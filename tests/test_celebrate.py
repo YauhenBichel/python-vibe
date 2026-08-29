@@ -62,6 +62,11 @@ class CelebrateAssetsTest(unittest.TestCase):
         body = WORKFLOW.read_text(encoding="utf-8")
         self.assertNotIn("actions/checkout", body)
 
+    def test_github_script_is_pinned_to_a_commit(self) -> None:
+        """pull-requests: write plus a mutable tag is a silent privilege change."""
+        body = WORKFLOW.read_text(encoding="utf-8")
+        self.assertRegex(body, r"uses: actions/github-script@[0-9a-f]{40}")
+
 
 if __name__ == "__main__":
     unittest.main()

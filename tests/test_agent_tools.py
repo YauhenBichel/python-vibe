@@ -137,8 +137,12 @@ class AgentToolsTest(unittest.TestCase):
             root = Path(tmp)
             dest = root / "tests"
             dest.mkdir()
+            # A real test file imports what it calls, so the harness can
+            # extend that line. Without one, the missing import is the more
+            # serious fault and is refused first.
             dest.joinpath("test_mathy.py").write_text(
                 "import unittest\n\n"
+                "from pkg.mathy import add\n\n"
                 "class TestMathy(unittest.TestCase):\n"
                 "    def test_add_returns_the_sum(self) -> None:\n"
                 "        got = add(2, 3)\n"
@@ -177,3 +181,55 @@ class AgentToolsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ImportRepairFollowsTheStyleRulesTest(unittest.TestCase):
+    """The import repair and the style rules used to contradict each other.
+
+    The repair read the called name out of `assertEqual(multiply(...))`.
+    The style rules ask for the opposite shape — assign to `got`, then
+    assert `got` — so a test written the way the harness demands never got
+    its import, and the suite went red. Seen in an editor session.
+    """
+
+    ORIGINAL = (
+        "import unittest\n\n"
+        "from src.orders import compute_total\n\n\n"
+        "class TestOrders(unittest.TestCase):\n"
+        "    def test_compute_total_sums(self) -> None:\n"
+        "        self.assertEqual(compute_total([1, 2]), 3)\n"
+    )
+
+    def _append(self, body: str) -> str:
+        from harness.act.tools import repair_unittest_append
+
+        out = repair_unittest_append(self.ORIGINAL, body)
+        self.assertIsNotNone(out)
+        assert out is not None
+        return out
+
+    def test_the_arranged_shape_gets_its_import(self) -> None:
+        out = self._append(
+            "    def test_total_lines_counts(self) -> None:\n"
+            "        prices = [1, 2, 3]\n"
+            "        got = total_lines(prices)\n"
+            "        self.assertEqual(got, 3)\n"
+        )
+        self.assertIn("from src.orders import compute_total, total_lines", out)
+
+    def test_the_inline_shape_still_gets_its_import(self) -> None:
+        out = self._append(
+            "    def test_total_lines_counts(self) -> None:\n"
+            "        self.assertEqual(total_lines([1, 2, 3]), 3)\n"
+        )
+        self.assertIn("total_lines", out.splitlines()[2])
+
+    def test_the_result_has_no_unbound_name(self) -> None:
+        from harness.scan.names import undefined_names
+
+        out = self._append(
+            "    def test_total_lines_counts(self) -> None:\n"
+            "        got = total_lines([1, 2, 3])\n"
+            "        self.assertEqual(got, 3)\n"
+        )
+        self.assertEqual(undefined_names(out), [])
