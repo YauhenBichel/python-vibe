@@ -18,7 +18,7 @@ Notes from laptop runs. Dates are the day of the measurement. Public pages do no
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for questions, writes, structure, ship. |
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids to run or tune. 1.5B and 1B do not parse Action:. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
-| [Skills]({{ '/skills/' | relative_url }}) | The nineteen kit skills and when each one loads. |
+| [Skills]({{ '/skills/' | relative_url }}) | The twenty kit skills and when each one loads. |
 | [Platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}) | Small files that must work on Windows, macOS, and Linux. |
 | [Everyday skills]({{ '/investigations/everyday-skills/' | relative_url }}) | Skills written as one copy-paste Action for an 8B. |
 | [Harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}) | What transfers from other published harnesses. |

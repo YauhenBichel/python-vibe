@@ -19,6 +19,7 @@ from harness.task import (
     looks_like_fix_smell,
     looks_like_http_client,
     looks_like_new_package,
+    looks_like_ops,
     looks_like_platform,
     looks_like_question,
     looks_like_script,
@@ -116,16 +117,23 @@ def pick_skills(task: str, catalog: list[Skill]) -> list[Skill]:
     picked: list[Skill] = []
     if looks_like_question(task):
         picked.extend(s for s in catalog if s.name == "answer-question")
-    from harness.task import looks_like_merge, looks_like_ship
+    from harness.task import (
+        looks_like_merge,
+        looks_like_ship,
+        looks_like_ticket,
+        looks_like_ticket_work,
+    )
 
-    if looks_like_ship(task):
-        if looks_like_merge(task):
-            picked.extend(s for s in catalog if s.name == "merge-pr")
-        elif re.search(r"\b(pr|pull request|push|commit)\b", task, re.I):
-            picked.extend(s for s in catalog if s.name == "open-pr")
-        else:
-            picked.extend(s for s in catalog if s.name == "read-issue")
+    if looks_like_merge(task):
+        picked.extend(s for s in catalog if s.name == "merge-pr")
         return picked
+    if looks_like_ship(task) and not looks_like_ticket_work(task):
+        picked.extend(s for s in catalog if s.name == "open-pr")
+        return picked
+    if looks_like_ticket(task):
+        picked.extend(s for s in catalog if s.name == "read-issue")
+        if not looks_like_ticket_work(task) and not looks_like_ship(task):
+            return picked
     if looks_like_new_package(task):
         picked.extend(s for s in catalog if s.name == "new-package")
         return picked
@@ -145,6 +153,9 @@ def pick_skills(task: str, catalog: list[Skill]) -> list[Skill]:
             for s in catalog
             if s.name in {"review-design", "refactor-split", "readable-layout"}
         )
+        return picked
+    if looks_like_ops(task):
+        picked.extend(s for s in catalog if s.name == "write-workflow")
         return picked
     if looks_like_platform(task):
         picked.extend(s for s in catalog if s.name == "write-paths")

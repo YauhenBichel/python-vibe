@@ -115,14 +115,19 @@ def looks_like_fix_smell(task: str) -> bool:
 
 
 _SHIP = re.compile(
-    r"(#\d+|\bissue\s+#?\d+|\bpr\s+#?\d+|\bpull request\b|"
-    r"\bopen a pr\b|\bcreate a pr\b|\bcommit\b|\bpush\b|\bmerge\b)",
+    r"(\bopen a pr\b|\bcreate a pr\b|\bopen a pull request\b|"
+    r"\bcommit\b|\bpush\b|\bmerge\b)",
     re.I,
 )
 _ISSUE_NUM = re.compile(r"(?:#|issue\s+#?|pr\s+#?)(\d+)", re.I)
+_TICKET_WORK = re.compile(
+    r"\b(fix|do|implement|write|add|address|handle|cover)\b", re.I
+)
+_PR_REF = re.compile(r"\b(pr|pull request)\s+#?\d+", re.I)
 
 
 def looks_like_ship(task: str) -> bool:
+    """Commit, push, open a PR, or merge — not merely “fix #50”."""
     if looks_like_question(task) or looks_like_new_package(task):
         return False
     return bool(_SHIP.search(task))
@@ -135,6 +140,23 @@ def looks_like_merge(task: str) -> bool:
 def issue_number(task: str) -> str:
     match = _ISSUE_NUM.search(task)
     return match.group(1) if match else ""
+
+
+def looks_like_ticket(task: str) -> bool:
+    return bool(issue_number(task))
+
+
+def looks_like_pr_ref(task: str) -> bool:
+    return bool(_PR_REF.search(task))
+
+
+def looks_like_ticket_work(task: str) -> bool:
+    """Do the work the ticket names, not only open or merge a PR."""
+    if not looks_like_ticket(task) or looks_like_question(task):
+        return False
+    if looks_like_merge(task) and not _TICKET_WORK.search(task):
+        return False
+    return bool(_TICKET_WORK.search(task))
 
 
 def looks_like_refactor(task: str) -> bool:
@@ -213,6 +235,13 @@ _PLATFORM = re.compile(
     r")\b",
     re.I,
 )
+_OPS = re.compile(
+    r"\b("
+    r"devops|dev.?ops|\bci\b|continuous integration|"
+    r"workflow|pipeline|ci workflow"
+    r")\b",
+    re.I,
+)
 
 
 def _without_paths(task: str) -> str:
@@ -252,22 +281,36 @@ def looks_like_platform(task: str) -> bool:
     """Path / venv / OS-layout work. Small files, many platforms."""
     if looks_like_question(task) or looks_like_new_package(task) or looks_like_ship(task):
         return False
+    if looks_like_ops(task):
+        return False
     return bool(_PLATFORM.search(task))
 
 
+def looks_like_ops(task: str) -> bool:
+    """CI / workflow YAML. Not a function add, not a path helper."""
+    if looks_like_question(task) or looks_like_new_package(task) or looks_like_ship(task):
+        return False
+    if looks_like_write_tests(task):
+        return False
+    return bool(_OPS.search(task))
+
+
 def looks_like_everyday_code(task: str) -> bool:
-    """Simple script, HTTP client, tally, algorithm, or path helper."""
+    """Simple script, HTTP client, tally, algorithm, path helper, or CI YAML."""
     return (
         looks_like_script(task)
         or looks_like_http_client(task)
         or looks_like_analytics(task)
         or looks_like_algorithm(task)
         or looks_like_platform(task)
+        or looks_like_ops(task)
     )
 
 
 def everyday_skill_name(task: str) -> str:
-    """The kit skill for a script / HTTP / tally / algorithm / path task."""
+    """The kit skill for a script / HTTP / tally / algorithm / path / CI task."""
+    if looks_like_ops(task):
+        return "write-workflow"
     if looks_like_platform(task):
         return "write-paths"
     if looks_like_http_client(task):
@@ -287,6 +330,7 @@ _EVERYDAY_PATH = {
     "analyze-data": "pkg/tally.py",
     "write-algorithm": "pkg/index_of.py",
     "write-paths": "pkg/paths.py",
+    "write-workflow": ".github/workflows/tests.yml",
 }
 
 
@@ -351,6 +395,8 @@ def looks_like_add_feature(task: str) -> bool:
     if looks_like_question(text):
         return False
     if looks_like_write_tests(task):
+        return False
+    if looks_like_ops(task) or looks_like_platform(task):
         return False
     if (
         looks_like_new_package(text)

@@ -22,6 +22,8 @@ from harness.task import (
     looks_like_new_package,
     looks_like_question,
     looks_like_ship,
+    looks_like_ticket,
+    looks_like_ticket_work,
     question_symbol,
 )
 
@@ -209,6 +211,14 @@ def start_hint(brief: ProjectBrief, task: str, *, located: bool = False) -> str:
         return (
             "This is a question. Read what you need, then Action: done with the answer. "
             "Do not edit unless asked."
+        )
+    if looks_like_ticket(task) and (
+        looks_like_ticket_work(task) or not looks_like_ship(task)
+    ):
+        return (
+            "This is a ticket. The brief names Where and Job. "
+            "Action: read that Path (or locate the symbol). Then do the Job. "
+            "Commit / push / pr only if the task asked."
         )
     if looks_like_ship(task):
         if looks_like_merge(task):

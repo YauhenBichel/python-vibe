@@ -34,9 +34,19 @@ of `demo/orders` per case. Independent checks are the `check=` snippets in
 `scripts/demo.py`, not the agent's summary. The hosted agent read the same
 files and answered the same prompts in one sitting.
 
-File jobs that have an independent check: **3 / 4 passed** on the 8B run
-(bugfix, write-tests, rename). add-feature failed. Review passed the
-no-write check while naming the wrong defect.
+File jobs that have an independent check: **3 / 4 passed** on the first 8B
+run (bugfix, write-tests, rename). add-feature failed that evening.
+
+A later run the same night, after the module-pick fix, used the five daily
+jobs (bugfix, write-tests, add-feature, pathlib helper, CI workflow).
+Independent check: **3 / 5**. add-feature now passed (`src/orders.py` +
+test). Path helper and CI still failed: the add-feature refuse sent the
+path job to `src/util.py`, and “add a CI workflow” was classified as
+add-feature, so the 8B wrote `def workflow` instead of YAML.
+
+Two hosted IDE agents were scored on the same wording in this sitting.
+On these small Python jobs they agree with each other: right file, one
+edit, run the suite. They were not called as a second local weight.
 
 ## Scoreboard
 
@@ -46,7 +56,7 @@ Score is “would a daily user get the same outcome,” not model size. 0–5.
 | --- | --- | --- | --- |
 | `what does apply_discount return?` | 3. `done` in 1 step. Summary was `"int"`. Missed floor-division and that percent is a whole number. | 3. Type quote is already required. Formula is still a model sentence. | 5. Quoted `-> int` and `total - (total * percent) // 100`. |
 | NameError in `src/orders.py` | 5. 0 model steps. `subtotl → subtotal`. Check passed. | 5 | 5. Same one-line bind. |
-| add `total_lines` + test | 1. 7 actions. Wrote `src/orders_controller.py`. Claimed a test in `tests/__init__.py`. `ImportError` on `src.orders`. | 4. Module pick follows name overlap, not file size. `done` is refused until `def total_lines` exists. | 5. Function next to `compute_total`, AAA test, run. |
+| add `total_lines` + test | 1 on the first run (controller). **5 on the later run** (`src/orders.py` + test, check passed). | 5 | 5. Function next to `compute_total`, AAA test, run. |
 | write tests for `apply_discount` | 5. 0 model steps. Mechanical AAA. Check passed. | 5 | 5 |
 | rename `calc` → `multiply` | 5. 0 model steps. Check passed. | 5 | 5 |
 | review `src/orders.py` | 2. 6 actions, 4 refusals. Invented an empty-list bug in `compute_total`. Missed `subtotl`. No writes. | 5. Compiler findings finish the run with no model turn. | 5. Named `subtotl` on the first read. |
@@ -76,9 +86,15 @@ agent never tried to edit.
 a daily user wants. Closing that gap without another refuse that rejects
 a good sentence is still open.
 
-**A lie in the summary.** add-feature reported a test in `tests/__init__.py`
-and a refactor to `pkg/orders.py`. Neither file was written. Independent
-check is the only score that matters.
+**A lie in the summary.** On the first run, add-feature reported a test in
+`tests/__init__.py`. Independent check is the only score that matters.
+
+**Platform and CI were classified as add-feature.** “write a pathlib
+helper” was refused off `pkg/paths.py` because add-feature thought the
+function belonged in `src/util.py`. “add a CI workflow” wrote
+`def workflow` in `src/util.py`. Hosted agents write `pkg/paths.py` and a
+workflow YAML. `looks_like_ops` / `write-workflow` and a path-job refuse
+are the harness answer.
 
 ## What the harness now does
 
@@ -90,12 +106,17 @@ check is the only score that matters.
 2. **New functions belong with related names.**
    `pick_module` scores token overlap with existing `def` lines, penalises
    `*_controller` / `*_service` adapters, and only then uses size (smaller
-   first). `refuse_wrong_file` blocks a write to the adapter.
+   first). After the def exists the harness writes the AAA test.
    `refuse_done_oracle` blocks `done` until `def <symbol>` exists.
 
-Those two changes are the hosted-agent behaviour that transfers: read the
+3. **Path helpers and CI YAML are not add-feature.**
+   `looks_like_platform` / `looks_like_ops` win. Prelude pins
+   `pkg/paths.py` or `.github/workflows/tests.yml`. `curl|sh` and
+   `0.0.0.0` in a workflow are refused.
+
+Those changes are the hosted-agent behaviour that transfers: read the
 defining file, put the new function beside the ones that already share a
-word, and do not accept a summary that describes work that is not there.
+word, and keep platform files in the path the skill named.
 
 ## What not to fix with weights
 

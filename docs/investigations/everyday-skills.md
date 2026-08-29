@@ -77,7 +77,7 @@ These kit skills, each a **single copy-paste Action** (no essays):
   `pkg/<noun>.py`. SoC, not a SOLID lecture.
 - `skills/fix-smell/SKILL.md` — one `Find:` / `Replace:` to a readable
   snake_case name (`total_price`, not `calc`).
-- `skills/read-issue/SKILL.md` — `Action: issue Number: N`
+- `skills/read-issue/SKILL.md` — `Action: issue Number: N` (or `Action: pr Number: N`). Brief names files in this project and comments from other users on the ticket, using the signed-in `gh` user.
 - `skills/open-pr/SKILL.md` — `Action: pr Title:` + `Body: Closes #N`
 - `skills/merge-pr/SKILL.md` — `Action: merge Number: N` only when the
   task says merge

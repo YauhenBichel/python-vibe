@@ -89,6 +89,29 @@ def refuse_shell_fetch(rel: str, draft: str) -> str:
     return "urllib.request only. Do not emit curl, wget, or os.system."
 
 
+_PIPE_SH = re.compile(r"curl\s+\S+.*\|\s*(sh|bash)|wget\s+\S+.*\|\s*(sh|bash)", re.I)
+_BIND_ALL = re.compile(r"0\.0\.0\.0")
+_INLINE_SECRET = re.compile(
+    r"""(?i)(api[_-]?key|token|password|secret)\s*[:=]\s*['"][^'"]{8,}['"]"""
+)
+
+
+def refuse_ops_draft(rel: str, draft: str) -> str:
+    """Workflow YAML stays a test runner. No installer pipe, no public bind."""
+    suffix = Path(rel or "").suffix.lower()
+    if suffix not in {".yml", ".yaml"} and "workflow" not in (rel or "").lower():
+        return ""
+    if not draft:
+        return ""
+    if _PIPE_SH.search(draft):
+        return "no curl|sh in a workflow. Run unittest only."
+    if _BIND_ALL.search(draft):
+        return "do not bind 0.0.0.0. Keep the sidecar on 127.0.0.1."
+    if _INLINE_SECRET.search(draft):
+        return "no inline secrets. Use the runner's secret store, or omit."
+    return ""
+
+
 _OS_PATH = re.compile(
     r"\bos\.path\.(join|exists|isfile|isdir|dirname|abspath|basename|"
     r"expanduser|normpath)\b"

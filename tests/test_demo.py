@@ -128,13 +128,15 @@ class ReviewDoesNotEditTest(unittest.TestCase):
     def test_a_named_file_review_finishes_without_a_model(self) -> None:
         from harness import Agent, AgentOptions
 
-        result = Agent(
-            AgentOptions(
-                project=DEMO_PROJECT,
-                task="review src/orders.py for bugs",
-                allow_writes=True,
-            )
-        ).run()
+        with tempfile.TemporaryDirectory() as tmp:
+            project = DEMO._fresh_copy(Path(tmp))
+            result = Agent(
+                AgentOptions(
+                    project=project,
+                    task="review src/orders.py for bugs",
+                    allow_writes=True,
+                )
+            ).run()
         self.assertTrue(result.ok)
         self.assertEqual(result.stopped, "done")
         self.assertIn("subtotl", result.summary)

@@ -32,6 +32,7 @@ from harness.ship.git_ship import (
     merge_pr,
     push_branch,
     read_issue,
+    read_pr,
 )
 from harness.skillkit.catalog import (
     list_skills,
@@ -101,15 +102,25 @@ def run_action(
     if turn.action == "run":
         return run_python(project, turn.argv), last_path
     if turn.action == "issue":
-        return read_issue(project, turn.name or turn.query), last_path
+        return read_issue(
+            project, turn.number or turn.name or turn.query
+        ), last_path
     if turn.action == "branch":
         return make_branch(project, turn.name or turn.summary), last_path
     if turn.action == "commit":
         return commit_changes(project, turn.summary), last_path
     if turn.action == "push":
         return push_branch(project), last_path
+    if turn.action == "pr" and (turn.number or turn.name or turn.query).strip().isdigit():
+        return read_pr(
+            project, (turn.number or turn.name or turn.query).strip()
+        ), last_path
     if turn.action == "pr":
-        return create_pr(project, turn.summary, turn.append), last_path
+        return create_pr(
+            project, turn.title or turn.summary, turn.body or turn.append
+        ), last_path
     if turn.action == "merge":
-        return merge_pr(project, turn.name or turn.query, allowed=True), last_path
+        return merge_pr(
+            project, turn.number or turn.name or turn.query, allowed=True
+        ), last_path
     return f"unknown Action {turn.action}. Use {ACTIONS}.", last_path

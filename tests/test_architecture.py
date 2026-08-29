@@ -17,7 +17,9 @@ DEPTH = {
     "paths": 0,
     "task": 0,
     "model": 1,
-    "ship": 1,
+    # `ship` sits above `scan` because reading a ticket means locating what
+    # it names in the project.
+    "ship": 3,
     "guard": 1,
     "scan": 2,
     "skillkit": 3,

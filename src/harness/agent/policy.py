@@ -44,7 +44,10 @@ from harness.skillkit.style import (
     refuse_write_done,
 )
 from harness.task import (
+    everyday_example_path,
     looks_like_add_feature,
+    looks_like_ops,
+    looks_like_platform,
     looks_like_bugfix,
     looks_like_design_loop,
     named_project_file,
@@ -55,6 +58,7 @@ from harness.task import (
     looks_like_new_package,
     looks_like_question,
     looks_like_ship,
+    looks_like_ticket,
     question_symbol,
     rename_target,
     smell_symbol,
@@ -125,6 +129,32 @@ def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
                 else "tests/test_module.py"
             )
             return f"Tests go in {dest}. Do not change {got}."
+    # A file the task names outright beats any routing rule below. "in
+    # src/app.py ... fix it for Windows" was being sent to pkg/paths.py,
+    # which ignores the one instruction the person gave.
+    if named_project_file(task, project):
+        return _refuse_other_than_named(task, project, path)
+    if looks_like_platform(task) or looks_like_ops(task):
+        from harness.skillkit.target import pick_module
+
+        wanted = (
+            pick_module(project, "", task)
+            if looks_like_ops(task)
+            else everyday_example_path(task)
+        )
+        got = as_project_rel(path)
+        parts = got.split("/") if got else []
+        if (
+            got
+            and wanted
+            and got != wanted
+            and "tests" not in parts
+            and not parts[-1].startswith("test_")
+        ):
+            return (
+                f"This job writes {wanted}. Do not change {got}. "
+                f"Action: edit Path: {wanted}"
+            )
     if looks_like_add_feature(task):
         from harness.skillkit.target import pick_module
 
@@ -152,6 +182,22 @@ def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
     # "write tests for apply_discount in src/orders.py" names the source
     # file, but the test belongs beside it, not inside it. A test file is
     # always an allowed destination.
+    parts = got.split("/")
+    if "tests" in parts or parts[-1].startswith("test_"):
+        return ""
+    return (
+        f"The task names {wanted}. Do not change {got}. "
+        f"Action: patch Path: {wanted}"
+    )
+
+
+def _refuse_other_than_named(task: str, project: Path, path: str) -> str:
+    """Allow the named file and its tests; refuse anything else."""
+    named = named_project_file(task, project)
+    wanted = as_project_rel(named)
+    got = as_project_rel(path)
+    if not got or got == wanted or wanted.endswith(got) or got.endswith(wanted):
+        return ""
     parts = got.split("/")
     if "tests" in parts or parts[-1].startswith("test_"):
         return ""
@@ -233,6 +279,8 @@ def _located_body(state: LoopState) -> str:
 
 
 def _refuse_ship(task: str, action: str) -> str:
+    if action in {"issue", "pr"} and looks_like_ticket(task):
+        return ""
     if not looks_like_ship(task):
         return (
             "Ship actions only when the task is about an issue, PR, commit, "
@@ -344,6 +392,10 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
     # Tests passing only means the work is finished if there was some work.
     # An agent that runs the suite first, to see the starting state, would
     # otherwise be told to finish before it had changed anything.
+    if turn.action in {"issue", "pr"}:
+        for line in result.splitlines():
+            if line.startswith("Next:"):
+                return line.split(":", 1)[1].strip() + "\n"
     if (
         turn.action == "run"
         and result.startswith("exit 0")
