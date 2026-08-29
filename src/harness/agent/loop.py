@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from harness.act.autofix import apply_cover_test
 from harness.act.parse import parse_turn_smart
 from harness.act.tools import run_python
+from harness.scan.names import undefined_in_file
 from harness.agent.dispatch import ACTIONS, run_action
 from harness.agent.options import AgentOptions, AgentResult, Step
 from harness.agent.policy import LoopState, next_prompt, refuse_before, refuse_done
@@ -27,6 +28,7 @@ from harness.observe.trace_record import append_turn
 from harness.scan.design import render_design_review
 from harness.task import (
     looks_like_add_feature,
+    looks_like_bugfix,
     looks_like_design_loop,
     looks_like_question,
     looks_like_ship,
@@ -124,9 +126,21 @@ class Agent:
                     stopped="done",
                     writes=(),
                 )
+            leftover_names = []
+            if looks_like_bugfix(options.task):
+                for rel in writes:
+                    leftover_names.extend(
+                        undefined_in_file(self.project / rel)
+                    )
             verdict, test_out = _verify_mechanical(self.project)
             options.emit("result", test_out)
-            if verdict in {"passed", "no suite"}:
+            if leftover_names:
+                leftover_tests = (
+                    f"undefined name {leftover_names[0]} after the "
+                    "mechanical fix. The suite is not enough."
+                )
+                options.emit("result", leftover_tests)
+            elif verdict in {"passed", "no suite"}:
                 note = next(
                     (
                         line[2:]
@@ -146,7 +160,8 @@ class Agent:
                     stopped="done",
                     writes=tuple(writes),
                 )
-            leftover_tests = test_out
+            else:
+                leftover_tests = test_out
         label, generate = make_generate(
             options.engine,
             options.max_tokens,

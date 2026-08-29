@@ -210,6 +210,7 @@ class AddFeatureGoesInTheDomainFileTest(unittest.TestCase):
         text, _path = prelude(DEMO_PROJECT, self.TASK)
         self.assertIn("Path: src/orders.py", text)
         self.assertIn("def total_lines", text)
+        self.assertIn("`prices`", text)
 
     def test_a_written_function_gets_a_cover_test(self) -> None:
         from harness.agent.loop import _cover_after_add

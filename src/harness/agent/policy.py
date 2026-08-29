@@ -65,6 +65,8 @@ from harness.task import (
 )
 
 MAX_QUESTIONS = 2
+# How often the loop may send a summary back for being too thin.
+MAX_THIN_DONE = 2
 # A Summary this close to a line it was given is an echo, not an answer.
 ECHO_RATIO = 0.75
 
@@ -86,6 +88,7 @@ class LoopState:
         autofixed: the harness already applied a rename or unique typo.
         scope: optional subdirectory the run is limited to.
         questions_asked: how many questions the agent has put to the user.
+        thin_done_refused: how often a summary was sent back as too thin.
         instructions: skill lines the model was given, used to detect a
             reply that repeats an instruction instead of answering.
         guard: record of read-only actions already performed.
@@ -105,6 +108,7 @@ class LoopState:
     questions_asked: int = 0
     wrote_something: bool = False
     empty_done_refused: bool = False
+    thin_done_refused: int = 0
     instructions: tuple[str, ...] = ()
     guard: LoopGuard = field(default_factory=LoopGuard)
 
@@ -223,9 +227,18 @@ def refuse_before(state: LoopState, turn) -> str:
             "This run is read-only. Do not patch, edit, or run. "
             "Action: done Summary: say what you would change and why."
         )
-    if turn.action == "ask" and state.ran_tests and state.wrote_something:
+    if turn.action == "ask" and state.wrote_something:
+        # A live run wrote a function and a test, then asked which of two
+        # readings was meant. The question was reasonable and far too
+        # late: the files were already on disk under one of them. Once
+        # something is written, the next move is to run or to report.
+        if state.ran_tests:
+            return (
+                "Tests already passed. Action: done Summary: say what you changed."
+            )
         return (
-            "Tests already passed. Action: done Summary: say what you changed."
+            "You have already changed files, so it is too late to ask. "
+            "Action: run Argv: -m unittest discover -s tests -q"
         )
     if turn.action == "ask" and state.questions_asked >= MAX_QUESTIONS:
         return (
@@ -364,9 +377,16 @@ def refuse_done(state: LoopState, turn) -> str:
     if not blocked:
         blocked = refuse_early_done(state.task, state.last_path, state.located_path)
     if not blocked:
-        blocked = refuse_shallow_done(
+        # Asking for a fuller sentence is worth two turns, not the whole
+        # budget. A scripted or stubborn model that cannot produce one
+        # otherwise spends every remaining step being told the same thing
+        # and the run fails with the answer already in hand.
+        thin = refuse_shallow_done(
             state.task, turn.summary, state.located_signature
         )
+        if thin and state.thin_done_refused < MAX_THIN_DONE:
+            state.thin_done_refused += 1
+            blocked = thin
     if not blocked:
         blocked = refuse_design_dirty(state.task, state.design_report)
     if not blocked:

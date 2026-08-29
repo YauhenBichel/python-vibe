@@ -184,6 +184,14 @@ class SmartHarnessTest(unittest.TestCase):
             "",
         )
         self.assertIn(
+            "what it computes",
+            refuse_shallow_done(
+                "what does compute_total return?",
+                '"int"',
+                "def compute_total(prices: list[int]) -> int:",
+            ),
+        )
+        self.assertIn(
             "patch",
             refuse_redundant_locate(
                 "add a function multiply(a, b) and a unit test", "locate", True
