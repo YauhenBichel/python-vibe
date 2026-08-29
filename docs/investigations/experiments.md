@@ -19,9 +19,6 @@ Related: [Live scenarios]({{ '/scenarios/' | relative_url }}) ·
 [Research index]({{ '/investigations/' | relative_url }}) ·
 [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
 
-A Medium article from this table is kept in `drafts/medium-experiments.md`
-in the repository, so it is not published here as well.
-
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
 <ol>
