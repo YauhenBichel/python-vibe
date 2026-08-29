@@ -7,7 +7,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from harness.act.autofix import apply_function_rename, apply_typo_fixes
+from harness.act.autofix import (
+    apply_function_rename,
+    apply_missing_imports,
+    apply_typo_fixes,
+)
 from harness.act.code import apply_source, read_project_file, resolve_project_file
 from harness.paths import is_secret_name, rel_posix, suffix_globs
 from harness.act.patch_fix import align_indent, find_match, miss_message
@@ -289,6 +293,10 @@ def patch_py(
         if bound != text:
             text = bound
             note = (note + " (harness bound unique NameError typo)").strip()
+    repaired = apply_missing_imports(text)
+    if repaired != text:
+        text = repaired
+        note = (note + " (harness added the missing import)").strip()
     blocked = refuse_duplicate_module(project, rel, original)
     if not blocked:
         blocked = refuse_missing_import_target(project, rel, text)
@@ -306,6 +314,7 @@ def patch_py(
 def edit_py(project: Path, rel: str, source: str, task: str = "") -> str:
     path = resolve_project_file(project, rel)
     original = path.read_text(encoding="utf-8") if path.is_file() else ""
+    source = apply_missing_imports(source)
     blocked = refuse_duplicate_module(project, rel, original)
     if not blocked:
         blocked = refuse_missing_import_target(project, rel, source)

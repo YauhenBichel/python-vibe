@@ -11,6 +11,7 @@ The three jobs this is for: write a test, add a small component, fix a bug.
   tier 3  a new module with a component and a test
   tier 4  write a test for something already there
   tier 5  fix a bug that is already in the code
+  tier 6  platform and operations work: paths, environment, config, retries
 
 Each case runs the code afterwards. "Worked" means the function does the
 job, not that a file was written.
@@ -133,6 +134,49 @@ CASES = [
                                         "def total_with_tax(prices: list[int]) -> float:\n"
                                         "    subtotal = compute_total(prices)\n"
                                         "    return subtotl + (subtotl * TAX)\n"}),
+    # Tier 6: the work a platform or operations person brings.
+    Case("env-flag", 6,
+         "add a function env_flag(name, default) that reads a boolean environment "
+         "variable, accepting 1, true and yes in any case",
+         "import os\n"
+         "f = load('env_flag')\n"
+         "os.environ['X'] = 'TRUE'\nassert f('X', False) is True, 'TRUE'\n"
+         "os.environ['X'] = 'yes'\nassert f('X', False) is True, 'yes'\n"
+         "os.environ['X'] = '0'\nassert f('X', True) is False, '0'\n"
+         "os.environ.pop('X')\nassert f('X', True) is True, 'default'\n"),
+    Case("venv-python", 6,
+         "add a function venv_python(venv, windows) that returns the interpreter "
+         "path inside a virtual environment, Scripts on Windows and bin elsewhere",
+         "from pathlib import Path\n"
+         "f = load('venv_python')\n"
+         "def call(on_windows):\n"
+         "    # The natural signature makes `windows` keyword-only. Accept\n"
+         "    # either shape: what matters is the path it returns.\n"
+         "    try:\n"
+         "        return str(f(Path('/p/.venv'), on_windows))\n"
+         "    except TypeError:\n"
+         "        return str(f(Path('/p/.venv'), windows=on_windows))\n"
+         "win, nix = call(True), call(False)\n"
+         "assert 'Scripts' in win and 'python' in win.lower(), win\n"
+         "assert 'bin' in nix, nix\n"),
+    Case("read-env-file", 6,
+         "add a function read_env_file(path) that reads KEY=VALUE lines into a dict, "
+         "skipping blank lines and comments",
+         "open('.env.sample','w').write('# note\\nA=1\\n\\nB=two\\n')\n"
+         "got = load('read_env_file')('.env.sample')\n"
+         "assert got.get('A') == '1' and got.get('B') == 'two', got\n"
+         "assert '#' not in ''.join(got), got\n"),
+    Case("retry", 6,
+         "add a function retry(action, times) that calls action and tries again "
+         "on an exception, up to times, returning the result",
+         "calls = []\n"
+         "def flaky():\n"
+         "    calls.append(1)\n"
+         "    if len(calls) < 3:\n"
+         "        raise ValueError('not yet')\n"
+         "    return 'ok'\n"
+         "assert load('retry')(flaky, 5) == 'ok', calls\n"),
+
     Case("fix-offbyone", 5,
          "fix the bug in last_price in src/orders.py: it raises IndexError on a full list",
          "assert load('last_price')([1, 2, 3]) == 3\n",

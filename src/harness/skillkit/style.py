@@ -281,6 +281,29 @@ def refuse_test_in_impl(rel: str, draft: str) -> str:
     return ""
 
 
+def _undefined_message(rel: str, name: str) -> str:
+    """Say how to bind the name, not just that it is unbound.
+
+    `Path` used without `from pathlib import Path` was answered with
+    "Find: Path Replace: the name you assigned", which asks for a rename
+    when the fix is an import line.
+    """
+    from harness.scan.names import import_for
+
+    line = import_for(name)
+    if line:
+        return (
+            f"{name} is used but never imported. "
+            f"Action: patch Path: {rel} Find: {line.split()[-1]} "
+            f"Replace: {line.split()[-1]}  # then add at the top: {line}"
+        )
+    return (
+        f"undefined name {name}. "
+        f"Action: patch Path: {rel} Find: {name} "
+        "Replace: the name you assigned."
+    )
+
+
 def refuse_undefined_draft(task: str, rel: str, original: str, draft: str) -> str:
     """Refuse a write that adds an unbound name, or a bugfix that leaves one."""
     if not draft or not (rel or "").endswith(".py"):
@@ -288,15 +311,11 @@ def refuse_undefined_draft(task: str, rel: str, original: str, draft: str) -> st
     if looks_like_bugfix(task):
         leftover = undefined_names(draft)
         if leftover:
-            return (
-                f"undefined name {leftover[0]}. "
-                f"Action: patch Path: {rel} Find: {leftover[0]} "
-                "Replace: the name you assigned."
-            )
+            return _undefined_message(rel, leftover[0])
         return ""
     added = new_undefined(original, draft)
     if added:
-        return (
+        return _undefined_message(rel, added[0]) or (
             f"undefined name {added[0]}. "
             f"Action: patch Path: {rel} Find: {added[0]} "
             "Replace: the name you assigned."
