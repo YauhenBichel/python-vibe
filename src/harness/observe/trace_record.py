@@ -13,13 +13,19 @@ from harness.secrets import secret_in
 # file: a trace is written to disk and kept, so it redacts wider than a
 # refusal needs to.
 _ALSO_REDACT = re.compile(r"(HF_TOKEN=|-----BEGIN )")
-_HOME = re.compile(r"/Users/[^/\s]+")
+_HOME = re.compile(r"/(Users|home)/[^/\s]+")
+_URL_HOST = re.compile(r"\b([a-z][a-z0-9+.-]*://)(?:[^/@\s]+@)?([^/\s]+)", re.IGNORECASE)
+_BARE_HOST = re.compile(
+    r"\b[A-Za-z0-9-]+\.(?:local|lan|internal|corp|home)(?::\d+)?\b"
+)
 
 
 def redact(text: str) -> str:
     if secret_in(text) or _ALSO_REDACT.search(text):
         return "[redacted]"
-    return _HOME.sub("/Users/you", text)
+    text = _HOME.sub(lambda match: f"/{match.group(1)}/you", text)
+    text = _URL_HOST.sub(lambda match: f"{match.group(1)}[host]", text)
+    return _BARE_HOST.sub("[host]", text)
 
 
 def append_turn(path: Path, row: dict[str, str]) -> None:
