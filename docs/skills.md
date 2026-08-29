@@ -56,7 +56,9 @@ also gets `stay-scoped`.
 
 A question is never treated as a write. Ship skills (`read-issue`, `open-pr`,
 `merge-pr`) do not force, do not target `main` / `master`, and skip secret
-filenames.
+filenames. A harness commit keeps you as the author and adds
+`Co-authored-by: python-vibe` so the [python-vibe](https://github.com/python-vibe)
+GitHub user appears on that commit.
 
 ## Kit catalog
 

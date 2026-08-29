@@ -8,15 +8,17 @@ import subprocess
 from pathlib import Path
 
 from harness.paths import SECRET_NAMES
+from harness.ship.identity import CO_AUTHOR_URL, co_author_line, with_co_author
 from harness.ship.ticket import identity_from_user_json, parse_ticket, render_ticket
 
 PROTECTED = frozenset({"main", "master"})
 _BRANCH = re.compile(r"^[A-Za-z0-9._][A-Za-z0-9._/-]{0,79}$")
-CO_AUTHOR = "Co-Authored-By: python-vibe <python-vibe@users.noreply.github.com>"
+CO_AUTHOR = co_author_line()
 # Says on the pull request itself which tool did the work, the way a
 # commit trailer does for a commit.
 PR_FOOTER = (
-    "\n\n---\nOpened with [python-vibe](https://github.com/YauhenBichel/python-vibe), a local harness.\n"
+    "\n\n---\nOpened with [python-vibe](https://github.com/YauhenBichel/python-vibe). "
+    f"Co-authored-by [@{CO_AUTHOR_URL.rsplit('/', 1)[-1]}]({CO_AUTHOR_URL}).\n"
 )
 _TIMEOUT = 45
 
@@ -170,7 +172,7 @@ def commit_changes(project: Path, summary: str) -> str:
         return "refusing to commit secret filenames"
     if not names:
         return "nothing to commit"
-    code, out = _run(project, ["git", "commit", "-m", message, "-m", CO_AUTHOR])
+    code, out = _run(project, ["git", "commit", "-m", with_co_author(message)])
     return out or "committed" if code == 0 else out
 
 

@@ -113,6 +113,25 @@ Python 3.11 to 3.13.
 
 Do not call the project everyday-ready until `scripts/eval_everyday.py --live` beats an untuned 8B on Action parse rate and a real ≥1 KB fix.
 
+## GitHub account (co-author)
+
+When python-vibe commits, **you** stay the author. The harness adds a
+`Co-authored-by` trailer for the [python-vibe](https://github.com/python-vibe)
+GitHub user so that account appears on the commit. Create it once (a person
+has to sign up; the harness cannot):
+
+1. Open [github.com/signup](https://github.com/signup).
+2. Username: `python-vibe` (still unused as of 29 Aug 2026).
+3. Use a mailbox you control. Verify the email.
+4. Settings → Emails → keep the noreply address
+   `python-vibe@users.noreply.github.com`.
+5. Bio: point at [YauhenBichel/python-vibe](https://github.com/YauhenBichel/python-vibe).
+   Do not give this user write access to other people’s repos. It is only
+   for attribution.
+
+Until that user exists, GitHub still stores the trailer but does not show
+an avatar.
+
 ## Tiny sidecar (not daily work)
 
 ```bash
