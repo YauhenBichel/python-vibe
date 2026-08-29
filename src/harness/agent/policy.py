@@ -26,12 +26,14 @@ from harness.paths import as_project_rel
 from harness.locate import (
     refuse_design_dirty,
     refuse_early_done,
+    refuse_invented_review,
     refuse_question_ask,
     refuse_question_write,
     refuse_redundant_explore,
     refuse_redundant_locate,
     refuse_shallow_done,
     refuse_thin_review,
+    refuse_write_tests_ask,
 )
 from harness.skillkit.catalog import get_skill, render_skill
 from harness.scan.names import undefined_in_file
@@ -47,6 +49,8 @@ from harness.task import (
     looks_like_design_loop,
     named_project_file,
     looks_like_fix_smell,
+    looks_like_write_tests,
+    covered_symbol,
     looks_like_merge,
     looks_like_new_package,
     looks_like_question,
@@ -110,6 +114,17 @@ def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
     """
     if action not in WRITE_ACTIONS or action == "run":
         return ""
+    if looks_like_write_tests(task):
+        got = as_project_rel(path)
+        parts = got.split("/") if got else []
+        if got and "tests" not in parts and not parts[-1].startswith("test_"):
+            symbol = covered_symbol(task)
+            dest = (
+                f"tests/test_{symbol.split('.')[-1]}.py"
+                if symbol
+                else "tests/test_module.py"
+            )
+            return f"Tests go in {dest}. Do not change {got}."
     named = named_project_file(task, project)
     if not named:
         return ""
@@ -154,6 +169,9 @@ def refuse_before(state: LoopState, turn) -> str:
             "You have already asked. Choose the most likely reading, say "
             "which you chose, and continue."
         )
+    blocked = refuse_write_tests_ask(state.task, turn.action)
+    if blocked:
+        return blocked
     blocked = refuse_wrong_file(
         state.task, state.project, turn.action, turn.path or state.last_path
     )
@@ -286,6 +304,10 @@ def refuse_done(state: LoopState, turn) -> str:
         blocked = refuse_design_dirty(state.task, state.design_report)
     if not blocked:
         blocked = refuse_thin_review(state.task, turn.summary, state.design_report)
+    if not blocked:
+        blocked = refuse_invented_review(
+            state.task, turn.summary, _located_body(state)
+        )
     if not blocked:
         blocked = refuse_write_done(
             state.task, state.ran_tests, wrote=state.wrote_something

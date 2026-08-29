@@ -9,6 +9,7 @@ from harness.act.tools import grep_py, read_py
 from harness.task import looks_like_question, question_symbol
 from harness.task import looks_like_add_feature
 from harness.task import (
+    covered_symbol,
     everyday_example_path,
     everyday_skill_name,
     named_project_file,
@@ -18,6 +19,7 @@ from harness.task import (
     looks_like_new_package,
     looks_like_refactor,
     looks_like_review,
+    looks_like_write_tests,
     smell_symbol,
 )
 
@@ -133,6 +135,24 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
         return f"Harness design review ({kind})\n{next_line}\n\n{report}", ""
     if looks_like_new_package(task):
         return "", ""
+    if looks_like_write_tests(task):
+        symbol = covered_symbol(task) or question_symbol(task)
+        dest = named_project_file(task, project)
+        rel = dest.replace("\\", "/").lower()
+        if dest and "test" not in rel and not rel.split("/")[-1].startswith("test_"):
+            dest = ""
+        if not dest and symbol:
+            dest = f"tests/test_{symbol.split('.')[-1]}.py"
+        if not dest:
+            dest = "tests/test_module.py"
+        text, path = locate_py(project, symbol, scope) if symbol else ("", "")
+        header = (
+            f"Harness locate (write-tests) Query: {symbol or 'the function'}\n"
+            f"Next Action must be patch Path: {dest} Append: one AAA "
+            f"test_<unit>_<result> that calls {symbol or 'the function'}.\n"
+            "Do not edit the implementation. Do not ask."
+        )
+        return f"{header}\n\n{text}", path
 
     # A task that names a file has already said which file to open. Looking
     # up a word out of that path instead finds every file in the project:
@@ -225,6 +245,84 @@ def refuse_redundant_locate(task: str, action: str, prelude_ran: bool) -> str:
             "already located. Action: patch Path: + Append: the new function."
         )
     return ""
+
+
+def refuse_write_tests_ask(task: str, action: str) -> str:
+    """Cover-test jobs name the symbol. Asking where tests live wastes the step."""
+    if action != "ask" or not looks_like_write_tests(task):
+        return ""
+    symbol = covered_symbol(task)
+    dest = f"tests/test_{symbol}.py" if symbol else "tests/test_<unit>.py"
+    return (
+        "Do not ask. Action: patch Path: "
+        f"{dest} Append: one AAA test_<unit>_<result> method."
+    )
+
+
+_INVENTED = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]{5,})\b")
+_INVENTED_SKIP = frozenset(
+    {
+        "function",
+        "returns",
+        "return",
+        "empty",
+        "input",
+        "output",
+        "should",
+        "because",
+        "however",
+        "potential",
+        "defects",
+        "defect",
+        "errors",
+        "found",
+        "change",
+        "would",
+        "summary",
+        "action",
+        "module",
+        "caller",
+        "callers",
+        "formatted",
+        "present",
+        "values",
+        "counts",
+        "measured",
+        "estimated",
+    }
+)
+
+
+def refuse_invented_review(task: str, summary: str, body: str) -> str:
+    """Refuse a review that names a function the file does not contain.
+
+    Live 8B on a real tree invented compute_total and estimate_tokens after
+    reading an unrelated OpenSRE file. Demo-task prior, not a finding.
+    """
+    from harness.task import looks_like_review_code
+
+    if not looks_like_review_code(task):
+        return ""
+    if not (summary or "").strip() or not (body or "").strip():
+        return ""
+    invented: list[str] = []
+    for name in _INVENTED.findall(summary):
+        if name.lower() in _INVENTED_SKIP:
+            continue
+        if name.lower() in task.lower():
+            continue
+        if "_" not in name:
+            continue
+        if name in body or f"def {name}" in body:
+            continue
+        invented.append(name)
+    if not invented:
+        return ""
+    return (
+        f"{invented[0]} is not in the file you read. "
+        "Action: done Summary: quote a name that is in # auto-read, or say "
+        "no defects found."
+    )
 
 
 def refuse_question_ask(task: str, action: str, located_path: str) -> str:

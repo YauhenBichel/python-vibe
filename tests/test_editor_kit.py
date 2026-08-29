@@ -13,11 +13,14 @@ from harness.locate import prelude, refuse_redundant_locate
 from harness.scan.project_brief import start_hint
 from harness.scan.project_brief import classify_project
 from harness.task import (
+    everyday_example_path,
     everyday_skill_name,
+    looks_like_add_feature,
     looks_like_algorithm,
     looks_like_analytics,
     looks_like_http_client,
     looks_like_script,
+    looks_like_write_tests,
 )
 
 
@@ -29,6 +32,24 @@ class EverydayKindsTest(unittest.TestCase):
         self.assertTrue(looks_like_analytics("tally counts by key from a csv"))
         self.assertTrue(looks_like_algorithm("implement binary search"))
         self.assertFalse(looks_like_script("what does weekday_name return?"))
+        self.assertFalse(
+            looks_like_script(
+                "write unit tests for validate_cron_and_timezone in tests/cli/foo.py"
+            )
+        )
+        cover = (
+            "write AAA unit tests for validate_cron_and_timezone; "
+            "add them in tests/cli/test_cron_validation.py"
+        )
+        self.assertTrue(looks_like_write_tests(cover))
+        self.assertFalse(looks_like_add_feature(cover))
+        self.assertNotEqual(everyday_example_path(cover), "pkg/weekday_name.py")
+        self.assertTrue(
+            looks_like_add_feature("add a function multiply(a, b) and a unit test")
+        )
+        self.assertFalse(
+            looks_like_write_tests("add a function multiply(a, b) and a unit test")
+        )
         self.assertEqual(everyday_skill_name("implement binary search"), "write-algorithm")
         self.assertEqual(everyday_skill_name("fetch json from the HTTP API"), "call-http")
 
