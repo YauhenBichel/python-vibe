@@ -83,7 +83,7 @@ Use a hosted IDE agent when the job is multi-file across languages, needs extra 
 - [Hub models]({{ '/investigations/hub-models/' | relative_url }}) — Hugging Face ids to run or tune; 1.5B does not parse Action:
 - [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) — why 0.5B is not daily work
 - [Demo]({{ '/demo/' | relative_url }}) — eleven everyday tasks on one small tree, including misses
-- [Skills]({{ '/skills/' | relative_url }}) — the nineteen kit skills and when the harness loads each one
+- [Skills]({{ '/skills/' | relative_url }}) — the twenty kit skills and when the harness loads each one
 - [Platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}) — pathlib, venv layouts, config files, every OS
 - [Everyday skills]({{ '/investigations/everyday-skills/' | relative_url }}) — skills written for an 8B
 - [Harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}) — what transfers from other agent harnesses

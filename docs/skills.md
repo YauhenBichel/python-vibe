@@ -38,7 +38,7 @@ also gets `stay-scoped`.
 | A what / why / how question | `answer-question` |
 | Merge a pull request | `merge-pr` |
 | Open a PR, commit, or push | `open-pr` |
-| Read a GitHub issue | `read-issue` |
+| Read a GitHub issue or pull request | `read-issue` |
 | Create a package or project layout | `new-package` |
 | Rename or clean up a smell | `fix-smell` |
 | Review one named file | `review-code` |
@@ -49,6 +49,7 @@ also gets `stay-scoped`.
 | Analytics / tally / csv | `analyze-data`, `write-tests` |
 | Algorithm / binary search / stack | `write-algorithm`, `write-tests` |
 | Path / venv / filesystem / platform | `write-paths`, `write-tests` |
+| CI / pipeline / workflow YAML | `write-workflow` |
 | Vague, no file and no symbol | `ask-when-unclear` |
 | Mentions tests | `write-tests` |
 | Mode is large | `stay-scoped` as well |
@@ -59,7 +60,7 @@ filenames.
 
 ## Kit catalog
 
-Nineteen skills ship with python-vibe.
+Twenty skills ship with python-vibe.
 
 ### Code changes
 
@@ -74,6 +75,7 @@ Nineteen skills ship with python-vibe.
 | [`analyze-data`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/analyze-data/SKILL.md) | One `Counter` / group-by over rows. | Analytics, tally, csv, histogram. |
 | [`write-algorithm`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/write-algorithm/SKILL.md) | One named algorithm (binary search, stack). | Data structures and algorithms. |
 | [`write-paths`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/write-paths/SKILL.md) | One `pathlib` helper. Both venv layouts. `Path.home()`. | Filesystem, venv, Windows / macOS / Linux paths. |
+| [`write-workflow`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/write-workflow/SKILL.md) | One workflow YAML that runs `unittest`. No curl, no `0.0.0.0`. | CI, pipeline, or workflow. Not a Python function add. |
 | [`write-tests`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/write-tests/SKILL.md) | Add one test that sets up its inputs, calls the function, then checks the result. | After `add-feature`, or when the task asks for tests. |
 | [`new-package`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/new-package/SKILL.md) | Create `pkg/` and `tests/`, with an `__init__.py` that only lists what the package exports. | Create a package or project structure. Not for one function on an existing module. |
 | [`fix-smell`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/fix-smell/SKILL.md) | Rename one opaque function to readable snake_case. One `Find:` / `Replace:`. | Smell, rename, or clean up. Not for add or questions. |
@@ -93,7 +95,7 @@ Nineteen skills ship with python-vibe.
 
 | Skill | What it tells the model to do | When it is used |
 | --- | --- | --- |
-| [`read-issue`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/read-issue/SKILL.md) | `Action: issue` plus `Number: N`. | The task names an issue. |
+| [`read-issue`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/read-issue/SKILL.md) | `Action: issue` or `Action: pr` plus `Number: N`. The brief names files that exist here, the job, and comments from other users on the same ticket (signed-in `gh` user). | The task names an issue or pull request. |
 | [`open-pr`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/open-pr/SKILL.md) | Commit, push, then open a PR (`Title:` / `Body: Closes #N`). | The task says PR, commit, or push. |
 | [`merge-pr`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/merge-pr/SKILL.md) | `Action: merge` plus `Number: N`. No force. | The task says merge. |
 | [`stay-scoped`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/stay-scoped/SKILL.md) | Stay in one folder. Do not grep the whole tree. | Mode is large, grep is truncated, or you named a folder with `--scope`. |

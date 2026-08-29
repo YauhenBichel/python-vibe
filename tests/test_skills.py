@@ -59,6 +59,10 @@ class SkillsTest(unittest.TestCase):
             ["read-issue"],
         )
         self.assertEqual(
+            [item.name for item in pick_skills("read pr 108", catalog)],
+            ["read-issue"],
+        )
+        self.assertEqual(
             [item.name for item in pick_skills("create a pr for #50", catalog)],
             ["open-pr"],
         )
@@ -87,6 +91,7 @@ class SkillsTest(unittest.TestCase):
             ("tally counts by key from a csv", "analyze-data"),
             ("implement binary search", "write-algorithm"),
             ("write a pathlib helper for the venv", "write-paths"),
+            ("add a CI workflow that runs the unit tests", "write-workflow"),
         ):
             skill = get_skill(name, ROOT)
             assert skill is not None

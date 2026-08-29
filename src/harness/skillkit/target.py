@@ -24,7 +24,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness.task import question_symbol
+from harness.task import looks_like_ops, question_symbol
 from harness.paths import rel_posix
 from harness.scan.project_brief import iter_text_files
 
@@ -84,6 +84,8 @@ def pick_module(project: Path, located_path: str = "", task: str = "") -> str:
     a file literally at `path/to/module.py` — the same fault as shipping a
     fixture path, arriving by a different route.
     """
+    if looks_like_ops(task):
+        return pick_workflow(project)
     if located_path:
         rel = located_path.replace("\\", "/").lstrip("./")
         if rel.endswith(".py") and not _is_test(rel):
@@ -120,6 +122,21 @@ def _module_score(
             1 for name in _DEF_NAME.findall(body) if _name_tokens(name) & wanted
         )
     return (-overlap, role, size, rel)
+
+
+def pick_workflow(project: Path) -> str:
+    """Existing workflow YAML, else the path the skill creates."""
+    root = Path(project)
+    folder = root / ".github" / "workflows"
+    if folder.is_dir():
+        found = sorted(
+            rel_posix(path, root)
+            for path in folder.iterdir()
+            if path.suffix in {".yml", ".yaml"} and path.is_file()
+        )
+        if found:
+            return found[0]
+    return ".github/workflows/tests.yml"
 
 
 def _new_module_name(task: str) -> str:

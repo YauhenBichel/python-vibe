@@ -26,11 +26,15 @@ and are tested on every OS the suite runs on.
 1. **`write-paths` skill.** One copy-paste `Action: edit` of `pkg/paths.py`.
    `pathlib`, `os.name`, both venv layouts, `Path.home()`. No `os.path.join`.
    No hardcoded home paths.
-2. **Jail text files.** Writes may target `.py`, `.pyi`, `.md`, `.toml`,
+2. **`write-workflow` skill.** One workflow YAML that runs the unit suite.
+   Live 8B treated “add a CI workflow” as add-feature and wrote a function
+   named `workflow` into `src/util.py`. The task kind is now `looks_like_ops`.
+   Drafts with `curl|sh`, `0.0.0.0`, or an inline secret are refused.
+3. **Jail text files.** Writes may target `.py`, `.pyi`, `.md`, `.toml`,
    `.yml`, `.yaml`, `.cfg`, `.ini`, and `.json`. Secret names
    (`.env`, `credentials.json`, `.pypirc`, `secrets.json`) are refused on
    read and write. The map and grep skip them.
-3. **Compiler-shaped refuses.** A draft that joins paths with `os.path`,
+4. **Compiler-shaped refuses.** A draft that joins paths with `os.path`,
    hardcodes a home or `/tmp`, writes `bin/python` without the Windows
    branch, opens a text file without `encoding="utf-8"`, or calls `chmod`
    without an `os.name != "nt"` guard is not written. The next Action is

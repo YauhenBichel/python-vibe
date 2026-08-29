@@ -15,7 +15,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Home]({{ '/' | absolute_url }}): What the project is, when to use it, honest limits.
 - [Start]({{ '/start/' | absolute_url }}): Install the 8B loop, run tests without a model, optional 0.5B sidecar.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
-- [Skills]({{ '/skills/' | absolute_url }}): The nineteen kit skills and when the harness loads each one.
+- [Skills]({{ '/skills/' | absolute_url }}): The twenty kit skills and when the harness loads each one.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks run against one small project, with an independent check of each outcome.
 - [Architecture]({{ '/architecture/' | absolute_url }}): Bottom-up harness layers. Imports only point downward.
 - [Cursor]({{ '/cursor/' | absolute_url }}): Three commands. Local MCP. No Override OpenAI Base URL.
