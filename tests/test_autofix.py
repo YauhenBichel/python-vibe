@@ -283,7 +283,7 @@ class AddCountFunctionTest(unittest.TestCase):
             "src/orders.py",
             "def total_lines(file_path: str) -> int:\n    return len(open(file_path).read())\n",
         )
-        self.assertIn("Do not open files", blocked)
+        self.assertIn("not what total_lines was asked for", blocked)
         self.assertEqual(
             refuse_add_opens_file(
                 "what does compute_total return?",
@@ -292,6 +292,34 @@ class AddCountFunctionTest(unittest.TestCase):
             ),
             "",
         )
+
+    def test_a_function_whose_job_is_a_file_may_open_one(self) -> None:
+        """The rule cost more than it saved when it judged every add.
+
+        `read_env_file(path)` has to open a file. Refusing it left a
+        function returning an int where the caller wanted a dict, and the
+        run spent its whole step budget being told to write something
+        else. A task that talks about files, or that names its own
+        arguments, is not the case this rule was written for.
+        """
+        from harness.skillkit.style import refuse_add_opens_file
+
+        for task in (
+            "add a function read_env_file(path) that reads KEY=VALUE lines "
+            "into a dict, skipping blank lines and comments",
+            "add a function load_config that reads the config file",
+            "add a function venv_python(venv, windows) that returns the "
+            "interpreter path inside a virtual environment",
+        ):
+            with self.subTest(task=task[:40]):
+                self.assertEqual(
+                    refuse_add_opens_file(
+                        task,
+                        "src/orders.py",
+                        "def f(p):\n    return open(p).read()\n",
+                    ),
+                    "",
+                )
 
 
 class UnnamedNameErrorTest(unittest.TestCase):

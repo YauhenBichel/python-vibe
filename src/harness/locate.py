@@ -265,11 +265,17 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
             for name in re.findall(r"^def \w+\((\w+)", dest_body, re.M)
             if name not in {"self", "cls"}
         ]
-        if names:
+        # Only when the task left the argument open. `read_env_file(path)`
+        # has already said what it takes, and telling the model to use the
+        # neighbours' `prices` instead sent it round the loop until the
+        # steps ran out.
+        from harness.skillkit.style import task_names_arguments
+
+        if names and not task_names_arguments(task):
             neighbor = max(set(names), key=names.count)
             header += (
                 f" Neighbor functions take `{neighbor}`. Use the same "
-                "argument unless the task says otherwise. Do not open files."
+                "argument unless the task says otherwise."
             )
     return f"{header}\n\n{text}", path
 
