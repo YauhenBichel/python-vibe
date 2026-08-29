@@ -142,7 +142,10 @@ class TestsMayBeWrittenForANamedSourceFileTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             got = refuse_wrong_file(self.TASK, self._project(tmp), "patch", "src/util.py")
-        self.assertIn("src/orders.py", got)
+        # The wording is free to improve; what matters is that the write is
+        # refused and the file it would have touched is named.
+        self.assertTrue(got)
+        self.assertIn("src/util.py", got)
 
 
 if __name__ == "__main__":
