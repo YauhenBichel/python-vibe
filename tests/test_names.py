@@ -233,3 +233,103 @@ class NoFalsePositivesTest(unittest.TestCase):
     def test_a_module_dunder_is_bound(self) -> None:
         source = "from pathlib import Path\n\n\ndef here():\n    return Path(__file__).parent\n"
         self.assertEqual(undefined_names(source), [])
+
+
+class MissingImportTargetTest(unittest.TestCase):
+    """A test importing a function nobody has written yet reads as valid.
+
+    The import binds the name, so the undefined-name scan sees nothing, and
+    the failure only appears when the suite runs. Asked to create a module
+    and a test for it, the model wrote the test alone four times out of
+    four.
+    """
+
+    def _project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "src").mkdir()
+        (root / "src" / "__init__.py").write_text("", encoding="utf-8")
+        (root / "src" / "orders.py").write_text(
+            "def compute_total(prices):\n    return sum(prices)\n", encoding="utf-8"
+        )
+        return root
+
+    def test_a_name_the_module_does_not_define_is_found(self) -> None:
+        from harness.scan.names import missing_import_targets
+
+        with tempfile.TemporaryDirectory() as tmp:
+            got = missing_import_targets(
+                self._project(tmp), "from src.orders import slugify\n"
+            )
+        self.assertEqual(got, [("src.orders", "slugify")])
+
+    def test_a_name_it_does_define_is_fine(self) -> None:
+        from harness.scan.names import missing_import_targets
+
+        with tempfile.TemporaryDirectory() as tmp:
+            got = missing_import_targets(
+                self._project(tmp), "from src.orders import compute_total\n"
+            )
+        self.assertEqual(got, [])
+
+    def test_an_import_from_outside_the_project_is_left_alone(self) -> None:
+        from harness.scan.names import missing_import_targets
+
+        with tempfile.TemporaryDirectory() as tmp:
+            got = missing_import_targets(
+                self._project(tmp), "from pathlib import Path\nimport unittest\n"
+            )
+        self.assertEqual(got, [])
+
+    def test_the_write_is_refused_and_the_file_is_not_created(self) -> None:
+        from harness.act.tools import edit_py
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self._project(tmp)
+            (project / "tests").mkdir()
+            out = edit_py(
+                project,
+                "tests/test_it.py",
+                "import unittest\n\nfrom src.orders import slugify\n\n\n"
+                "class T(unittest.TestCase):\n"
+                "    def test_slugify_lowercases(self) -> None:\n"
+                "        got = slugify('A B')\n"
+                "        self.assertEqual(got, 'a-b')\n",
+                task="create a module with slugify and a unit test",
+            )
+            created = (project / "tests" / "test_it.py").exists()
+        self.assertIn("does not define slugify", out)
+        self.assertFalse(created)
+
+
+class CoveredSymbolTest(unittest.TestCase):
+    """A pronoun is not a function name."""
+
+    def test_a_pronoun_is_not_a_symbol_to_cover(self) -> None:
+        from harness.task import covered_symbol
+
+        self.assertEqual(
+            covered_symbol(
+                "create a function slugify(text) and a unit test for it"
+            ),
+            "",
+        )
+
+    def test_a_real_name_still_is(self) -> None:
+        from harness.task import covered_symbol
+
+        self.assertEqual(
+            covered_symbol("write tests for apply_discount in src/orders.py"),
+            "apply_discount",
+        )
+
+    def test_creating_a_function_asks_for_the_feature_skill_first(self) -> None:
+        from harness.skillkit.catalog import list_skills, pick_skills
+
+        names = sorted(
+            skill.name
+            for skill in pick_skills(
+                "create a new module with a function slugify(text) and a unit test for it",
+                list_skills(),
+            )
+        )
+        self.assertIn("add-feature", names)
