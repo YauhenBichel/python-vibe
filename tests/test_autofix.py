@@ -198,9 +198,49 @@ class CoverTestTest(unittest.TestCase):
         self.assertIn("got = apply_discount", body)
         self.assertIn("from src.orders import compute_total, apply_discount", body)
 
+    def test_already_covered_is_a_note_not_a_rewrite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "orders.py").write_text(self.IMPL, encoding="utf-8")
+            dest = root / "tests" / "test_orders.py"
+            dest.write_text(
+                self.TEST + "\n    def test_apply_discount_ok(self) -> None:\n"
+                "        self.assertEqual(apply_discount(100, 10), 90)\n",
+                encoding="utf-8",
+            )
+            before = dest.read_text(encoding="utf-8")
+            note = apply_cover_test(root, "write tests for apply_discount")
+            after = dest.read_text(encoding="utf-8")
+        self.assertIn("already has a test for apply_discount", note)
+        self.assertEqual(before, after)
 
-if __name__ == "__main__":
-    unittest.main()
+
+class UnnamedNameErrorTest(unittest.TestCase):
+    """`find the NameError and fix it` names no file. Scan the tree."""
+
+    def test_the_unique_typo_is_fixed_without_a_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "orders.py").write_text(ORDERS, encoding="utf-8")
+            (root / "src" / "ctrl.py").write_text(
+                "class C:\n    def status(self) -> str:\n        return stauts\n",
+                encoding="utf-8",
+            )
+            (root / "tests" / "test_orders.py").write_text(
+                "import unittest\n\nclass T(unittest.TestCase):\n"
+                "    def test_ok(self) -> None:\n        self.assertEqual(1, 1)\n",
+                encoding="utf-8",
+            )
+            note = apply_mechanical(root, "find the NameError and fix it", "")
+            orders = (root / "src" / "orders.py").read_text(encoding="utf-8")
+            ctrl = (root / "src" / "ctrl.py").read_text(encoding="utf-8")
+        self.assertIn("subtotl → subtotal", note)
+        self.assertNotIn("subtotl", orders)
+        self.assertIn("stauts", ctrl)
 
 
 class OnlyCodeIsRewrittenTest(unittest.TestCase):
@@ -408,3 +448,61 @@ class MissingImportTest(unittest.TestCase):
             body = (project / "pkg" / "paths.py").read_text(encoding="utf-8")
         self.assertTrue(out.startswith("wrote"), out)
         self.assertIn("from pathlib import Path", body)
+
+
+class MethodNameIsNotInScopeTest(unittest.TestCase):
+    """A method name cannot repair a typo inside that method's body.
+
+    `def status(self): return stauts` looks like an easy bind: `status`
+    is one letter away, and it was the only candidate, so the binder
+    took it and wrote `return status` — which still raises NameError.
+    The run then reported "Tests passed", because no test covered the
+    method. A wrong deterministic repair is worse than none: it is
+    silent, instant, and reported as success.
+    """
+
+    SOURCE = (
+        "class OrdersController:\n"
+        "    def status(self) -> str:\n"
+        "        return stauts\n"
+    )
+
+    def test_no_pair_is_offered(self) -> None:
+        self.assertEqual(typo_pairs(self.SOURCE), [])
+
+    def test_the_file_is_left_alone(self) -> None:
+        self.assertEqual(apply_typo_fixes(self.SOURCE), self.SOURCE)
+
+    def test_a_class_attribute_is_not_in_scope_either(self) -> None:
+        source = (
+            "class Config:\n"
+            "    timeout = 30\n"
+            "\n"
+            "    def wait(self) -> int:\n"
+            "        return timeoutt\n"
+        )
+        self.assertEqual(typo_pairs(source), [])
+
+    def test_a_module_level_name_still_repairs(self) -> None:
+        """The fix must not switch the working case off."""
+        source = (
+            "def compute_total(prices):\n"
+            "    return sum(prices)\n"
+            "\n"
+            "def total_with_tax(prices):\n"
+            "    subtotal = compute_total(prices)\n"
+            "    return subtotl\n"
+        )
+        self.assertEqual(typo_pairs(source), [("subtotl", "subtotal")])
+
+    def test_a_parameter_still_repairs_inside_a_method(self) -> None:
+        source = (
+            "class Cart:\n"
+            "    def total(self, prices):\n"
+            "        return sum(pricess)\n"
+        )
+        self.assertEqual(typo_pairs(source), [("pricess", "prices")])
+
+
+if __name__ == "__main__":
+    unittest.main()

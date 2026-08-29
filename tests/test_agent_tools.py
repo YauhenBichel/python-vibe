@@ -133,6 +133,31 @@ class AgentToolsTest(unittest.TestCase):
         self.assertLess(out.index("def test_multiply"), out.index("if __name__"))
         self.assertIn("class TestMathy", out.split("def test_multiply")[0])
 
+    def test_patch_refuses_a_duplicate_test_method(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dest = root / "tests"
+            dest.mkdir()
+            dest.joinpath("test_mathy.py").write_text(
+                "import unittest\n\n"
+                "from pkg.mathy import add\n\n"
+                "class TestMathy(unittest.TestCase):\n"
+                "    def test_add_returns_the_sum(self) -> None:\n"
+                "        got = add(2, 3)\n"
+                "        self.assertEqual(got, 5)\n",
+                encoding="utf-8",
+            )
+            out = patch_py(
+                root,
+                "tests/test_mathy.py",
+                "",
+                "",
+                "    def test_add_returns_the_sum(self) -> None:\n"
+                "        got = add(2, 3)\n"
+                "        self.assertEqual(got, 5)\n",
+            )
+        self.assertIn("already exists", out)
+
     def test_patch_refuses_a_test_that_asserts_without_arranging(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -178,10 +203,6 @@ class AgentToolsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out = run_python(Path(tmp), ("-c", "print(1)"))
         self.assertIn("refusing", out)
-
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class ImportRepairFollowsTheStyleRulesTest(unittest.TestCase):
@@ -257,3 +278,7 @@ class DuplicateModuleTest(unittest.TestCase):
             self.assertEqual(
                 refuse_duplicate_module(root, "src/orders.py", original), ""
             )
+
+
+if __name__ == "__main__":
+    unittest.main()

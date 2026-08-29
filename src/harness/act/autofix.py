@@ -71,12 +71,34 @@ def typo_pairs(source: str) -> list[tuple[str, str]]:
         tree = ast.parse(source)
     except (SyntaxError, ValueError):
         return []
+    # A class body binds its methods and attributes on the class, not in
+    # the scope its methods run in. Counting them let `stauts` inside
+    # `def status(self)` bind to `status`, which produced code that still
+    # raised NameError and a note saying the tests passed.
+    in_class_body: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ClassDef):
+            continue
+        for item in node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                in_class_body.add(id(item))
+            elif isinstance(item, ast.Assign):
+                for target in item.targets:
+                    for name in ast.walk(target):
+                        if isinstance(name, ast.Name):
+                            in_class_body.add(id(name))
+            elif isinstance(item, ast.AnnAssign):
+                in_class_body.add(id(item.target))
+
     bound: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-            bound.add(node.id)
+            if id(node) not in in_class_body:
+                bound.add(node.id)
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            bound.add(node.name)
+            if id(node) not in in_class_body:
+                bound.add(node.name)
+            # Parameters are in scope inside the method that declares them.
             for arg in (*node.args.args, *node.args.posonlyargs, *node.args.kwonlyargs):
                 bound.add(arg.arg)
     pairs: list[tuple[str, str]] = []
@@ -143,6 +165,22 @@ def apply_function_rename(source: str, old: str, new: str) -> str:
     return re.sub(rf"\b{re.escape(old)}\s*\(", f"{new}(", text)
 
 
+def _impl_py(project: Path) -> list[tuple[Path, str]]:
+    """First-party Python files that are not tests, with project-relative paths."""
+    from harness.scan.project_brief import iter_text_files
+
+    root = Path(project).resolve()
+    found: list[tuple[Path, str]] = []
+    for path, _size in iter_text_files(root):
+        if path.suffix != ".py":
+            continue
+        rel = path.resolve().relative_to(root).as_posix()
+        if "test" in rel.lower():
+            continue
+        found.append((path, rel))
+    return found
+
+
 def apply_mechanical(
     project: Path, task: str, rel: str, *, write: bool = True
 ) -> str:
@@ -174,6 +212,20 @@ def apply_mechanical(
                 notes.append(f"bound unique NameError typo ({shown}) in {rel}")
         if text != original and notes and write:
             apply_source(path, text, original=original)
+    elif looks_like_bugfix(task):
+        for dest, dest_rel in _impl_py(project):
+            try:
+                original = dest.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            fixed = apply_typo_fixes(original)
+            if fixed == original:
+                continue
+            pairs = typo_pairs(original)
+            if write:
+                apply_source(dest, fixed, original=original)
+            shown = ", ".join(f"{bad} → {good}" for bad, good in pairs)
+            notes.append(f"bound unique NameError typo ({shown}) in {dest_rel}")
     if looks_like_write_tests(task):
         cover = apply_cover_test(project, task, write=write)
         if cover:
@@ -194,7 +246,11 @@ def apply_mechanical(
 
 
 def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
-    """Add one AAA test for the named function. Empty if one already exists."""
+    """Add one AAA test for the named function.
+
+    Returns a note when a test already names the function, so the run can
+    finish without the model appending a dead copy after `if __name__`.
+    """
     name = covered_symbol(task) or (
         question_symbol(task) if looks_like_add_feature(task) else ""
     )
@@ -208,7 +264,7 @@ def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     body = dest.read_text(encoding="utf-8")
     safe = name.replace(".", "_")
     if name in body or f"def test_{safe}_" in body:
-        return ""
+        return f"already has a test for {name}"
     impl = named_project_file(task, project)
     if not impl:
         from harness.skillkit.target import pick_module

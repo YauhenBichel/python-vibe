@@ -111,10 +111,6 @@ class AgentParseTest(unittest.TestCase):
         self.assertIsNone(parse_turn("no issues"))
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class FieldNameAsActionTest(unittest.TestCase):
     """A field name on the Action line means the action it belongs to.
 
@@ -155,3 +151,7 @@ class FieldNameAsActionTest(unittest.TestCase):
         for verb in ("read", "grep", "run", "done", "edit"):
             turn = parse_turn(f"Action: {verb}\nPath: src/o.py\n")
             self.assertEqual(turn.action, verb)
+
+
+if __name__ == "__main__":
+    unittest.main()

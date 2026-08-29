@@ -239,10 +239,6 @@ class AskTest(unittest.TestCase):
         self.assertIn("1. alpha", question.render())
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class EchoedSummaryTest(unittest.TestCase):
     """An 8B pastes the skill line back. That is not an answer."""
 
@@ -412,3 +408,7 @@ class TestsPassedTest(unittest.TestCase):
             state = self._state("add multiply(a, b) and a test", _project(tmp))
             state.wrote_something = True
             self.assertEqual(next_prompt(state, self._run_turn(), "exit 1\nE"), "")
+
+
+if __name__ == "__main__":
+    unittest.main()

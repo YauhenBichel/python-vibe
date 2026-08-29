@@ -9,7 +9,8 @@ import ast
 import unittest
 from pathlib import Path
 
-HARNESS = Path(__file__).resolve().parents[1] / "src" / "harness"
+ROOT = Path(__file__).resolve().parents[1]
+HARNESS = ROOT / "src" / "harness"
 
 # Lower number = deeper. A layer may only import strictly lower layers.
 DEPTH = {
@@ -121,10 +122,6 @@ class LayerRuleTest(unittest.TestCase):
         self.assertEqual(leaks, [])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TempDirectoryTest(unittest.TestCase):
     """A test must not create files inside the checkout.
 
@@ -148,3 +145,45 @@ class TempDirectoryTest(unittest.TestCase):
                 if "dir=" in stripped and "dir=tmp" not in stripped:
                     offenders.append(f"{path.name}:{number}: {stripped}")
         self.assertEqual(offenders, [], "use the system temp area")
+
+
+class SuiteRunsWholeFilesTest(unittest.TestCase):
+    """Every test in a file must run when that file is run on its own.
+
+    `unittest.main()` executes where it sits, so a class defined below
+    it is never collected. Ten files had it mid-file; test_autofix.py
+    ran 11 of its 36 tests that way. CI uses discovery, so all of them
+    were green while more than half of one file did nothing. Iterating
+    on a single file is the normal way to work, and it was the way that
+    lied.
+    """
+
+    def test_no_test_class_is_defined_after_unittest_main(self) -> None:
+        stragglers = []
+        for path in sorted((ROOT / "tests").glob("test_*.py")):
+            lines = path.read_text(encoding="utf-8").splitlines()
+            start = next(
+                (i for i, line in enumerate(lines)
+                 if line.startswith('if __name__ == "__main__"')),
+                None,
+            )
+            if start is None:
+                continue
+            after = [
+                line for line in lines[start + 1:]
+                if line.startswith("class ") or line.startswith("def test")
+            ]
+            if after:
+                stragglers.append(f"{path.name}: {after[0]}")
+        self.assertEqual(stragglers, [])
+
+    def test_running_a_file_directly_collects_what_discovery_does(self) -> None:
+        import unittest.loader
+
+        loader = unittest.defaultTestLoader
+        for path in sorted((ROOT / "tests").glob("test_*.py")):
+            with self.subTest(file=path.name):
+                found = loader.discover(str(ROOT / "tests"), pattern=path.name)
+                self.assertGreater(found.countTestCases(), 0, path.name)
+if __name__ == "__main__":
+    unittest.main()

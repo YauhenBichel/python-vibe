@@ -67,10 +67,6 @@ class GitShipTest(unittest.TestCase):
             self.assertIn("merge only", merge_pr(Path(tmp), "16", allowed=False))
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class AttributionTest(unittest.TestCase):
     """python-vibe's work should be visible where it happened.
 
@@ -126,3 +122,7 @@ class AttributionTest(unittest.TestCase):
             "Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>",
             body,
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

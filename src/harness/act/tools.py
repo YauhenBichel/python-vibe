@@ -282,6 +282,14 @@ def patch_py(
     elif text == original and not append:
         return "patch needs Find: or Append:"
     if append:
+        meth = _TEST_METH.search(append)
+        if meth and re.search(
+            rf"def\s+{re.escape(meth.group(1))}\s*\(", original
+        ):
+            return (
+                f"{meth.group(1)} already exists. Action: done Summary: "
+                "that function is already covered."
+            )
         repaired = repair_unittest_append(text, append)
         text = (
             repaired
