@@ -86,7 +86,7 @@ jobs:
               fh.write(f"tag={tag}\n")
           PY
 
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           GIF_URL: ${{ steps.gif.outputs.url }}
           GIF_TAG: ${{ steps.gif.outputs.tag }}

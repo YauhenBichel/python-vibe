@@ -5,8 +5,11 @@ name: Contributors
 #
 # Does not open a pull request. Protected main refuses both a
 # GITHUB_TOKEN push and "Actions may create PRs" (that setting is
-# off). So this job writes only on a same-repo PR branch or on
-# workflow_dispatch of a non-default branch.
+# off). Same-repo PR / feature branches get the commit in place.
+# A fork PR cannot be written (and the contributor is not in the
+# API until merge). After that merge, or any other default-branch
+# run with a stale list, the commit is force-pushed to
+# docs/contributors so the change is not discarded.
 
 on:
   pull_request:
@@ -25,7 +28,7 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
           persist-credentials: true
@@ -38,13 +41,21 @@ jobs:
 
       - name: Push the list on a writable branch
         if: >-
-          github.event.repository.default_branch != (github.head_ref || github.ref_name)
-          && (github.event_name != 'pull_request'
-              || github.event.pull_request.head.repo.full_name == github.repository)
+          github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add README.md
           git diff --cached --quiet && exit 0
-          git commit -m "docs: refresh README contributors"
-          git push
+          if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
+            git checkout -B docs/contributors
+            git commit -m "docs: refresh README contributors"
+            git push --force --set-upstream origin docs/contributors
+          else
+            git commit -m "docs: refresh README contributors"
+            git push
+          fi

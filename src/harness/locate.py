@@ -49,9 +49,33 @@ def _compact(text: str) -> str:
     return re.sub(r"\s+", "", text).lower()
 
 
+_ASKS_RETURN = re.compile(r"\b(return|returns|returned|type|give back|output)\b", re.I)
+MIN_DESCRIPTION_WORDS = 4
+
+
+def asks_what_it_returns(task: str) -> bool:
+    """True for "what does X return?", false for "what does X do?"."""
+    return bool(_ASKS_RETURN.search(task))
+
+
 def refuse_shallow_done(task: str, summary: str, signature: str) -> str:
+    """Refuse an answer that is thinner than the question asked for.
+
+    Quoting the return type was added because the model answered "a tuple".
+    It was applied to every question, so "what does apply_discount do?" was
+    refused for the answer "it reduces a total by a whole percentage" —
+    the harness insisting on a worse reply than the one it was given.
+    """
     if not looks_like_question(task):
         return ""
+    if not asks_what_it_returns(task):
+        # A question about behaviour wants a sentence, not a type name.
+        if len((summary or "").split()) >= MIN_DESCRIPTION_WORDS:
+            return ""
+        return (
+            "too thin. Action: done Summary: say in a sentence what it does, "
+            "from the code you read."
+        )
     wanted = return_annotation(signature)
     if not wanted:
         return ""

@@ -159,3 +159,77 @@ class StyleOracleTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MethodsAreScannedTest(unittest.TestCase):
+    """Every unittest test is a method, and methods were never scanned.
+
+    Seen in an editor session: the model wrote the function into one file
+    and a test calling it into another, without the import. The scan saw
+    nothing, the write was allowed, and the suite went red.
+    """
+
+    TEST_FILE = (
+        "import unittest\n\n"
+        "from src.orders import compute_total\n\n\n"
+        "class TestOrders(unittest.TestCase):\n"
+        "    def test_compute_total_sums(self) -> None:\n"
+        "        self.assertEqual(compute_total([1, 2]), 3)\n\n"
+        "    def test_total_lines_counts(self) -> None:\n"
+        "        got = total_lines([1, 2, 3])\n"
+        "        self.assertEqual(got, 3)\n"
+    )
+
+    def test_a_method_calling_an_unimported_name_is_found(self) -> None:
+        self.assertIn("total_lines", undefined_names(self.TEST_FILE))
+
+    def test_an_imported_name_is_not_flagged(self) -> None:
+        self.assertNotIn("compute_total", undefined_names(self.TEST_FILE))
+
+    def test_self_is_not_flagged(self) -> None:
+        self.assertNotIn("self", undefined_names(self.TEST_FILE))
+
+    def test_a_class_attribute_is_bound_for_its_methods(self) -> None:
+        source = (
+            "class Thing:\n"
+            "    LIMIT = 3\n\n"
+            "    def check(self) -> bool:\n"
+            "        return LIMIT > 1\n"
+        )
+        self.assertEqual(undefined_names(source), [])
+
+
+class NoFalsePositivesTest(unittest.TestCase):
+    """A guard that blocks good code is worse than the bug it catches.
+
+    Scanning methods found sixteen names in this project's own source that
+    are perfectly well bound: comprehension variables, parameters of nested
+    functions and lambdas, and module dunders.
+    """
+
+    ROOT = Path(__file__).resolve().parents[1]
+
+    def test_this_project_has_no_undefined_names(self) -> None:
+        flagged = []
+        for path in sorted((self.ROOT / "src").rglob("*.py")):
+            names = undefined_names(path.read_text(encoding="utf-8"))
+            if names:
+                flagged.append(f"{path.relative_to(self.ROOT)}: {names[:3]}")
+        self.assertEqual(flagged, [])
+
+    def test_a_nested_function_parameter_is_bound(self) -> None:
+        source = (
+            "def outer():\n"
+            "    def inner(text: str) -> str:\n"
+            "        return text.upper()\n"
+            "    return inner\n"
+        )
+        self.assertEqual(undefined_names(source), [])
+
+    def test_a_lambda_parameter_is_bound(self) -> None:
+        source = "def outer():\n    return sorted([], key=lambda item: item.name)\n"
+        self.assertEqual(undefined_names(source), [])
+
+    def test_a_module_dunder_is_bound(self) -> None:
+        source = "from pathlib import Path\n\n\ndef here():\n    return Path(__file__).parent\n"
+        self.assertEqual(undefined_names(source), [])

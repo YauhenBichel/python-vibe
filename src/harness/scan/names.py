@@ -14,7 +14,12 @@ from pathlib import Path
 def _builtin_names() -> set[str]:
     raw = __builtins__
     names = set(raw) if isinstance(raw, dict) else set(dir(raw))
-    return names | {"Ellipsis", "NotImplemented", "False", "None", "True"}
+    # Module dunders are bound by the interpreter, not by the source.
+    return names | {
+        "Ellipsis", "NotImplemented", "False", "None", "True",
+        "__file__", "__name__", "__doc__", "__package__", "__spec__",
+        "__loader__", "__builtins__", "__debug__",
+    }
 
 
 _BUILTINS = _builtin_names()
@@ -60,23 +65,31 @@ def _assign_names(node: ast.AST) -> set[str]:
     return set()
 
 
+def _argument_names(args: ast.arguments) -> set[str]:
+    """Every parameter name a signature binds."""
+    names = {
+        arg.arg
+        for arg in (*args.posonlyargs, *args.args, *args.kwonlyargs)
+    }
+    if args.vararg:
+        names.add(args.vararg.arg)
+    if args.kwarg:
+        names.add(args.kwarg.arg)
+    return names
+
+
 def _function_bound(fn: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
-    bound = {fn.name}
-    for arg in (
-        *fn.args.posonlyargs,
-        *fn.args.args,
-        *fn.args.kwonlyargs,
-    ):
-        bound.add(arg.arg)
-    if fn.args.vararg:
-        bound.add(fn.args.vararg.arg)
-    if fn.args.kwarg:
-        bound.add(fn.args.kwarg.arg)
+    bound = {fn.name} | _argument_names(fn.args)
     for node in ast.walk(fn):
         if node is fn:
             continue
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             bound.add(node.name)
+        # A nested function or lambda binds its own parameters. Only their
+        # names were collected, so every such parameter read looked
+        # undefined: `item`, `text`, `prompt` across this project's own code.
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            bound.update(_argument_names(node.args))
         bound.update(_assign_names(node))
         if isinstance(node, ast.comprehension):
             bound.update(_store_names(node.target))
@@ -96,17 +109,31 @@ def undefined_names(source: str) -> list[str]:
             module_bound.add(node.name)
     found: list[str] = []
     seen: set[str] = set()
-    for node in tree.body:
-        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            continue
-        bound = module_bound | _function_bound(node)
-        for child in ast.walk(node):
+
+    def scan(function: ast.AST, bound: set[str]) -> None:
+        inner = bound | _function_bound(function)
+        for child in ast.walk(function):
             if not isinstance(child, ast.Name) or not isinstance(child.ctx, ast.Load):
                 continue
-            if child.id in bound or child.id in seen:
+            if child.id in inner or child.id in seen:
                 continue
             seen.add(child.id)
             found.append(child.id)
+
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            scan(node, module_bound)
+        elif isinstance(node, ast.ClassDef):
+            # Methods were never scanned, and every unittest test is one.
+            # A test calling a function it forgot to import looked clean.
+            class_bound = set(module_bound)
+            for member in node.body:
+                class_bound.update(_assign_names(member))
+                if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    class_bound.add(member.name)
+            for member in node.body:
+                if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    scan(member, class_bound)
     return found
 
 

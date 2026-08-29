@@ -114,6 +114,22 @@ def _add_import_symbol(text: str, name: str) -> str:
     return text
 
 
+def _called_name(original: str, append: str) -> str:
+    """The function the new test needs imported.
+
+    It used to be read out of `assertEqual(multiply(...))`. The style rules
+    ask for the opposite shape — `got = multiply(...)`, then assert `got` —
+    so following them meant the import was never added and the suite broke.
+    Reading the names the new test leaves unbound covers both shapes.
+    """
+    from harness.scan.names import new_undefined
+
+    for name in new_undefined(original, original.rstrip() + "\n\n" + append):
+        return name
+    match = _ASSERT_CALL.search(append)
+    return match.group(1) if match else ""
+
+
 def repair_unittest_append(original: str, append: str) -> str | None:
     """8B Append: often lands after if __name__ and skips the import."""
     if "def test_" not in append:
@@ -133,8 +149,7 @@ def repair_unittest_append(original: str, append: str) -> str | None:
         line[base:] if len(line) >= base else line.lstrip() for line in lines
     )
     method = "    " + dedented.replace("\n", "\n    ")
-    called = _ASSERT_CALL.search(append)
-    text = _add_import_symbol(original, called.group(1) if called else "")
+    text = _add_import_symbol(original, _called_name(original, append))
     marker = "\nif __name__"
     if marker in text:
         return text.replace(marker, "\n" + method + "\n" + marker, 1)

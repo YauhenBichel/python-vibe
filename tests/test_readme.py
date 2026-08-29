@@ -34,6 +34,26 @@ class ReadmeContributorsTest(unittest.TestCase):
         script = ROOT / ".github" / "scripts" / "fill_contributors.py"
         self.assertTrue(script.is_file())
 
+    def test_checkout_is_pinned_to_a_commit(self) -> None:
+        """contents: write plus persist-credentials must not follow a moving tag."""
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertRegex(text, r"uses: actions/checkout@[0-9a-f]{40}")
+
+    def test_workflow_keeps_a_fork_merge_on_a_writable_branch(self) -> None:
+        """A fork PR cannot be pushed, and protected main cannot either.
+
+        After that merge the generated list was discarded because both
+        the PR-head push and the default-branch push were skipped.
+        """
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("docs/contributors", text)
+        self.assertIn("head.repo.full_name == github.repository", text)
+        self.assertIn("DEFAULT_BRANCH", text)
+        self.assertNotIn(
+            "github.event.repository.default_branch != (github.head_ref || github.ref_name)",
+            text,
+        )
+
     def test_celebrate_merge_uses_giphy_not_hardcoded_gifs(self) -> None:
         text = CELEBRATE.read_text(encoding="utf-8")
         self.assertIn("pull_request_target", text)
