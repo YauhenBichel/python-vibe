@@ -1,6 +1,5 @@
 import subprocess
 import sys
-import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -89,10 +88,14 @@ class AttributionTest(unittest.TestCase):
 
     def test_a_commit_names_python_vibe_as_co_author(self) -> None:
         from harness.ship.git_ship import CO_AUTHOR
+        from harness.ship.identity import with_co_author
 
-        self.assertTrue(CO_AUTHOR.startswith("Co-Authored-By:"))
-        self.assertIn("python-vibe", CO_AUTHOR)
-        self.assertIn("users.noreply.github.com", CO_AUTHOR)
+        self.assertTrue(CO_AUTHOR.startswith("Co-authored-by:"))
+        self.assertIn("python-vibe <python-vibe@users.noreply.github.com>", CO_AUTHOR)
+        once = with_co_author("Explain why the print changed.")
+        twice = with_co_author(once)
+        self.assertEqual(once.count("Co-authored-by:"), 1)
+        self.assertEqual(twice.count("Co-authored-by:"), 1)
 
     def test_a_pull_request_says_what_opened_it(self) -> None:
         from harness.ship.git_ship import PR_FOOTER
@@ -118,4 +121,4 @@ class AttributionTest(unittest.TestCase):
                 cwd=root, capture_output=True, text=True, check=False,
             ).stdout
         self.assertEqual(author, "A Person")
-        self.assertIn("python-vibe", body)
+        self.assertIn("Co-authored-by: python-vibe <python-vibe@users.noreply.github.com>", body)

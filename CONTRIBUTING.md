@@ -65,6 +65,21 @@ Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe
 
 Open threads: [fused weights](https://github.com/YauhenBichel/python-vibe/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/python-vibe/discussions/12) · [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13) · [train without MLX](https://github.com/YauhenBichel/python-vibe/discussions/14).
 
+## GitHub account `python-vibe`
+
+The harness never authors a commit as this project. **You** stay the
+author. When `Action: commit` runs, it adds:
+
+```
+Co-authored-by: python-vibe <python-vibe@users.noreply.github.com>
+```
+
+Create the user [python-vibe](https://github.com/python-vibe) once at
+[github.com/signup](https://github.com/signup) (username `python-vibe`).
+A person has to do that; CI cannot. After it exists, GitHub links the
+trailer to that profile. Do not grant the account write access to other
+repos — attribution only.
+
 ## Project site
 
 The project site is published at https://yauhenbichel.github.io/python-vibe/.
