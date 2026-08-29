@@ -33,6 +33,7 @@ from harness.task import (
     looks_like_question,
     looks_like_ship,
     looks_unclear,
+    named_project_file,
 )
 
 
@@ -162,6 +163,18 @@ class Agent:
                 )
             else:
                 leftover_tests = test_out
+        leftover_q = leftover_bind_question(options.task, self.project)
+        if leftover_q is not None:
+            answer = self._ask(leftover_q, options)
+            if answer is None:
+                return AgentResult(
+                    ok=False,
+                    summary=leftover_q.render(),
+                    stopped="question",
+                    writes=tuple(writes),
+                )
+            options = _with_task(options, f"{options.task} ({answer})")
+            options.emit("preamble", f"user answered: {answer}")
         label, generate = make_generate(
             options.engine,
             options.max_tokens,
@@ -351,6 +364,77 @@ def _verify_mechanical(project) -> tuple[str, str]:
     if "no tests/ directory" in result:
         return "no suite", result
     return "failed", result
+
+
+def leftover_bind_question(task: str, project) -> Question | None:
+    """Ask when a named file holds a typo the harness must not guess at.
+
+    `stauts` inside `def status` reads as a misspelling of `status`, and
+    `status` is the method's own name, which is not in scope in its body.
+    Binding it writes `return status`, still a NameError, in a tenth of a
+    second and reports success. Sending it to the model instead spent
+    twenty steps and left `return stauts` untouched. A person has to say
+    what was meant.
+
+    Only a name that looks like a typo counts. Any other undefined name
+    is work the model can do: a missing import, or something the task is
+    asking to be written. Asking about those would stop a run that had
+    every chance of finishing.
+    """
+    from pathlib import Path
+
+    from harness.act.autofix import _is_typo, typo_pairs
+
+    if not looks_like_bugfix(task):
+        return None
+    named = named_project_file(task, project)
+    if not named:
+        return None
+    path = Path(project) / named
+    leftover = undefined_in_file(path)
+    if not leftover:
+        return None
+    try:
+        source = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    if typo_pairs(source):
+        return None  # a unique bind exists, so the mechanical pass has it
+    known = _names_in_file(source)
+    for bad in leftover:
+        near = sorted(name for name in known if _is_typo(bad, name))
+        if near:
+            shown = ", ".join(f"`{name}`" for name in near[:3])
+            return Question(
+                f"`{bad}` in {named} looks like {shown}, but none of those "
+                "is in scope where it is used. What did you mean?",
+            )
+    return None
+
+
+def _names_in_file(source: str) -> set[str]:
+    """Every name the file defines, wherever it defines it."""
+    import ast
+
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return set()
+    found: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            found.add(node.id)
+        elif isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+        ):
+            found.add(node.name)
+            for arg in (
+                *node.args.args,
+                *node.args.posonlyargs,
+                *node.args.kwonlyargs,
+            ) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) else ():
+                found.add(arg.arg)
+    return found
 
 
 def opening_question(task: str, pre) -> Question | None:

@@ -47,11 +47,11 @@ def total_lines(prices: list[int]) -> int:
 | `python-vibe run "find a real NameError in src/orders.py and fix it"` | Bound `subtotl` → `subtotal`. No model. | passed | 0.1 s |
 | `python-vibe run "add a function total_lines(prices) that counts the prices, and a unit test"` | Same result as the short wording, by the same mechanical route. No model. | passed | 0.1 s |
 | `python-vibe run "write tests for OrderService in src/orders_service.py"` | Six steps. New file `tests/test_OrderService.py`. The summary was the single word `done`. | passed | 23 s |
-| `python-vibe run "find the NameError in src/orders_controller.py and fix it"` | No safe bind, so it went to the model. Eight steps, no file written, `stopped after 8 steps`. `return stauts` is still there. | **failed** | 21 s |
+| `python-vibe run "find the NameError in src/orders_controller.py and fix it"` | `stauts` reads as `status`, which is the method's own name and not in scope in its body. The harness asks what was meant rather than writing code that still raises. No model. | question, nothing written | instant |
 
 The short `add` command now matches the precise one: both write
 `total_lines(prices)` and a test. The controller NameError still has no
-safe mechanical bind; the 8B does not invent a return value worth keeping.
+safe mechanical bind; the harness asks instead of guessing `return "ok"`.
 
 ## What the harness will not guess
 
@@ -63,7 +63,7 @@ one edit away. The second is not, and the reason is worth stating: the
 nearest name to `stauts` is `status`, which is the **method's own name**.
 It is not in scope inside the method body, so binding to it would produce
 `return status` — code that still raises, from a repair that takes a tenth
-of a second and reports success. The harness leaves that one to the model.
+of a second and reports success. The harness asks what it should return.
 
 ## Reproduce
 
@@ -76,6 +76,9 @@ python scripts/demo.py --case brief --case question --case write-tests \
 
 The demo runner uses the precise wording. The loose wording in the first
 table is what someone actually types, which is why it is on this page.
+
+Write-up of the same evening:
+[First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}).
 
 The older eleven-case table, including review and dry-run, is on
 [Demo]({{ '/demo/' | relative_url }}).

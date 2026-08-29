@@ -10,6 +10,7 @@ Notes from laptop runs. Dates are the day of the measurement. Public pages do no
 
 | Note | What it answers |
 | --- | --- |
+| [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. First they failed. Then the harness finished them without a model. |
 | [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. Same jobs, measured 29 Aug 2026. |
 | [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) | Eleven demo tasks: laptop 8B vs a hosted IDE agent, 29 Aug 2026 evening. |
 | [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}) | Which gaps a harness can close, and which it cannot. |

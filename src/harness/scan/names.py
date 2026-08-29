@@ -62,6 +62,14 @@ def _assign_names(node: ast.AST) -> set[str]:
         return found
     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
         return {node.name}
+    # `type Properties = dict[str, JsonValue]`, the 3.12 alias spelling.
+    if isinstance(node, ast.TypeAlias):
+        return _store_names(node.name)
+    # `case InputSubmitted(text):` binds `text` for the branch body.
+    if isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
+        return {node.name}
+    if isinstance(node, ast.MatchMapping) and node.rest:
+        return {node.rest}
     return set()
 
 
@@ -78,13 +86,25 @@ def _argument_names(args: ast.arguments) -> set[str]:
     return names
 
 
+def _type_param_names(node: ast.AST) -> set[str]:
+    """Names bound by PEP 695 type parameters: `def tool[F](...)`.
+
+    Python 3.12 spelling, and the only place `F` or `T` is declared in a
+    file that uses it. Without this they read as undefined, which was
+    the largest group left in a real project after module scope was
+    handled properly.
+    """
+    return {param.name for param in getattr(node, "type_params", []) or []}
+
+
 def _function_bound(fn: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
-    bound = {fn.name} | _argument_names(fn.args)
+    bound = {fn.name} | _argument_names(fn.args) | _type_param_names(fn)
     for node in ast.walk(fn):
         if node is fn:
             continue
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             bound.add(node.name)
+            bound.update(_type_param_names(node))
         # A nested function or lambda binds its own parameters. Only their
         # names were collected, so every such parameter read looked
         # undefined: `item`, `text`, `prompt` across this project's own code.
@@ -96,17 +116,54 @@ def _function_bound(fn: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
     return bound
 
 
+def _module_scope_bound(tree: ast.Module) -> set[str]:
+    """Every name module scope binds, including inside `if` and `try`.
+
+    Only the top level of `tree.body` used to count, so the two most
+    common shapes in typed and cross-platform code read as undefined:
+
+        if TYPE_CHECKING:
+            from rich.markdown import Markdown   # used in an annotation
+
+        try:
+            import termios                       # POSIX only
+        except ImportError:
+            termios = None
+
+    Both run fine. On a sample of 600 files from a real project, 18 were
+    reported as having an undefined name and these two shapes accounted
+    for them. Function and class bodies are separate scopes and are not
+    descended into.
+    """
+    bound: set[str] = set()
+
+    def walk(body: list[ast.stmt]) -> None:
+        for node in body:
+            bound.update(_assign_names(node))
+            bound.update(_type_param_names(node))
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            for field in ("body", "orelse", "finalbody"):
+                inner = getattr(node, field, None)
+                if isinstance(inner, list):
+                    walk([item for item in inner if isinstance(item, ast.stmt)])
+            for handler in getattr(node, "handlers", []) or []:
+                bound.update(_assign_names(handler))
+                walk(handler.body)
+            for item in getattr(node, "items", []) or []:
+                bound.update(_assign_names(item))
+
+    walk(tree.body)
+    return bound
+
+
 def undefined_names(source: str) -> list[str]:
     """Load-names in functions that are not bound in the module or the function."""
     try:
         tree = ast.parse(source)
     except (SyntaxError, ValueError):
         return []
-    module_bound = set(_BUILTINS)
-    for node in tree.body:
-        module_bound.update(_assign_names(node))
-        if isinstance(node, ast.ClassDef):
-            module_bound.add(node.name)
+    module_bound = set(_BUILTINS) | _module_scope_bound(tree)
     found: list[str] = []
     seen: set[str] = set()
 

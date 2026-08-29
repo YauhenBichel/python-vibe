@@ -26,6 +26,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 
 ## Research
 
+- [First-run four jobs]({{ '/investigations/first-run-four/' | absolute_url }}): The four Start commands. First fail, then mechanical pass. 29 Aug 2026.
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.
 - [What to improve]({{ '/investigations/what-to-improve/' | absolute_url }}): Harness work that can close a gap, and work that cannot.
