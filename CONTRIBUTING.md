@@ -63,6 +63,8 @@ Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe
 | Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#5](https://github.com/YauhenBichel/python-vibe/issues/5) localhost + body cap · [#6](https://github.com/YauhenBichel/python-vibe/issues/6) HTTP sidecar tests · [#7](https://github.com/YauhenBichel/python-vibe/issues/7) best val checkpoint |
 | Research | [`research`](https://github.com/YauhenBichel/python-vibe/labels/research) | [#8](https://github.com/YauhenBichel/python-vibe/issues/8) guard evasion · [#9](https://github.com/YauhenBichel/python-vibe/issues/9) 45 pairs vs style prior |
 
+What has been measured, and how many runs each number stands on: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+
 Open threads: [fused weights](https://github.com/YauhenBichel/python-vibe/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/python-vibe/discussions/12) · [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13) · [train without MLX](https://github.com/YauhenBichel/python-vibe/discussions/14) · [experiment results](https://github.com/YauhenBichel/python-vibe/discussions/128).
 
 ## GitHub account `python-vibe`
