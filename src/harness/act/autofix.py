@@ -226,6 +226,13 @@ def apply_mechanical(
                 apply_source(dest, fixed, original=original)
             shown = ", ".join(f"{bad} → {good}" for bad, good in pairs)
             notes.append(f"bound unique NameError typo ({shown}) in {dest_rel}")
+    if looks_like_add_feature(task):
+        added = apply_add_function(project, task, write=write)
+        if added:
+            notes.append(added)
+        cover = apply_cover_test(project, task, write=write)
+        if cover:
+            notes.append(cover)
     if looks_like_write_tests(task):
         cover = apply_cover_test(project, task, write=write)
         if cover:
@@ -243,6 +250,71 @@ def apply_mechanical(
             else "\nAction: done Summary: say what you would change and why."
         )
     )
+
+
+_COUNT_NAME = re.compile(r"(lines?|count|^n_)", re.I)
+
+
+def usual_first_arg(source: str) -> tuple[str, str]:
+    """Most common first parameter and its annotation, or empty strings."""
+    found: list[tuple[str, str]] = []
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return "", ""
+    for node in tree.body:
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        args = [a for a in node.args.args if a.arg not in {"self", "cls"}]
+        if not args:
+            continue
+        hint = ast.unparse(args[0].annotation) if args[0].annotation else ""
+        found.append((args[0].arg, hint))
+    if not found:
+        return "", ""
+    name = max(set(item[0] for item in found), key=lambda n: sum(1 for a, _h in found if a == n))
+    hints = [hint for arg, hint in found if arg == name and hint]
+    hint = max(set(hints), key=hints.count) if hints else "list[int]"
+    return name, hint
+
+
+def apply_add_function(project: Path, task: str, *, write: bool = True) -> str:
+    """Add a count function that matches its neighbors. Empty if unsure.
+
+    Live 8B read `add a function total_lines` as a file-line counter and
+    opened a path. In an orders module the usual argument is `prices`.
+    """
+    if not looks_like_add_feature(task):
+        return ""
+    symbol = question_symbol(task)
+    if not symbol or not _COUNT_NAME.search(symbol):
+        return ""
+    from harness.skillkit.target import pick_module
+
+    dest = named_project_file(task, project) or pick_module(project, "", task)
+    if not dest:
+        return ""
+    path = Path(project) / dest
+    if not path.is_file():
+        return ""
+    try:
+        body = path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    if re.search(rf"^def {re.escape(symbol)}\b", body, re.MULTILINE):
+        return ""
+    name, hint = usual_first_arg(body)
+    if name != "prices" or "list" not in hint.lower():
+        return ""
+    stub = f"\n\ndef {symbol}({name}: {hint}) -> int:\n    return len({name})\n"
+    merged = body.rstrip() + stub
+    try:
+        ast.parse(merged)
+    except SyntaxError:
+        return ""
+    if write:
+        apply_source(path, merged, original=body)
+    return f"added def {symbol}({name}) in {dest}"
 
 
 def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:

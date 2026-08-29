@@ -77,6 +77,24 @@ _SHELL_FETCH = re.compile(
 )
 
 
+def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:
+    """Add-a-function next to `prices` is not a file-line counter.
+
+    Live 8B appended `open(file_path)` for `total_lines` and the suite failed.
+    """
+    if not looks_like_add_feature(task):
+        return ""
+    if "test" in (rel or "").replace("\\", "/").lower():
+        return ""
+    if not draft or not re.search(r"\bopen\s*\(", draft):
+        return ""
+    symbol = question_symbol(task) or "the_new_function"
+    return (
+        f"Do not open files. Action: patch Path: {rel} "
+        f"Append: def {symbol}(prices: list[int]) -> int: return len(prices)."
+    )
+
+
 def refuse_shell_fetch(rel: str, draft: str) -> str:
     """HTTP helpers use urllib. curl|sh is already PV003; this catches curl alone.
 

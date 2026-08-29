@@ -18,6 +18,7 @@ from harness.act.patch_fix import align_indent, find_match, miss_message
 from harness.skillkit.style import (
     refuse_layout,
     refuse_stdlib_shadow,
+    refuse_add_opens_file,
     refuse_ops_draft,
     refuse_platform_draft,
     refuse_rename_incomplete,
@@ -216,6 +217,9 @@ def _style_blocks(
     if blocked:
         return blocked
     blocked = refuse_layout(rel, original, draft)
+    if blocked:
+        return blocked
+    blocked = refuse_add_opens_file(task, rel, draft)
     if blocked:
         return blocked
     blocked = refuse_shell_fetch(rel, draft)

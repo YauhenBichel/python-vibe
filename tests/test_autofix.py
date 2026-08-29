@@ -7,12 +7,14 @@ from unittest import mock
 
 from harness import Agent, AgentOptions
 from harness.act.autofix import (
+    apply_add_function,
     apply_cover_test,
     apply_function_rename,
     apply_mechanical,
     apply_typo_fixes,
     levenshtein,
     typo_pairs,
+    usual_first_arg,
 )
 from harness.agent.prompt import build_preamble
 
@@ -215,6 +217,81 @@ class CoverTestTest(unittest.TestCase):
             after = dest.read_text(encoding="utf-8")
         self.assertIn("already has a test for apply_discount", note)
         self.assertEqual(before, after)
+
+
+class AddCountFunctionTest(unittest.TestCase):
+    """`add a function total_lines` next to prices is len(prices), not open()."""
+
+    def test_usual_first_arg_is_prices(self) -> None:
+        name, hint = usual_first_arg(ORDERS)
+        self.assertEqual(name, "prices")
+        self.assertIn("list", hint)
+
+    def test_total_lines_counts_prices(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "orders.py").write_text(ORDERS, encoding="utf-8")
+            (root / "tests" / "test_orders.py").write_text(
+                "import unittest\n\nfrom src.orders import compute_total\n\n\n"
+                "class T(unittest.TestCase):\n"
+                "    def test_ok(self) -> None:\n"
+                "        self.assertEqual(1, 1)\n",
+                encoding="utf-8",
+            )
+            note = apply_add_function(root, "add a function total_lines and a test")
+            body = (root / "src" / "orders.py").read_text(encoding="utf-8")
+        self.assertIn("src/orders.py", note)
+        self.assertIn("def total_lines(prices", body)
+        self.assertIn("return len(prices)", body)
+        self.assertNotIn("open(", body)
+
+    def test_the_run_ends_before_the_engine_loads(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "orders.py").write_text(ORDERS, encoding="utf-8")
+            (root / "tests" / "test_orders.py").write_text(
+                "import unittest\n\nfrom src.orders import compute_total\n\n\n"
+                "class T(unittest.TestCase):\n"
+                "    def test_ok(self) -> None:\n"
+                "        self.assertEqual(1, 1)\n",
+                encoding="utf-8",
+            )
+            options = AgentOptions(
+                project=root,
+                task="add a function total_lines and a test",
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError("model must not load after a mechanical add"),
+            ):
+                result = Agent(options).run()
+            body = (root / "src" / "orders.py").read_text(encoding="utf-8")
+        self.assertTrue(result.ok)
+        self.assertEqual(result.stopped, "done")
+        self.assertIn("total_lines", body)
+        self.assertIn("Tests passed", result.summary)
+
+    def test_open_is_refused_on_an_add(self) -> None:
+        from harness.skillkit.style import refuse_add_opens_file
+
+        blocked = refuse_add_opens_file(
+            "add a function total_lines and a test",
+            "src/orders.py",
+            "def total_lines(file_path: str) -> int:\n    return len(open(file_path).read())\n",
+        )
+        self.assertIn("Do not open files", blocked)
+        self.assertEqual(
+            refuse_add_opens_file(
+                "what does compute_total return?",
+                "src/orders.py",
+                "open('x')",
+            ),
+            "",
+        )
 
 
 class UnnamedNameErrorTest(unittest.TestCase):

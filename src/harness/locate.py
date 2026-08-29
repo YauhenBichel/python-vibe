@@ -54,6 +54,13 @@ def _compact(text: str) -> str:
 
 _ASKS_RETURN = re.compile(r"\b(return|returns|returned|type|give back|output)\b", re.I)
 MIN_DESCRIPTION_WORDS = 4
+# Words a return-type answer must add beyond the type itself. The
+# bare answer to "what does compute_total return?" was `"int"`, which
+# is the annotation read back, not what the function does. Two extra
+# words is enough for "compute_total sums int"; asking for four
+# rejected answers a person would accept, and the loop then spent
+# every remaining step asking again.
+MIN_EXTRA_WORDS = 2
 
 
 def asks_what_it_returns(task: str) -> bool:
@@ -82,12 +89,23 @@ def refuse_shallow_done(task: str, summary: str, signature: str) -> str:
     wanted = return_annotation(signature)
     if not wanted:
         return ""
-    if _compact(wanted) in _compact(summary or ""):
-        return ""
-    return (
-        f"too thin. Action: done Summary: must quote {wanted} "
-        f"from {signature}"
-    )
+    compact = _compact(summary or "")
+    if _compact(wanted) not in compact:
+        return (
+            f"too thin. Action: done Summary: must quote {wanted} "
+            f"from {signature} and say what it computes."
+        )
+    extra = [
+        word
+        for word in re.findall(r"[A-Za-z0-9_]+", summary or "")
+        if _compact(word) not in _compact(wanted)
+    ]
+    if len(extra) < MIN_EXTRA_WORDS:
+        return (
+            f"too thin. Action: done Summary: quote {wanted} and say in a "
+            "sentence what it computes, from the code you read."
+        )
+    return ""
 
 
 def def_hit_path(grep_text: str, symbol: str) -> str:
@@ -213,7 +231,10 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
         )
         sig = signature_line(text, symbol)
         if return_annotation(sig):
-            header += f"\nSummary must quote the -> type from: {sig}"
+            header += (
+                f"\nSummary must quote the -> type from: {sig} "
+                "and say what the function computes."
+            )
     elif looks_like_fix_smell(task) and path:
         header += (
             "\nNext Action must be patch Find: the old def line "
@@ -234,6 +255,22 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
             f"Append: def {symbol}(...). Do not grep. Do not create a second "
             f"{Path(dest).stem}.py."
         )
+        dest_path = Path(project) / dest
+        try:
+            dest_body = dest_path.read_text(encoding="utf-8")
+        except OSError:
+            dest_body = ""
+        names = [
+            name
+            for name in re.findall(r"^def \w+\((\w+)", dest_body, re.M)
+            if name not in {"self", "cls"}
+        ]
+        if names:
+            neighbor = max(set(names), key=names.count)
+            header += (
+                f" Neighbor functions take `{neighbor}`. Use the same "
+                "argument unless the task says otherwise. Do not open files."
+            )
     return f"{header}\n\n{text}", path
 
 
@@ -352,7 +389,8 @@ def refuse_question_ask(task: str, action: str, located_path: str) -> str:
     if not located_path:
         return ""
     return (
-        "already located. Action: done Summary: quote the -> type from # auto-read."
+        "already located. Action: done Summary: quote the -> type from "
+        "# auto-read and say what the function computes."
     )
 
 
