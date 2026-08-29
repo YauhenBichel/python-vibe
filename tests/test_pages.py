@@ -330,8 +330,8 @@ class NoCommercialPlanTest(unittest.TestCase):
     A control plane — per-customer API keys, a usage ledger, GPU metering,
     a platform fee — is a different job from a local write jail, and it
     carries customer secrets and money. It belongs in a private repository
-    in the molecare org. A note about it was written into `drafts/` here
-    and referenced from a published page, which put an unbuilt commercial
+    in the molecare org. A note about it was written into this tree and
+    referenced from a published page, which put an unbuilt commercial
     plan on a personal open-source site.
 
     `--engine openai` stays: pointing the harness at a host you rent, with
@@ -374,6 +374,46 @@ class NoCommercialPlanTest(unittest.TestCase):
             for word in ("per-customer", "usage ledger", "platform fee"):
                 if word in lowered:
                     offenders.append(f"{path.relative_to(ROOT)}: {word}")
+        self.assertEqual(offenders, [], offenders)
+
+
+class NoPersonalDraftsTest(unittest.TestCase):
+    """Writing meant for somewhere else is not kept here.
+
+    A `drafts/` directory was added to hold Medium articles, on the
+    reasoning that version control would keep their numbers checkable.
+    That was the wrong call: the articles are the author's own, they are
+    not part of the tool, and a published page ended up pointing readers
+    at a file that only makes sense before it is posted. They live
+    outside this repository now.
+
+    Measurements stay, in `docs/investigations/`. Those are the source
+    the articles are written from, and they belong to the project.
+    """
+
+    def test_there_is_no_drafts_directory(self) -> None:
+        self.assertFalse(
+            (ROOT / "drafts").exists(),
+            "drafts/ is the author's own writing; keep it outside the repo",
+        )
+
+    def test_no_file_is_a_draft_for_another_site(self) -> None:
+        offenders = [
+            path.relative_to(ROOT).as_posix()
+            for path in sorted(ROOT.rglob("*.md"))
+            if ".git/" not in path.as_posix()
+            and path.name.lower().startswith("medium")
+        ]
+        self.assertEqual(offenders, [], offenders)
+
+    def test_nothing_points_at_a_draft(self) -> None:
+        offenders = []
+        for path in sorted(ROOT.rglob("*.md")):
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith(".git/"):
+                continue
+            if "drafts/" in path.read_text(encoding="utf-8"):
+                offenders.append(rel)
         self.assertEqual(offenders, [], offenders)
 
 

@@ -95,7 +95,3 @@ on parse **and** a real ≥1 KB fix.
 
 Do not train more 0.5B steps. Do not train an 8B LoRA on thirty seed
 rows. See [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
-
-The catalog of every run is [Experiments]({{ '/investigations/experiments/' | relative_url }}).
-A Medium article from that table is `drafts/medium-experiments.md` in
-the repository, so it is not published here as well.
