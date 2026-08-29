@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import re
 import sys
 from pathlib import Path
@@ -462,6 +463,35 @@ def refuse_layout(rel: str, original: str, draft: str) -> str:
     return ""
 
 
+def _a_test_uses(body: str, symbol: str) -> bool:
+    """True when some `def test_...` in `body` actually mentions `symbol`.
+
+    Asking only whether the name appears anywhere in the test files
+    accepted a file holding one import line and nothing else. On a real
+    module the run wrote exactly that, reported `done`, and `unittest
+    discover` found no tests at all. An import is not coverage.
+    """
+    if not body.strip() or not symbol:
+        return False
+    try:
+        tree = ast.parse(body)
+    except (SyntaxError, ValueError):
+        # Unparsable here means several files concatenated. Fall back to
+        # requiring the name somewhere after a test definition.
+        return bool(re.search(rf"def test_\w*[\s\S]*?\b{re.escape(symbol)}\b", body))
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if not node.name.startswith("test"):
+            continue
+        for child in ast.walk(node):
+            if isinstance(child, ast.Name) and child.id == symbol:
+                return True
+            if isinstance(child, ast.Attribute) and child.attr == symbol:
+                return True
+    return False
+
+
 def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
     """Refuse done when the named file or last write still has an unbound name."""
     from harness.scan.names import undefined_in_file
@@ -518,12 +548,12 @@ def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
                         body += path.read_text(encoding="utf-8")
                     except OSError:
                         continue
-            if symbol not in body:
+            if not _a_test_uses(body, symbol):
                 test_rel = "tests/test_module.py"
                 if named:
                     test_rel = f"tests/test_{Path(named).stem}.py"
                 return (
-                    f"no test names {symbol}. "
+                    f"no test calls {symbol}. "
                     f"Action: patch Path: {test_rel} "
                     f"Append: one AAA test that calls {symbol}."
                 )

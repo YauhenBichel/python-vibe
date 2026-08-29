@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -6,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from harness.task import looks_like_fix_smell, looks_like_new_package, rename_target, smell_symbol
 from harness.skillkit.style import (
+    refuse_done_oracle,
     refuse_stdlib_shadow,
     refuse_layout,
     refuse_opaque_names,
@@ -253,6 +255,77 @@ class StdlibShadowTest(unittest.TestCase):
 
     def test_the_message_offers_a_name_that_works(self) -> None:
         self.assertIn("math_helpers.py", refuse_stdlib_shadow("pkg/math.py", ""))
+
+
+class AnImportIsNotCoverageTest(unittest.TestCase):
+    """A `write tests` run must leave a test that calls the symbol.
+
+    Measured on a real repository, not the demo tree: asked to cover
+    `redact_slack_token`, the run wrote a file holding one import line
+    and nothing else, and reported `done`. The oracle asked only whether
+    the name appeared anywhere in tests/, and it did — in that import.
+    `unittest discover` found no tests at all.
+    """
+
+    TASK = (
+        "write tests for redact_slack_token in "
+        "infrastructure/delivery/notifications/redaction.py"
+    )
+
+    def _project(self, tmp: str, test_body: str) -> Path:
+        root = Path(tmp)
+        pkg = root / "infrastructure" / "delivery" / "notifications"
+        pkg.mkdir(parents=True)
+        for part in (root / "infrastructure", root / "infrastructure" / "delivery", pkg):
+            (part / "__init__.py").write_text("", encoding="utf-8")
+        (pkg / "redaction.py").write_text(
+            "def redact_slack_token(text: str, token: str) -> str:\n"
+            "    return text.replace(token, '<redacted>')\n",
+            encoding="utf-8",
+        )
+        tests = root / "tests"
+        tests.mkdir()
+        (tests / "__init__.py").write_text("", encoding="utf-8")
+        (tests / "test_redaction.py").write_text(test_body, encoding="utf-8")
+        return root
+
+    IMPORT_ONLY = (
+        "from infrastructure.delivery.notifications.redaction import "
+        "redact_slack_token\n"
+    )
+    REAL_TEST = (
+        "import unittest\n\n"
+        "from infrastructure.delivery.notifications.redaction import "
+        "redact_slack_token\n\n\n"
+        "class TestRedaction(unittest.TestCase):\n"
+        "    def test_redact_slack_token_hides_the_token(self) -> None:\n"
+        "        got = redact_slack_token('a xoxb-1 b', 'xoxb-1')\n"
+        "        self.assertIn('<redacted>', got)\n"
+    )
+
+    def test_a_file_holding_only_an_import_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp, self.IMPORT_ONLY)
+            blocked = refuse_done_oracle(self.TASK, root, "")
+        self.assertIn("no test calls redact_slack_token", blocked)
+
+    def test_a_real_test_is_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp, self.REAL_TEST)
+            self.assertEqual(refuse_done_oracle(self.TASK, root, ""), "")
+
+    def test_the_name_in_a_comment_is_not_a_test(self) -> None:
+        body = (
+            "import unittest\n\n\n"
+            "class TestRedaction(unittest.TestCase):\n"
+            "    def test_placeholder(self) -> None:\n"
+            "        # redact_slack_token goes here\n"
+            "        self.assertTrue(True)\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp, body)
+            blocked = refuse_done_oracle(self.TASK, root, "")
+        self.assertIn("no test calls redact_slack_token", blocked)
 
 
 if __name__ == "__main__":
