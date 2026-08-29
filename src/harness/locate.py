@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from harness.act.tools import grep_py, read_py
+from harness.scan.names import undefined_names
 from harness.task import looks_like_question, question_symbol
 from harness.task import looks_like_add_feature
 from harness.task import (
@@ -169,6 +170,14 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
                     "Next Action must be done. Quote what this file does. "
                     "Do not grep, read, or edit."
                 )
+            elif reviews_one_named_file(task):
+                findings = named_file_review_summary(project, task)
+                extra = f"\n{findings}" if findings else ""
+                next_line = (
+                    "Next Action must be done. Quote a defect from the "
+                    "findings below. Do not patch, edit, or run."
+                    f"{extra}"
+                )
             else:
                 next_line = (
                     f"Next Action must be patch Path: {named} with a Find: "
@@ -217,9 +226,13 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
             "Do not grep. Do not emit curl."
         )
     elif looks_like_add_feature(task):
+        from harness.skillkit.target import pick_module
+
+        dest = path or pick_module(project, path, task)
         header += (
-            "\nNext Action must be patch with Append: (see the skill). "
-            "Do not grep."
+            f"\nNext Action must be patch Path: {dest} "
+            f"Append: def {symbol}(...). Do not grep. Do not create a second "
+            f"{Path(dest).stem}.py."
         )
     return f"{header}\n\n{text}", path
 
@@ -228,7 +241,9 @@ _QUESTION_WRITE = frozenset({"patch", "edit", "run"})
 _QUESTION_REEXPLORE = frozenset({"read", "locate", "grep"})
 
 
-def refuse_redundant_locate(task: str, action: str, prelude_ran: bool) -> str:
+def refuse_redundant_locate(
+    task: str, action: str, prelude_ran: bool, project: Path | None = None
+) -> str:
     if action != "locate" or not prelude_ran:
         return ""
     if looks_like_question(task):
@@ -241,8 +256,14 @@ def refuse_redundant_locate(task: str, action: str, prelude_ran: bool) -> str:
             f"already located. Action: edit Path: {example} with one function."
         )
     if looks_like_add_feature(task):
+        dest = ""
+        if project is not None:
+            from harness.skillkit.target import pick_module
+
+            dest = pick_module(project, "", task)
+        where = f" Path: {dest}" if dest else ""
         return (
-            "already located. Action: patch Path: + Append: the new function."
+            f"already located. Action: patch{where} Append: the new function."
         )
     return ""
 
@@ -345,6 +366,29 @@ def reviews_one_named_file(task: str) -> bool:
     from harness.task import looks_like_review_code, task_paths
 
     return bool(task_paths(task)) and looks_like_review_code(task)
+
+
+def named_file_review_summary(project: Path, task: str) -> str:
+    """Quote compiler findings in a named file. Empty when there are none.
+
+    Live 8B on `review src/orders.py for bugs` was told to patch, then
+    refused, then burned the step budget. A hosted agent reads the file
+    once and names `subtotl`. This is that read, without a model turn.
+    """
+    if not reviews_one_named_file(task):
+        return ""
+    named = named_project_file(task, project)
+    if not named:
+        return ""
+    try:
+        body = read_py(project, named)
+    except (OSError, ValueError):
+        return ""
+    leftover = undefined_names(body)
+    if not leftover:
+        return ""
+    shown = ", ".join(leftover)
+    return f"Compiler findings: undefined name {shown} in {named} (used, never bound)."
 
 
 def refuse_question_write(task: str, action: str) -> str:

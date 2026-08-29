@@ -34,6 +34,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "investigations/everyday-skills.md",
             "investigations/harness-comparison.md",
             "investigations/local-vs-cloud.md",
+            "investigations/same-jobs.md",
             "investigations/what-to-improve.md",
             "investigations/small-llm-harness.md",
             "investigations/platform-engineering.md",

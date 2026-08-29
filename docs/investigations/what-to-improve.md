@@ -46,9 +46,10 @@ Score is “would a daily user get the same outcome,” not model size. 0–5. �
 
 | Job | 8B + harness today | After recommended harness | Hosted IDE agent |
 | --- | --- | --- | --- |
-| Typed question | 4 | 4 | 5 |
-| Add a function + test | 4 | 4 | 5 |
-| Rename / smell | 3 | 4 | 5 |
+| Typed question | 3 | 3 | 5 |
+| Add a function + test | 1 (wrong file, 29 Aug evening) | 4 (name-overlap pick + refuse `done` until `def` exists) | 5 |
+| Rename / smell | 5 | 5 | 5 |
+| Named-file review | 2 (invented a defect) | 5 (compiler findings, no model turn) | 5 |
 | One-split refactor | 2 | 3 | 5 |
 | 100-file review | 1 | 2 | 5 |
 | Extra tools / browser / any language | 0 | 0 | 5 |
@@ -69,6 +70,8 @@ Ship these before training another model.
 10. **Compiler oracle.** Undefined-name scan (`scan/names.py`). `done` is refused if a bugfix file still has `subtotl`. Tests in an impl file are refused. A rename that still defines the old name is refused. See [small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}).
 11. **Platform paths.** Skill `write-paths`. Jail includes `.toml` / `.yml` / `.json`. Drafts that use `os.path.join`, a hardcoded home or `/tmp`, or a POSIX-only venv path are refused. See [platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}).
 12. **Traces, then a 7B LoRA.** Only after a live design loop reaches no structure findings. `--record` into `data/agent-loop/extra.jsonl` (gitignored). Thirty seed rows are not enough. Decision write-up: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
+13. **Named-file review quotes the compiler.** Wired. `review src/orders.py` no longer asks for a patch, then refuses it. Undefined names finish the run with no generate. Measured: [same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}).
+14. **New functions stay with related names.** Wired. `pick_module` no longer prefers the largest file (that was the controller). Prelude pins `Path:`. After the def exists the harness writes the AAA test. `done` is refused until `def <symbol>` exists. A second `orders.py` is refused.
 
 ## What not to spend a week on
 

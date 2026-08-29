@@ -14,16 +14,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from harness.act.autofix import apply_cover_test
 from harness.act.parse import parse_turn_smart
 from harness.act.tools import run_python
 from harness.agent.dispatch import ACTIONS, run_action
 from harness.agent.options import AgentOptions, AgentResult, Step
 from harness.agent.policy import LoopState, next_prompt, refuse_before, refuse_done
 from harness.agent.prompt import Preamble, build_preamble
+from harness.locate import named_file_review_summary
 from harness.model.engine import make_generate
 from harness.observe.trace_record import append_turn
 from harness.scan.design import render_design_review
 from harness.task import (
+    looks_like_add_feature,
     looks_like_design_loop,
     looks_like_question,
     looks_like_ship,
@@ -94,6 +97,14 @@ class Agent:
             options = _with_task(options, f"{options.task} ({answer})")
             pre = build_preamble(options)
             options.emit("preamble", f"user answered: {answer}")
+        review = named_file_review_summary(self.project, options.task)
+        if review:
+            options.emit("result", review)
+            return AgentResult(
+                ok=True,
+                summary=review,
+                stopped="done",
+            )
         writes: list[str] = []
         leftover_tests = ""
         if pre.autofix:
@@ -251,12 +262,20 @@ class Agent:
                 )
             except (ValueError, OSError) as exc:
                 result = str(exc)
-            options.emit("result", result)
             if turn.action == "run" and result.startswith("exit 0"):
                 state.ran_tests = True
             if result.startswith(("patched", "wrote")):
                 writes.append(turn.path or state.last_path)
                 state.wrote_something = True
+                cover = _cover_after_add(
+                    self.project, options.task, turn.path or state.last_path
+                )
+                if cover:
+                    for rel in _autofix_paths(f"- {cover}"):
+                        if rel not in writes:
+                            writes.append(rel)
+                    result = f"{result}\n{cover}"
+            options.emit("result", result)
             steps.append(
                 Step(number, turn.action, state.last_path, result=result, draft=draft)
             )
@@ -281,6 +300,15 @@ class Agent:
         if handler is None:
             return None
         return handler(question)
+
+
+def _cover_after_add(project, task: str, path: str) -> str:
+    """Add the AAA test once the new function exists. Empty if not this job."""
+    if not looks_like_add_feature(task):
+        return ""
+    if "test" in (path or "").replace("\\", "/").lower():
+        return ""
+    return apply_cover_test(project, task, write=True)
 
 
 def _autofix_paths(note: str) -> list[str]:

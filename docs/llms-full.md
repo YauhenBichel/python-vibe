@@ -87,6 +87,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 
 - 8B first parsed Action on three scoped tasks: 3/3 (listen_addr question, complete-after-blocks, add multiply).
 - 8B live eval Action parse: 2/3. Above a 50% floor. Not everyday-ready.
+- 8B demo.py evening re-run (8 steps, demo/orders): independent file-job check 3/4. add-feature wrote orders_controller.py. Review invented an empty-list bug and missed subtotl. Details: {{ '/investigations/same-jobs/' | absolute_url }}
 - 8B listen_addr answer after hint fix: done in 1 step, quoted a host/port tuple, omitted env and argv defaults.
 - 0.5B / --tiny parsed Actions that day: 0/2 (echoed the skill, no Action parse).
 - 0.5B held-out vibe (weekday, count-md, jsonl, docstring): 0/4.
@@ -126,4 +127,5 @@ Home {{ '/' | absolute_url }}
 Start {{ '/start/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
+Same jobs {{ '/investigations/same-jobs/' | absolute_url }}
 What to improve {{ '/investigations/what-to-improve/' | absolute_url }}

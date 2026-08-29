@@ -20,10 +20,12 @@ from harness.act.code import apply_source
 from harness.scan.names import undefined_names
 from harness.task import (
     covered_symbol,
+    looks_like_add_feature,
     looks_like_bugfix,
     looks_like_fix_smell,
     looks_like_write_tests,
     named_project_file,
+    question_symbol,
     rename_pair,
 )
 
@@ -193,7 +195,9 @@ def apply_mechanical(
 
 def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     """Add one AAA test for the named function. Empty if one already exists."""
-    name = covered_symbol(task)
+    name = covered_symbol(task) or (
+        question_symbol(task) if looks_like_add_feature(task) else ""
+    )
     if not name:
         return ""
     tests = Path(project) / "tests"
@@ -206,8 +210,14 @@ def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     if name in body or f"def test_{safe}_" in body:
         return ""
     impl = named_project_file(task, project)
+    if not impl:
+        from harness.skillkit.target import pick_module
+
+        impl = pick_module(project, "", task)
     impl_path = Path(project) / impl if impl else None
     if impl_path is None or not impl_path.is_file():
+        return ""
+    if f"def {name}" not in impl_path.read_text(encoding="utf-8"):
         return ""
     sample = _sample_values(impl_path, name, project=Path(project))
     if sample is None:
