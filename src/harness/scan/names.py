@@ -103,10 +103,10 @@ def _type_param_names(node: ast.AST) -> set[str]:
     return {param.name for param in getattr(node, "type_params", []) or []}
 
 
-def _function_bound(fn: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
-    bound = {fn.name} | _argument_names(fn.args) | _type_param_names(fn)
-    for node in ast.walk(fn):
-        if node is fn:
+def _function_bound(function: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
+    bound = {function.name} | _argument_names(function.args) | _type_param_names(function)
+    for node in ast.walk(function):
+        if node is function:
             continue
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             bound.add(node.name)

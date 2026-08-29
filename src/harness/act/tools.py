@@ -67,7 +67,7 @@ def grep_py(project: Path, query: str, scope: str = "") -> str:
     root = project.resolve()
     base = resolve_scope(project, scope) if scope else root
     try:
-        rx = re.compile(query)
+        wanted = re.compile(query)
     except re.error as exc:
         return f"bad regex: {exc}"
     lines: list[str] = []
@@ -82,7 +82,7 @@ def grep_py(project: Path, query: str, scope: str = "") -> str:
             except OSError:
                 continue
             for i, line in enumerate(text.splitlines(), 1):
-                if rx.search(line):
+                if wanted.search(line):
                     rel = rel_posix(path, root)
                     lines.append(f"{rel}:{i}:{line.strip()[:160]}")
                     if len(lines) >= MAX_HITS:

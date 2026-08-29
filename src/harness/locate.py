@@ -137,45 +137,89 @@ def locate_py(project: Path, query: str, scope: str = "") -> tuple[str, str]:
 
 
 def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
-    """Run locate before the model. Small models skip the first grep."""
-    if looks_like_design_loop(task):
-        from harness.scan.design import design_is_clean, render_design_review
+    """Search before the model runs, and say what to do with what was found.
 
-        report = render_design_review(project, scope)
-        kind = "refactor" if looks_like_refactor(task) and not looks_like_review(task) else "review"
-        if design_is_clean(report):
-            next_line = (
-                "Next Action must be done. Summary: quote no structure findings."
-            )
-        else:
-            next_line = (
-                "Next Action must be edit Path: pkg/<new_concern>.py with one function."
-            )
-        return f"Harness design review ({kind})\n{next_line}\n\n{report}", ""
+    Small models skip the first grep, so the harness does it for them and
+    hands over the file with an instruction attached.
+
+    Each kind of task needs a different opening, so each one is its own
+    function below and this only chooses between them. They were a single
+    if-chain of a hundred and forty lines, which made the shared tail at
+    the end read as if it belonged to whichever branch you had just
+    finished reading.
+    """
     if looks_like_new_package(task):
         return "", ""
-    if looks_like_write_tests(task):
-        symbol = covered_symbol(task) or question_symbol(task)
-        dest = named_project_file(task, project)
-        rel = dest.replace("\\", "/").lower()
-        if dest and "test" not in rel and not rel.split("/")[-1].startswith("test_"):
-            dest = ""
-        if not dest and symbol:
-            dest = f"tests/test_{symbol.split('.')[-1]}.py"
-        if not dest:
-            dest = "tests/test_module.py"
-        text, path = locate_py(project, symbol, scope) if symbol else ("", "")
-        header = (
-            f"Harness locate (write-tests) Query: {symbol or 'the function'}\n"
-            f"Next Action must be patch Path: {dest} Append: one AAA "
-            f"test_<unit>_<result> that calls {symbol or 'the function'}.\n"
-            "Do not edit the implementation. Do not ask."
-        )
-        return f"{header}\n\n{text}", path
+    for opening in (
+        _opening_for_design_loop,
+        _opening_for_write_tests,
+        _opening_for_a_named_file,
+    ):
+        found = opening(project, task, scope)
+        if found is not None:
+            return found
+    return _opening_found_by_symbol(project, task, scope)
 
-    # A task that names a file has already said which file to open. Looking
-    # up a word out of that path instead finds every file in the project:
-    # "src/harness/model/engine.py" was searched for as "harness".
+
+def _opening_for_design_loop(
+    project: Path, task: str, scope: str
+) -> tuple[str, str] | None:
+    """A review or refactor starts from the structure report, not a file."""
+    if not looks_like_design_loop(task):
+        return None
+    from harness.scan.design import design_is_clean, render_design_review
+
+    report = render_design_review(project, scope)
+    kind = "refactor" if looks_like_refactor(task) and not looks_like_review(task) else "review"
+    if design_is_clean(report):
+        next_line = (
+            "Next Action must be done. Summary: quote no structure findings."
+        )
+    else:
+        next_line = (
+            "Next Action must be edit Path: pkg/<new_concern>.py with one function."
+        )
+    return f"Harness design review ({kind})\n{next_line}\n\n{report}", ""
+
+
+def _opening_for_write_tests(
+    project: Path, task: str, scope: str
+) -> tuple[str, str] | None:
+    """Writing a test needs the subject located and a destination chosen."""
+    if not looks_like_write_tests(task):
+        return None
+    symbol = covered_symbol(task) or question_symbol(task)
+    dest = named_project_file(task, project)
+    rel = dest.replace("\\", "/").lower()
+    if dest and "test" not in rel and not rel.split("/")[-1].startswith("test_"):
+        dest = ""
+    if not dest and symbol:
+        dest = f"tests/test_{symbol.split('.')[-1]}.py"
+    if not dest:
+        dest = "tests/test_module.py"
+    text, path = locate_py(project, symbol, scope) if symbol else ("", "")
+    header = (
+        f"Harness locate (write-tests) Query: {symbol or 'the function'}\n"
+        f"Next Action must be patch Path: {dest} Append: one AAA "
+        f"test_<unit>_<result> that calls {symbol or 'the function'}.\n"
+        "Do not edit the implementation. Do not ask."
+    )
+    return f"{header}\n\n{text}", path
+
+
+def _opening_for_a_named_file(
+    project: Path, task: str, scope: str
+) -> tuple[str, str] | None:
+    """Open the file the task names, and say what may be done to it.
+
+    A task that names a file has already said which file to open.
+    Looking up a word out of that path instead found every file in the
+    project: "src/harness/model/engine.py" was searched for as
+    "harness".
+
+    `scope` is unused here and kept so every opening has one shape and
+    the caller can try them in turn.
+    """
     named = named_project_file(task, project)
     if named:
         try:
@@ -209,7 +253,13 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
                 f"# auto-read {named}\n{body}",
                 named,
             )
+    return None
 
+
+def _opening_found_by_symbol(
+    project: Path, task: str, scope: str
+) -> tuple[str, str]:
+    """Nothing named a file, so find the symbol and say what to do with it."""
     symbol = smell_symbol(task) if looks_like_fix_smell(task) else question_symbol(task)
     if not symbol and looks_like_add_feature(task):
         symbol = question_symbol(task) or ""
@@ -225,6 +275,20 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
     else:
         kind = "add-feature"
     header = f"Harness locate ({kind}) Query: {symbol}"
+    header += _what_to_do_next(project, task, symbol, text, path)
+    return f"{header}\n\n{text}", path
+
+
+def _what_to_do_next(
+    project: Path, task: str, symbol: str, text: str, path: str
+) -> str:
+    """The instruction attached to what was found, or "" for none.
+
+    One line per kind of task. An 8B follows the first instruction it
+    sees, so there is exactly one and it names the action, the path and
+    the shape of the edit.
+    """
+    header = ""
     if looks_like_question(task) and path:
         header += (
             "\nNext Action must be done. Do not locate, grep, or read."
@@ -277,7 +341,7 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
                 f" Neighbor functions take `{neighbor}`. Use the same "
                 "argument unless the task says otherwise."
             )
-    return f"{header}\n\n{text}", path
+    return header
 
 
 _QUESTION_WRITE = frozenset({"patch", "edit", "run"})
