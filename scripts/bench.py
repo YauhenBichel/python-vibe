@@ -4,9 +4,13 @@
 Tiers exist so improvement can be seen where it happens. A change that
 helps one-file work and not two-file work should show exactly that.
 
-  tier 1  one function, one existing file, no test
-  tier 2  one function and a test for it, two files
-  tier 3  a new module, a function, and a test that imports it
+The three jobs this is for: write a test, add a small component, fix a bug.
+
+  tier 1  one small component in an existing file
+  tier 2  a component and a test for it, two files
+  tier 3  a new module with a component and a test
+  tier 4  write a test for something already there
+  tier 5  fix a bug that is already in the code
 
 Each case runs the code afterwards. "Worked" means the function does the
 job, not that a file was written.
@@ -103,6 +107,37 @@ CASES = [
     Case("wordcount", 3,
          "create a new module with a function word_count(text) that counts words, and a unit test for it",
          "assert load('word_count')('a b c') == 3\n", suite_must_pass=True),
+
+    # Tier 4: cover something that is already written.
+    Case("cover-discount", 4,
+         "write a unit test for apply_discount in src/orders.py",
+         "import pathlib\n"
+         "body = pathlib.Path('tests/test_orders.py').read_text()\n"
+         "assert 'apply_discount' in body, 'no test names apply_discount'\n",
+         suite_must_pass=True,
+         files={"src/orders.py": APP + "\n\ndef apply_discount(total: int, percent: int) -> int:\n"
+                                        "    return total - (total * percent) // 100\n"}),
+    Case("cover-shout", 4,
+         "write a unit test for shout in src/orders.py",
+         "import pathlib\n"
+         "body = pathlib.Path('tests/test_orders.py').read_text()\n"
+         "assert 'shout' in body, 'no test names shout'\n",
+         suite_must_pass=True,
+         files={"src/orders.py": APP + "\n\ndef shout(text: str) -> str:\n    return text.upper() + '!'\n"}),
+
+    # Tier 5: a bug that is already there, with a test that catches it.
+    Case("fix-nameerror", 5,
+         "fix the NameError in src/orders.py",
+         "assert load('total_with_tax')([10]) == 12.0\n",
+         files={"src/orders.py": APP + "\n\nTAX = 0.2\n\n\n"
+                                        "def total_with_tax(prices: list[int]) -> float:\n"
+                                        "    subtotal = compute_total(prices)\n"
+                                        "    return subtotl + (subtotl * TAX)\n"}),
+    Case("fix-offbyone", 5,
+         "fix the bug in last_price in src/orders.py: it raises IndexError on a full list",
+         "assert load('last_price')([1, 2, 3]) == 3\n",
+         files={"src/orders.py": APP + "\n\ndef last_price(prices: list[int]) -> int:\n"
+                                        "    return prices[len(prices)]\n"}),
 ]
 
 

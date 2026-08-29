@@ -157,5 +157,29 @@ class EmptyProjectTest(unittest.TestCase):
             target = pick_target(project, "add a function multiply(a, b)")
         self.assertEqual(target.module, "src/app.py")
 
+    def test_a_larger_controller_is_not_where_a_total_belongs(self) -> None:
+        """Live 8B wrote total_lines into orders_controller.py (largest file)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            src = project / "src"
+            src.mkdir()
+            (src / "orders.py").write_text(
+                "def compute_total(prices):\n    return sum(prices)\n"
+                "def total_with_tax(prices):\n    return sum(prices)\n",
+                encoding="utf-8",
+            )
+            (src / "orders_controller.py").write_text(
+                "class OrdersController:\n"
+                "    def handle(self, body):\n        return body\n"
+                "    def status(self):\n        return 'ok'\n"
+                + ("    # padding\n" * 20),
+                encoding="utf-8",
+            )
+            target = pick_target(
+                project,
+                "add a function total_lines(prices) that counts the prices",
+            )
+        self.assertEqual(target.module, "src/orders.py")
+
 if __name__ == "__main__":
     unittest.main()

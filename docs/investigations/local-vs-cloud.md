@@ -79,4 +79,6 @@ The job is multi-file, another language, extra tools, a browser, or you need a p
 
 Pointing an editor at Ollama via `openai_compat.py` does not make 8B into a hosted agent. It only changes the brain, not the tools.
 
+Evening re-run of the eleven demo jobs, same 8B, against a hosted IDE agent on the same wording: [same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}). File-job check 3 / 4. add-feature wrote the controller.
+
 Next: [what to improve]({{ '/investigations/what-to-improve/' | relative_url }}).

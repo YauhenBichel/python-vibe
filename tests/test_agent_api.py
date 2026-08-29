@@ -374,14 +374,36 @@ class TestsPassedTest(unittest.TestCase):
             self.assertEqual(next_prompt(state, self._run_turn(), "exit 0\nOK"), "")
 
     def test_a_green_suite_after_a_change_ends_the_task(self) -> None:
+        """Only once the function the task asked for actually exists.
+
+        A green suite is not proof on its own: the oracle checks that the
+        named function is in the project, because the existing tests very
+        often do not call the new one.
+        """
+        from harness.agent.policy import next_prompt
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _project(tmp)
+            app = project / "src" / "app.py"
+            app.write_text(
+                app.read_text(encoding="utf-8")
+                + "\n\ndef multiply(a: int, b: int) -> int:\n    return a * b\n",
+                encoding="utf-8",
+            )
+            state = self._state("add multiply(a, b) and a test", project)
+            state.wrote_something = True
+            self.assertIn(
+                "Action: done", next_prompt(state, self._run_turn(), "exit 0\nOK")
+            )
+
+    def test_a_green_suite_is_not_done_if_the_function_is_missing(self) -> None:
         from harness.agent.policy import next_prompt
 
         with tempfile.TemporaryDirectory() as tmp:
             state = self._state("add multiply(a, b) and a test", _project(tmp))
             state.wrote_something = True
-            self.assertIn(
-                "Action: done", next_prompt(state, self._run_turn(), "exit 0\nOK")
-            )
+            got = next_prompt(state, self._run_turn(), "exit 0\nOK")
+        self.assertIn("multiply is not in the project", got)
 
     def test_a_failing_suite_never_ends_the_task(self) -> None:
         from harness.agent.policy import next_prompt

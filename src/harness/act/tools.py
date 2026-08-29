@@ -157,6 +157,33 @@ def repair_unittest_append(original: str, append: str) -> str | None:
     return text.rstrip() + "\n\n" + method + "\n"
 
 
+def refuse_duplicate_module(project: Path, rel: str, original: str) -> str:
+    """Refuse a new file that repeats a module this project already has.
+
+    Watched a run write the same function to `pkg/orders.py` and then
+    `src/orders.py`. Two modules with one name is worse than either: an
+    import finds whichever comes first on the path, and the other rots.
+    """
+    if original.strip():
+        return ""
+    from harness.paths import as_project_rel, rel_posix
+
+    wanted = Path(as_project_rel(rel))
+    if wanted.name.startswith("test_") or "tests" in wanted.parts:
+        return ""
+    root = Path(project).resolve()
+    for existing in sorted(root.rglob(f"{wanted.stem}.py")):
+        if any(part in {".git", ".venv", "__pycache__"} for part in existing.parts):
+            continue
+        found = rel_posix(existing, root)
+        if found != wanted.as_posix():
+            return (
+                f"{found} is already this project's {wanted.stem} module. "
+                f"Action: patch Path: {found} Append: the new function"
+            )
+    return ""
+
+
 def refuse_missing_import_target(project: Path, rel: str, draft: str) -> str:
     """Refuse a file importing a name this project has not defined yet.
 
@@ -258,7 +285,9 @@ def patch_py(
         if bound != text:
             text = bound
             note = (note + " (harness bound unique NameError typo)").strip()
-    blocked = refuse_missing_import_target(project, rel, text)
+    blocked = refuse_duplicate_module(project, rel, original)
+    if not blocked:
+        blocked = refuse_missing_import_target(project, rel, text)
     if not blocked:
         blocked = _style_blocks(task, rel, original, text, fragment=append or replace)
     if blocked:
@@ -273,7 +302,9 @@ def patch_py(
 def edit_py(project: Path, rel: str, source: str, task: str = "") -> str:
     path = resolve_project_file(project, rel)
     original = path.read_text(encoding="utf-8") if path.is_file() else ""
-    blocked = refuse_missing_import_target(project, rel, source)
+    blocked = refuse_duplicate_module(project, rel, original)
+    if not blocked:
+        blocked = refuse_missing_import_target(project, rel, source)
     if not blocked:
         blocked = _style_blocks(task, rel, original, source)
     if blocked:

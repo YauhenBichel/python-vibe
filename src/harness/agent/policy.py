@@ -125,6 +125,23 @@ def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
                 else "tests/test_module.py"
             )
             return f"Tests go in {dest}. Do not change {got}."
+    if looks_like_add_feature(task):
+        from harness.skillkit.target import pick_module
+
+        wanted = pick_module(project, "", task)
+        got = as_project_rel(path)
+        parts = got.split("/") if got else []
+        if (
+            got
+            and wanted
+            and got != wanted
+            and "tests" not in parts
+            and not parts[-1].startswith("test_")
+        ):
+            return (
+                f"The new function belongs in {wanted}. Do not change {got}. "
+                f"Action: patch Path: {wanted}"
+            )
     named = named_project_file(task, project)
     if not named:
         return ""
@@ -184,7 +201,9 @@ def refuse_before(state: LoopState, turn) -> str:
             state.task, turn.action, turn.path, state.located_path
         )
     if not blocked:
-        blocked = refuse_redundant_locate(state.task, turn.action, state.prelude_ran)
+        blocked = refuse_redundant_locate(
+            state.task, turn.action, state.prelude_ran, state.project
+        )
     if not blocked:
         blocked = refuse_god_target(
             state.task, state.project, turn.action, turn.path or state.last_path
@@ -362,6 +381,13 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
     if not wrote:
         return ""
     is_test = "test" in path
+    if (
+        looks_like_add_feature(state.task)
+        and turn.action in {"patch", "edit"}
+        and not is_test
+        and "AAA test" in result
+    ):
+        return "Next Action must be run Argv: -m unittest discover -s tests -q\n"
     if (
         (looks_like_add_feature(state.task) or looks_like_bugfix(state.task))
         and turn.action in {"patch", "edit"}

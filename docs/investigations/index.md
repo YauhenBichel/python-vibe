@@ -11,6 +11,7 @@ Notes from laptop runs. Dates are the day of the measurement. Public pages do no
 | Note | What it answers |
 | --- | --- |
 | [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. Same jobs, measured 29 Aug 2026. |
+| [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) | Eleven demo tasks: laptop 8B vs a hosted IDE agent, 29 Aug 2026 evening. |
 | [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}) | Which gaps a harness can close, and which it cannot. |
 | [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) | How an 8B reaches bigger-model outcomes: oracles, not more training. |
 | [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) | When to train again. Not on 35 pairs. Not on 30 seed traces. |

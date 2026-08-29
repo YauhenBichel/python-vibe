@@ -11,6 +11,7 @@ from harness.act.tools import (
     map_py,
     patch_py,
     read_py,
+    refuse_duplicate_module,
     repair_unittest_append,
     run_python,
 )
@@ -233,3 +234,26 @@ class ImportRepairFollowsTheStyleRulesTest(unittest.TestCase):
             "        self.assertEqual(got, 3)\n"
         )
         self.assertEqual(undefined_names(out), [])
+
+
+class DuplicateModuleTest(unittest.TestCase):
+    """Live 8B wrote pkg/orders.py after src/orders.py already existed."""
+
+    def test_a_second_orders_module_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "orders.py").write_text("def compute_total():\n    return 0\n")
+            blocked = refuse_duplicate_module(root, "pkg/orders.py", "")
+        self.assertIn("src/orders.py", blocked)
+        self.assertIn("patch Path: src/orders.py", blocked)
+
+    def test_patching_the_existing_module_is_allowed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            original = "def compute_total():\n    return 0\n"
+            (root / "src" / "orders.py").write_text(original)
+            self.assertEqual(
+                refuse_duplicate_module(root, "src/orders.py", original), ""
+            )

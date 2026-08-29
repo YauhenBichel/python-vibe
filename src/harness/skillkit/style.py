@@ -17,6 +17,7 @@ from harness.task import (
     looks_like_write_tests,
     looks_like_new_package,
     looks_like_refactor,
+    question_symbol,
     rename_pair,
     smell_symbol,
 )
@@ -387,6 +388,31 @@ def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
                     f"undefined name {leftover[0]} in {rel}. "
                     f"Action: patch Path: {rel} Find: {leftover[0]} "
                     "Replace: the name you assigned."
+                )
+    if looks_like_add_feature(task):
+        symbol = question_symbol(task)
+        if symbol:
+            found = False
+            root = Path(project)
+            from harness.scan.project_brief import iter_text_files
+
+            for path, _size in iter_text_files(root):
+                if path.suffix != ".py":
+                    continue
+                try:
+                    body = path.read_text(encoding="utf-8")
+                except OSError:
+                    continue
+                if re.search(rf"^def {re.escape(symbol)}\b", body, re.MULTILINE):
+                    found = True
+                    break
+            if not found:
+                from harness.skillkit.target import pick_module
+
+                dest = pick_module(root, last_path, task)
+                return (
+                    f"def {symbol} is not in the project. "
+                    f"Action: patch Path: {dest} Append: def {symbol}(...)."
                 )
     if looks_like_write_tests(task):
         symbol = covered_symbol(task)

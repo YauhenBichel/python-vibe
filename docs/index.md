@@ -75,6 +75,7 @@ Use a hosted IDE agent when the job is multi-file across languages, needs extra 
 ## Research
 
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) — every shipped path, same jobs
+- [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) — eleven demo tasks, laptop 8B vs a hosted IDE agent
 - [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}) — harness work that closes a gap, and work that does not
 - [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) — oracles that make an 8B finish a change
 - [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) — when new weights help, and when they do not

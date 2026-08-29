@@ -28,6 +28,11 @@ from harness.task import question_symbol
 from harness.paths import rel_posix
 from harness.scan.project_brief import iter_text_files
 
+_DEF_NAME = re.compile(r"^def\s+([A-Za-z_]\w*)", re.MULTILINE)
+# HTTP/UI adapters are larger than the domain file beside them. Size-first
+# pick put `total_lines` in `orders_controller.py` on the live 8B demo.
+_ROLE_SUFFIX = ("_controller", "_service", "_view", "_router", "_handler")
+
 _PLACEHOLDER = re.compile(r"\{\{(module|test|scope|symbol)\}\}")
 _PATH_LINE = re.compile(r"^(Path|File):\s*(\S+)\s*$", re.MULTILINE)
 _SCOPE_LINE = re.compile(r"^Scope:\s*(\S+)\s*$", re.MULTILINE)
@@ -90,8 +95,31 @@ def pick_module(project: Path, located_path: str = "", task: str = "") -> str:
     ]
     if not usable:
         return _new_module_name(task)
-    usable.sort(key=lambda item: (-item[1], item[0]))
+    wanted = _name_tokens(question_symbol(task))
+    usable.sort(key=lambda item: _module_score(project, item[0], item[1], wanted))
     return usable[0][0]
+
+
+def _name_tokens(symbol: str) -> frozenset[str]:
+    return frozenset(part for part in symbol.lower().split("_") if len(part) >= 3)
+
+
+def _module_score(
+    project: Path, rel: str, size: int, wanted: frozenset[str]
+) -> tuple[int, int, int, str]:
+    """Lower is better: more name overlap, not a role adapter, then smaller."""
+    stem = Path(rel).stem.lower()
+    role = int(any(stem.endswith(suffix) for suffix in _ROLE_SUFFIX))
+    overlap = 0
+    if wanted:
+        try:
+            body = (Path(project) / rel).read_text(encoding="utf-8")
+        except OSError:
+            body = ""
+        overlap = sum(
+            1 for name in _DEF_NAME.findall(body) if _name_tokens(name) & wanted
+        )
+    return (-overlap, role, size, rel)
 
 
 def _new_module_name(task: str) -> str:

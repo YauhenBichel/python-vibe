@@ -85,6 +85,25 @@ class SmartHarnessTest(unittest.TestCase):
                 root, "add a function multiply(a, b) and a unit test"
             )
             self.assertIn("(no hits)", add_text)
+            self.assertIn("Path: pkg/mathy.py", add_text)
+            self.assertIn("def multiply", add_text)
+
+    def test_prelude_named_review_does_not_ask_for_a_patch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src"
+            src.mkdir()
+            (src / "orders.py").write_text(
+                "def total_with_tax(prices):\n"
+                "    subtotal = sum(prices)\n"
+                "    return subtotl\n",
+                encoding="utf-8",
+            )
+            text, path = prelude(root, "review src/orders.py for bugs")
+            self.assertEqual(path, "src/orders.py")
+            self.assertIn("must be done", text)
+            self.assertIn("subtotl", text)
+            self.assertNotIn("must be patch Path:", text)
 
     def test_refuse_early_done(self) -> None:
         self.assertIn("locate", refuse_early_done("what does apply_source refuse?", "", ""))
