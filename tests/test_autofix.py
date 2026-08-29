@@ -16,7 +16,9 @@ from harness.act.autofix import (
     typo_pairs,
     usual_first_arg,
 )
+from harness.agent.loop import leftover_bind_question
 from harness.agent.prompt import build_preamble
+from harness.scan.names import undefined_in_file
 
 ORDERS = '''TAX_RATE = 0.2
 
@@ -607,6 +609,99 @@ class MethodNameIsNotInScopeTest(unittest.TestCase):
             "        return sum(pricess)\n"
         )
         self.assertEqual(typo_pairs(source), [("pricess", "prices")])
+
+    def test_the_run_asks_instead_of_loading_the_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            dest = root / "src" / "orders_controller.py"
+            dest.write_text(self.SOURCE, encoding="utf-8")
+            options = AgentOptions(
+                project=root,
+                task="find the NameError in src/orders_controller.py and fix it",
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError(
+                    "model must not load when the bind is not unique"
+                ),
+            ):
+                result = Agent(options).run()
+            body = dest.read_text(encoding="utf-8")
+        self.assertEqual(result.stopped, "question")
+        self.assertFalse(result.ok)
+        self.assertIn("stauts", result.summary)
+        self.assertIn("looks like `status`", result.summary)
+        self.assertIn("none of those is in scope", result.summary)
+        self.assertEqual(body, self.SOURCE)
+        self.assertNotIn("return status", body)
+
+
+    def test_a_name_that_is_not_a_typo_goes_to_the_model(self) -> None:
+        """Asking is for a misspelling nobody can safely bind.
+
+        Any other undefined name is work the model can do: a missing
+        import, or something the task is asking to be written. The first
+        version asked about all of them, so a file using a name defined
+        under `if TYPE_CHECKING:` stopped the run with a question about
+        a type annotation instead of fixing the bug it was given.
+        """
+        source = (
+            "def total(prices: list[int]) -> int:\n"
+            "    return sum(prices) + offset\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "money.py").write_text(source, encoding="utf-8")
+            self.assertEqual(
+                leftover_bind_question(
+                    "fix the off by one in src/money.py", root
+                ),
+                None,
+            )
+
+    def test_a_type_checking_import_does_not_stop_the_run(self) -> None:
+        source = (
+            "from __future__ import annotations\n\n"
+            "from typing import TYPE_CHECKING\n\n"
+            "if TYPE_CHECKING:\n"
+            "    from rich.markdown import Markdown\n\n\n"
+            "def build(text: str) -> Markdown:\n"
+            "    return text\n\n\n"
+            "def total(prices: list[int]) -> int:\n"
+            "    return sum(prices) + 1\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "renderer.py").write_text(source, encoding="utf-8")
+            self.assertEqual(undefined_in_file(root / "src" / "renderer.py"), [])
+            self.assertEqual(
+                leftover_bind_question(
+                    "fix the off by one in src/renderer.py", root
+                ),
+                None,
+            )
+
+    def test_a_unique_bind_is_repaired_rather_than_asked_about(self) -> None:
+        source = (
+            "def compute_total(prices):\n"
+            "    return sum(prices)\n\n\n"
+            "def total_with_tax(prices):\n"
+            "    subtotal = compute_total(prices)\n"
+            "    return subtotl\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "orders.py").write_text(source, encoding="utf-8")
+            self.assertEqual(
+                leftover_bind_question(
+                    "fix the NameError in src/orders.py", root
+                ),
+                None,
+            )
 
 
 if __name__ == "__main__":

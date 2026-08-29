@@ -128,6 +128,7 @@ A free bash tool does not transfer to an 8B on a laptop working tree.
 Home {{ '/' | absolute_url }}
 Start {{ '/start/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
+First-run four {{ '/investigations/first-run-four/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
 Same jobs {{ '/investigations/same-jobs/' | absolute_url }}
 What to improve {{ '/investigations/what-to-improve/' | absolute_url }}
