@@ -185,5 +185,71 @@ class SuiteRunsWholeFilesTest(unittest.TestCase):
             with self.subTest(file=path.name):
                 found = loader.discover(str(ROOT / "tests"), pattern=path.name)
                 self.assertGreater(found.countTestCases(), 0, path.name)
+
+class FunctionsStaySmallTest(unittest.TestCase):
+    """A function long enough to need a map is a function to split.
+
+    `Agent.run` reached 242 lines and 33 branch points, holding the whole
+    decision about whether the model was needed at all in local
+    variables, so none of those decisions could be read or tested apart
+    from the others. `prelude` was 141 lines of task kinds, where the
+    shared tail read as if it belonged to whichever branch you had just
+    finished reading.
+
+    The six below are what is left. Each is listed with what it is, so
+    the number is a decision someone made rather than a line that
+    drifted. Nothing new joins the list without saying why.
+    """
+
+    LIMIT = 80
+    KNOWN_LONG = {
+        "make_handler": "one HTTP route table, closing over the server",
+        "_work_with_the_model": (
+            "the model turn loop; its branches end in continue or return, "
+            "so splitting them needs a protocol that reads worse than the loop"
+        ),
+        "handle_rpc": "one JSON-RPC method table",
+        "pick_skills": "one ordered list of skill rules",
+        "next_prompt": "one ordered list of nudges",
+        "build_parser": "argparse declarations, no branching",
+    }
+
+    def _long_functions(self) -> dict[str, int]:
+        found: dict[str, int] = {}
+        for path in sorted((ROOT / "src" / "harness").rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                length = (node.end_lineno or node.lineno) - node.lineno
+                if length > self.LIMIT:
+                    found[node.name] = length
+        return found
+
+    def test_no_new_long_function(self) -> None:
+        unexpected = {
+            name: length
+            for name, length in self._long_functions().items()
+            if name not in self.KNOWN_LONG
+        }
+        self.assertEqual(
+            unexpected,
+            {},
+            f"over {self.LIMIT} lines and not in KNOWN_LONG: {unexpected}. "
+            "Split it, or list it with the reason it stays whole.",
+        )
+
+    def test_the_list_has_no_stale_entries(self) -> None:
+        """A function that no longer needs the exception should lose it."""
+        stale = sorted(set(self.KNOWN_LONG) - set(self._long_functions()))
+        self.assertEqual(stale, [], f"no longer long, drop these: {stale}")
+
+    def test_every_exception_says_why(self) -> None:
+        for name, reason in self.KNOWN_LONG.items():
+            with self.subTest(function=name):
+                self.assertTrue(reason.strip(), name)
+
+
+
 if __name__ == "__main__":
     unittest.main()

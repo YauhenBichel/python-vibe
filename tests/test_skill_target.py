@@ -181,5 +181,6 @@ class EmptyProjectTest(unittest.TestCase):
             )
         self.assertEqual(target.module, "src/orders.py")
 
+
 if __name__ == "__main__":
     unittest.main()

@@ -12,7 +12,7 @@ an allowed action out.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from harness.act.autofix import apply_cover_test
 from harness.act.parse import parse_turn_smart
@@ -67,6 +67,59 @@ def _question_from(turn) -> Question:
     return Question(text, options[:4])
 
 
+@dataclass
+class RunState:
+    """What one run carries while it decides whether to call the model.
+
+    `run()` used to hold all of this in local variables across two
+    hundred lines, which is why the steps could not be read or tested
+    apart from each other.
+
+    Fields:
+        options: the request, replaced when the user answers a question.
+        preamble: what the harness found before any model turn.
+        writes: project-relative paths this run has changed.
+        test_note: what the suite said after a mechanical fix, when that
+            fix was not the end of the job. It is put to the model so it
+            starts from the real failure instead of looking for one.
+    """
+
+    options: AgentOptions
+    preamble: object
+    writes: list[str] = field(default_factory=list)
+    test_note: str = ""
+
+    def answer_was(self, answer: str, *, rebuild: bool = False) -> None:
+        """Fold the user's answer into the task and say so in the trace."""
+        self.options = _with_task(self.options, f"{self.options.task} ({answer})")
+        if rebuild:
+            self.preamble = build_preamble(self.options)
+        self.options.emit("preamble", f"user answered: {answer}")
+
+    def mechanical_note(self, fallback: str) -> str:
+        """The first line of what the mechanical pass reported."""
+        return next(
+            (
+                line[2:]
+                for line in (getattr(self.preamble, "autofix", "") or "").splitlines()
+                if line.startswith("- ")
+            ),
+            fallback,
+        )
+
+    def first_prompt(self) -> str:
+        """The prompt the model opens on."""
+        prompt = self.preamble.prompt
+        if not self.test_note:
+            return prompt
+        return (
+            f"{prompt}\n\nHarness ran tests after the mechanical fix:\n"
+            f"{self.test_note}\n"
+            "Action: patch the remaining failure, or Action: done if "
+            "the task is already met."
+        )
+
+
 class Agent:
     """Runs one task against one project."""
 
@@ -79,102 +132,135 @@ class Agent:
         return build_preamble(options)
 
     def run(self, task: str | None = None) -> AgentResult:
+        """Answer the task, and say honestly how the run ended.
+
+        Read as four questions asked in order, before the model is
+        loaded at all: is the task clear enough to start from, is
+        reading the file the whole job, can the harness make the change
+        on its own, and is there a typo only a person can settle. Each
+        one either finishes the run or hands on to the next. Whatever
+        survives all four is what the model is actually needed for.
+        """
         options = self.options if task is None else _with_task(self.options, task)
         if not options.task.strip():
             raise ValueError("task required")
-        pre = build_preamble(options)
-        options.emit("preamble", pre.pre_text or "")
+        run = RunState(options=options, preamble=build_preamble(options))
+        run.options.emit("preamble", run.preamble.pre_text or "")
 
-        # A task that names no file and no symbol cannot be started from.
-        # The harness asks, rather than relying on the model to notice: a
-        # small model reaches for `patch` long before it reaches for `ask`.
-        opening = opening_question(options.task, pre)
-        if opening is not None:
-            answer = self._ask(opening, options)
-            if answer is None:
-                return AgentResult(
-                    ok=False,
-                    summary=opening.render(),
-                    stopped="question",
-                )
-            options = _with_task(options, f"{options.task} ({answer})")
-            pre = build_preamble(options)
-            options.emit("preamble", f"user answered: {answer}")
-        review = named_file_review_summary(self.project, options.task)
-        if review:
-            options.emit("result", review)
+        for decide in (
+            self._settle_an_unclear_task,
+            self._read_the_file_if_that_is_the_whole_job,
+            self._make_the_change_without_a_model,
+            self._settle_a_typo_only_a_person_can,
+        ):
+            finished = decide(run)
+            if finished is not None:
+                return finished
+
+        return self._work_with_the_model(run)
+
+    # -- the four questions asked before the model is loaded ------------
+
+    def _settle_an_unclear_task(self, run: RunState) -> AgentResult | None:
+        """A task naming no file and no symbol cannot be started from.
+
+        The harness asks rather than relying on the model to notice: a
+        small model reaches for `patch` long before it reaches for `ask`.
+        """
+        question = opening_question(run.options.task, run.preamble)
+        if question is None:
+            return None
+        answer = self._ask(question, run.options)
+        if answer is None:
+            return AgentResult(ok=False, summary=question.render(), stopped="question")
+        run.answer_was(answer, rebuild=True)
+        return None
+
+    def _read_the_file_if_that_is_the_whole_job(
+        self, run: RunState
+    ) -> AgentResult | None:
+        """A review of a named file is reading, not editing."""
+        review = named_file_review_summary(self.project, run.options.task)
+        if not review:
+            return None
+        run.options.emit("result", review)
+        return AgentResult(ok=True, summary=review, stopped="done")
+
+    def _make_the_change_without_a_model(self, run: RunState) -> AgentResult | None:
+        """Apply the mechanical repairs, and stop if they were enough.
+
+        These are the cases that cannot be got wrong: a misspelling with
+        exactly one candidate in scope, a missing import for a module
+        everyone knows, a test appended where one already exists. They
+        take a tenth of a second and give the same answer every time.
+        """
+        if not run.preamble.autofix:
+            return None
+        run.writes.extend(_autofix_paths(run.preamble.autofix))
+        if not run.options.allow_writes:
             return AgentResult(
                 ok=True,
-                summary=review,
+                summary=f"Read-only: would {run.mechanical_note('mechanical fix')}. "
+                "Nothing written.",
                 stopped="done",
+                writes=(),
             )
-        writes: list[str] = []
-        leftover_tests = ""
-        if pre.autofix:
-            writes.extend(_autofix_paths(pre.autofix))
-            if not options.allow_writes:
-                note = next(
-                    (
-                        line[2:]
-                        for line in pre.autofix.splitlines()
-                        if line.startswith("- ")
-                    ),
-                    "mechanical fix",
-                )
-                return AgentResult(
-                    ok=True,
-                    summary=f"Read-only: would {note}. Nothing written.",
-                    stopped="done",
-                    writes=(),
-                )
-            leftover_names = []
-            if looks_like_bugfix(options.task):
-                for rel in writes:
-                    leftover_names.extend(
-                        undefined_in_file(self.project / rel)
-                    )
-            verdict, test_out = _verify_mechanical(self.project)
-            options.emit("result", test_out)
-            if leftover_names:
-                leftover_tests = (
-                    f"undefined name {leftover_names[0]} after the "
-                    "mechanical fix. The suite is not enough."
-                )
-                options.emit("result", leftover_tests)
-            elif verdict in {"passed", "no suite"}:
-                note = next(
-                    (
-                        line[2:]
-                        for line in pre.autofix.splitlines()
-                        if line.startswith("- ")
-                    ),
-                    "mechanical fix applied",
-                )
-                tail = (
-                    "Tests passed."
-                    if verdict == "passed"
-                    else "This project has no tests to check it against."
-                )
-                return AgentResult(
-                    ok=True,
-                    summary=f"{note}. {tail}",
-                    stopped="done",
-                    writes=tuple(writes),
-                )
-            else:
-                leftover_tests = test_out
-        leftover_q = leftover_bind_question(options.task, self.project)
-        if leftover_q is not None:
-            answer = self._ask(leftover_q, options)
-            if answer is None:
-                return AgentResult(
-                    ok=False,
-                    summary=leftover_q.render(),
-                    stopped="question",
-                    writes=tuple(writes),
-                )
-            options = _with_task(options, f"{options.task} ({answer})")
-            options.emit("preamble", f"user answered: {answer}")
+        still_undefined = self._names_left_undefined(run)
+        verdict, test_output = _verify_mechanical(self.project)
+        run.options.emit("result", test_output)
+        if still_undefined:
+            run.test_note = (
+                f"undefined name {still_undefined[0]} after the "
+                "mechanical fix. The suite is not enough."
+            )
+            run.options.emit("result", run.test_note)
+            return None
+        if verdict not in {"passed", "no suite"}:
+            run.test_note = test_output
+            return None
+        tail = (
+            "Tests passed."
+            if verdict == "passed"
+            else "This project has no tests to check it against."
+        )
+        note = run.mechanical_note("mechanical fix applied")
+        return AgentResult(
+            ok=True,
+            summary=f"{note}. {tail}",
+            stopped="done",
+            writes=tuple(run.writes),
+        )
+
+    def _names_left_undefined(self, run: RunState) -> list[str]:
+        """Names still unbound in what the mechanical pass just wrote."""
+        if not looks_like_bugfix(run.options.task):
+            return []
+        found: list[str] = []
+        for rel in run.writes:
+            found.extend(undefined_in_file(self.project / rel))
+        return found
+
+    def _settle_a_typo_only_a_person_can(self, run: RunState) -> AgentResult | None:
+        """A misspelling with no safe candidate is a question, not a guess."""
+        question = leftover_bind_question(run.options.task, self.project)
+        if question is None:
+            return None
+        answer = self._ask(question, run.options)
+        if answer is None:
+            return AgentResult(
+                ok=False,
+                summary=question.render(),
+                stopped="question",
+                writes=tuple(run.writes),
+            )
+        run.answer_was(answer)
+        return None
+
+    # -- what is left is what the model is for --------------------------
+
+    def _work_with_the_model(self, run: RunState) -> AgentResult:
+        options = run.options
+        pre = run.preamble
         label, generate = make_generate(
             options.engine,
             options.max_tokens,
@@ -182,32 +268,8 @@ class Agent:
             system=pre.system or options.system,
         )
         options.emit("engine", f"{label}  project {self.project}  mode {pre.brief.kind}")
-        state = LoopState(
-            task=options.task,
-            project=self.project,
-            located_path=pre.located_path,
-            located_signature=pre.located_signature,
-            prelude_ran=bool(pre.pre_text),
-            allow_writes=options.allow_writes,
-            last_path=pre.located_path,
-            instructions=_instruction_lines(pre),
-            scope=options.scope,
-            autofixed=bool(pre.autofix),
-            wrote_something=bool(pre.autofix),
-            design_report=(
-                render_design_review(self.project, options.scope)
-                if looks_like_design_loop(options.task)
-                else ""
-            ),
-        )
-        prompt = pre.prompt
-        if leftover_tests:
-            prompt = (
-                f"{pre.prompt}\n\nHarness ran tests after the mechanical fix:\n"
-                f"{leftover_tests}\n"
-                "Action: patch the remaining failure, or Action: done if "
-                "the task is already met."
-            )
+        state = self._starting_state(run)
+        prompt = run.first_prompt()
         steps: list[Step] = []
 
         for number in range(1, options.steps + 1):
@@ -246,7 +308,7 @@ class Agent:
                     summary=turn.summary or "done",
                     stopped="done",
                     steps=tuple(steps),
-                    writes=tuple(writes),
+                    writes=tuple(run.writes),
                 )
 
             # Policy first, ask included: the cap on repeated questions
@@ -273,36 +335,13 @@ class Agent:
                         summary=question.render(),
                         stopped="question",
                         steps=tuple(steps),
-                        writes=tuple(writes),
+                        writes=tuple(run.writes),
                     )
                 steps.append(Step(number, "ask", result=answer, draft=draft))
                 prompt = f"The user answered: {answer}\n\nNext Action:"
                 continue
 
-            try:
-                result, state.last_path = run_action(
-                    self.project,
-                    turn,
-                    state.last_path,
-                    options.scope,
-                    pre.target,
-                    task=options.task,
-                )
-            except (ValueError, OSError) as exc:
-                result = str(exc)
-            if turn.action == "run" and result.startswith("exit 0"):
-                state.ran_tests = True
-            if result.startswith(("patched", "wrote")):
-                writes.append(turn.path or state.last_path)
-                state.wrote_something = True
-                cover = _cover_after_add(
-                    self.project, options.task, turn.path or state.last_path
-                )
-                if cover:
-                    for rel in _autofix_paths(f"- {cover}"):
-                        if rel not in writes:
-                            writes.append(rel)
-                    result = f"{result}\n{cover}"
+            result = self._carry_out(turn, state, run)
             options.emit("result", result)
             steps.append(
                 Step(number, turn.action, state.last_path, result=result, draft=draft)
@@ -319,8 +358,57 @@ class Agent:
             summary=f"stopped after {options.steps} steps",
             stopped="steps",
             steps=tuple(steps),
-            writes=tuple(writes),
+            writes=tuple(run.writes),
         )
+
+    def _starting_state(self, run: RunState) -> LoopState:
+        pre, options = run.preamble, run.options
+        return LoopState(
+            task=options.task,
+            project=self.project,
+            located_path=pre.located_path,
+            located_signature=pre.located_signature,
+            prelude_ran=bool(pre.pre_text),
+            allow_writes=options.allow_writes,
+            last_path=pre.located_path,
+            instructions=_instruction_lines(pre),
+            scope=options.scope,
+            autofixed=bool(pre.autofix),
+            wrote_something=bool(pre.autofix),
+            design_report=(
+                render_design_review(self.project, options.scope)
+                if looks_like_design_loop(options.task)
+                else ""
+            ),
+        )
+
+    def _carry_out(self, turn, state: LoopState, run: RunState) -> str:
+        """Run one action and record what it changed."""
+        try:
+            result, state.last_path = run_action(
+                self.project,
+                turn,
+                state.last_path,
+                run.options.scope,
+                run.preamble.target,
+                task=run.options.task,
+            )
+        except (ValueError, OSError) as exc:
+            return str(exc)
+        if turn.action == "run" and result.startswith("exit 0"):
+            state.ran_tests = True
+        if result.startswith(("patched", "wrote")):
+            run.writes.append(turn.path or state.last_path)
+            state.wrote_something = True
+            cover = _cover_after_add(
+                self.project, run.options.task, turn.path or state.last_path
+            )
+            if cover:
+                for rel in _autofix_paths(f"- {cover}"):
+                    if rel not in run.writes:
+                        run.writes.append(rel)
+                result = f"{result}\n{cover}"
+        return result
 
     def _ask(self, question: Question, options: AgentOptions) -> str | None:
         """None means nobody is there to answer — the caller decides."""

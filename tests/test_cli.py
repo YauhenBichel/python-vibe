@@ -72,5 +72,46 @@ class ProjectTaskTest(unittest.TestCase):
         self.assertIn("needs a question", err.getvalue())
 
 
+class CommandTableTest(unittest.TestCase):
+    """Every subcommand the parser offers must have somewhere to go.
+
+    The dispatch was nine `if args.command ==` tests. Adding a
+    subcommand meant remembering to add a branch in the middle of them,
+    and forgetting produced a silent fall-through rather than an error.
+    """
+
+    def _parser_commands(self) -> set[str]:
+        from harness.cli import build_parser
+
+        for action in build_parser()._subparsers._group_actions:
+            if getattr(action, "choices", None):
+                return set(action.choices)
+        return set()
+
+    def test_the_table_and_the_parser_agree(self) -> None:
+        from harness.cli import COMMANDS
+
+        self.assertEqual(self._parser_commands(), set(COMMANDS))
+
+    def test_every_entry_can_be_called(self) -> None:
+        from harness.cli import COMMANDS
+
+        for name, handler in COMMANDS.items():
+            with self.subTest(command=name):
+                self.assertTrue(callable(handler))
+
+    def test_the_missing_task_hint_names_a_command_that_exists(self) -> None:
+        """The hint used to say `python-vibe`, installed or not."""
+        from harness.cli import _missing_task_message, _program_name
+
+        old = sys.argv
+        try:
+            sys.argv = ["/usr/bin/python3.13", "-m", "harness"]
+            self.assertIn(_program_name(), _missing_task_message("ask"))
+            self.assertNotIn("python-vibe ask", _missing_task_message("ask"))
+        finally:
+            sys.argv = old
+
+
 if __name__ == "__main__":
     unittest.main()

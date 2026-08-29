@@ -213,102 +213,92 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    if not args.command:
-        print(how_to(), end="")
-        return 0
-
-    if args.command in {"ask", "run"}:
-        project, task = resolve_project_task(args.first, args.second or None)
-        if not task.strip():
-            verb = "a question" if args.command == "ask" else "what to change"
-            print(
-                f"{args.command} needs {verb}, for example:\n"
-                f"  python-vibe {args.command} \"what does add return?\"",
-                file=sys.stderr,
-            )
-            return 2
-        args.project = project
-        args.task = task
-
-    if args.command == "brief":
-        project = args.project.expanduser().resolve()
-        print(
-            render_brief_for_person(
-                classify_project(project, args.scope), scope=args.scope
-            )
+def _run_brief(args) -> int:
+    project = args.project.expanduser().resolve()
+    print(
+        render_brief_for_person(
+            classify_project(project, args.scope), scope=args.scope
         )
-        # The full catalogue is written for the model, in the model's own
-        # syntax. Printing it here buries the answer the person asked for.
-        count = len(list_skills(project))
-        print()
-        print(
-            f"python-vibe has {count} skills it can apply. It picks them from "
-            "the wording of your task; you do not choose them."
+    )
+    # The full catalogue is written for the model, in the model's own
+    # syntax. Printing it here buries the answer the person asked for.
+    count = len(list_skills(project))
+    print()
+    print(
+        f"python-vibe has {count} skills it can apply. It picks them from "
+        "the wording of your task; you do not choose them."
+    )
+    return 0
+
+
+def _run_layout(args) -> int:
+    print(render_layout(args.project.expanduser().resolve()))
+    return 0
+
+
+def _run_route(args) -> int:
+    from harness.model.route import route_advice
+
+    print(route_advice(args.task))
+    return 0
+
+
+def _run_serve(args) -> int:
+    from harness.server import serve
+
+    return serve(
+        args.project.expanduser().resolve(),
+        port=args.port,
+        allow_writes=args.allow_writes,
+        model=args.model,
+    )
+
+
+def _run_mcp(args) -> int:
+    from harness.mcp_stdio import serve_stdio
+
+    return serve_stdio(
+        args.project.expanduser().resolve(),
+        allow_writes=args.allow_writes,
+        model=args.model,
+    )
+
+
+def _run_commit(args) -> int:
+    from harness.ship.git_ship import commit_changes
+
+    print(commit_changes(args.project.expanduser().resolve(), args.summary))
+    return 0
+
+
+def _run_editors(args) -> int:
+    from harness.editor_kit import install_editors, next_steps
+
+    try:
+        written = install_editors(
+            args.project,
+            args.kind,
+            allow_writes=getattr(args, "allow_writes", False),
+            user_wide=getattr(args, "user_wide", False),
         )
-        return 0
-
-    if args.command == "layout":
-        print(render_layout(args.project.expanduser().resolve()))
-        return 0
-
-    if args.command == "route":
-        from harness.model.route import route_advice
-
-        print(route_advice(args.task))
-        return 0
-
-    if args.command == "serve":
-        from harness.server import serve
-
-        return serve(
-            args.project.expanduser().resolve(),
-            port=args.port,
-            allow_writes=args.allow_writes,
-            model=args.model,
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    for path in written:
+        print(path)
+    print()
+    print(
+        next_steps(
+            args.kind,
+            allow_writes=getattr(args, "allow_writes", False),
+            user_wide=getattr(args, "user_wide", False),
         )
+    )
+    return 0
 
-    if args.command == "mcp":
-        from harness.mcp_stdio import serve_stdio
 
-        return serve_stdio(
-            args.project.expanduser().resolve(),
-            allow_writes=args.allow_writes,
-            model=args.model,
-        )
-
-    if args.command == "commit":
-        from harness.ship.git_ship import commit_changes
-
-        print(commit_changes(args.project.expanduser().resolve(), args.summary))
-        return 0
-
-    if args.command == "editors":
-        from harness.editor_kit import install_editors, next_steps
-
-        try:
-            written = install_editors(
-                args.project,
-                args.kind,
-                allow_writes=getattr(args, "allow_writes", False),
-                user_wide=getattr(args, "user_wide", False),
-            )
-        except ValueError as exc:
-            print(str(exc), file=sys.stderr)
-            return 2
-        for path in written:
-            print(path)
-        print()
-        print(
-            next_steps(
-                args.kind,
-                allow_writes=getattr(args, "allow_writes", False),
-                user_wide=getattr(args, "user_wide", False),
-            )
-        )
-        return 0
-
+def _run_agent(args) -> int:
+    """ask and run: the two commands that call the model."""
     interactive = sys.stdin.isatty()
     if args.command == "ask":
         args.allow_writes = False
@@ -322,3 +312,45 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(result.summary)
     return 0 if result.ok else 1
+
+
+# One entry per subcommand. A chain of nine `if args.command ==` tests
+# said the same thing at three times the length, and adding a command
+# meant finding the right place in the middle of it.
+COMMANDS = {
+    "brief": _run_brief,
+    "layout": _run_layout,
+    "route": _run_route,
+    "serve": _run_serve,
+    "mcp": _run_mcp,
+    "commit": _run_commit,
+    "editors": _run_editors,
+    "ask": _run_agent,
+    "run": _run_agent,
+}
+
+
+def _missing_task_message(command: str) -> str:
+    """What to print when ask or run was given no words to work on."""
+    wanted = "a question" if command == "ask" else "what to change"
+    return (
+        f"{command} needs {wanted}, for example:\n"
+        f'  {_program_name()} {command} "what does add return?"'
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    if not args.command:
+        print(how_to(), end="")
+        return 0
+
+    if args.command in {"ask", "run"}:
+        project, task = resolve_project_task(args.first, args.second or None)
+        if not task.strip():
+            print(_missing_task_message(args.command), file=sys.stderr)
+            return 2
+        args.project = project
+        args.task = task
+
+    return COMMANDS[args.command](args)

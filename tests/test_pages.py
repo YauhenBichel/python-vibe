@@ -322,5 +322,6 @@ class FirstRunOutputTest(unittest.TestCase):
         self.assertIn("--scope", text)
         self.assertNotIn("Action:", text)
 
+
 if __name__ == "__main__":
     unittest.main()

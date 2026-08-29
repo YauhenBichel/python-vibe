@@ -476,10 +476,10 @@ def _sample_values(
                 return None
             expected = getattr(cls(), func.name)(*values)
         else:
-            fn = getattr(module, func.name, None)
-            if fn is None:
+            found = getattr(module, func.name, None)
+            if found is None:
                 return None
-            expected = fn(*values)
+            expected = found(*values)
     except Exception:
         return None
     finally:
@@ -553,17 +553,17 @@ def apply_missing_imports(source: str) -> str:
     missing = [line for line in dict.fromkeys(wanted) if line not in present]
     if not missing:
         return source
-    at = 0
+    insert_at = 0
     if lines and lines[0].lstrip()[:3] in {'"""', "'''"}:
         quote = lines[0].lstrip()[:3]
         rest = lines[0].lstrip()[3:]
         if quote in rest:
-            at = 1
+            insert_at = 1
         else:
             for index, line in enumerate(lines[1:], 1):
                 if quote in line:
-                    at = index + 1
+                    insert_at = index + 1
                     break
-    while at < len(lines) and not lines[at].strip():
-        at += 1
-    return "\n".join(lines[:at] + missing + [""] + lines[at:]).rstrip() + "\n"
+    while insert_at < len(lines) and not lines[insert_at].strip():
+        insert_at += 1
+    return "\n".join(lines[:insert_at] + missing + [""] + lines[insert_at:]).rstrip() + "\n"
