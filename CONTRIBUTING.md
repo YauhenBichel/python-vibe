@@ -57,11 +57,10 @@ the public adapters without an account.
 Start at [Welcome — how to pick an issue](https://github.com/YauhenBichel/python-vibe/discussions/10).
 Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe/discussions), not a drive-by PR.
 
-| Level | Label | Seeded issues |
+| Level | Label | Open examples |
 | --- | --- | --- |
-| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#1](https://github.com/YauhenBichel/python-vibe/issues/1) PV005 test · [#2](https://github.com/YauhenBichel/python-vibe/issues/2) `.env.example` · [#3](https://github.com/YauhenBichel/python-vibe/issues/3) one training pair · [#4](https://github.com/YauhenBichel/python-vibe/issues/4) README clone path |
-| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#5](https://github.com/YauhenBichel/python-vibe/issues/5) localhost + body cap · [#6](https://github.com/YauhenBichel/python-vibe/issues/6) HTTP sidecar tests · [#7](https://github.com/YauhenBichel/python-vibe/issues/7) best val checkpoint |
-| Research | [`research`](https://github.com/YauhenBichel/python-vibe/labels/research) | [#8](https://github.com/YauhenBichel/python-vibe/issues/8) guard evasion · [#9](https://github.com/YauhenBichel/python-vibe/issues/9) 45 pairs vs style prior |
+| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#97](https://github.com/YauhenBichel/python-vibe/issues/97) naming table · [#96](https://github.com/YauhenBichel/python-vibe/issues/96) new-package example |
+| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#100](https://github.com/YauhenBichel/python-vibe/issues/100) demo orders · [#99](https://github.com/YauhenBichel/python-vibe/issues/99) split style.py |
 
 Open threads: [fused weights](https://github.com/YauhenBichel/python-vibe/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/python-vibe/discussions/12) · [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13) · [train without MLX](https://github.com/YauhenBichel/python-vibe/discussions/14).
 
