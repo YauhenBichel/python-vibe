@@ -42,7 +42,10 @@ The harness now does the compiler jobs *before* the model speaks.
   becomes `return len(prices)`. `open(` on that job is refused.
 - `stauts` inside `def status` has no unique bind. Binding to the method
   name still raises. The run **asks** what it should return. It does not
-  guess `return "ok"`, and it does not spend twenty patches.
+  guess `return "ok"`, and it does not spend twenty patches. If I answer
+  `ok`, that literal is written and the model still does not load —
+  unless I asked read-only, in which case it tells me what it would
+  have written.
 
 Re-measured the same night: all four Start commands finished correctly.
 The controller NameError stopped on a question. `return stauts` was

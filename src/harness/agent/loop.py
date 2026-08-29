@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from harness.act.autofix import apply_cover_test
+from harness.act.autofix import apply_cover_test, apply_person_bind, unbound_typo
 from harness.act.parse import parse_turn_smart
 from harness.act.tools import run_python
 from harness.scan.names import undefined_in_file
@@ -253,8 +253,54 @@ class Agent:
                 stopped="question",
                 writes=tuple(run.writes),
             )
-        run.answer_was(answer)
-        return None
+        # Asking is not writing, so a read-only run may still ask. What it
+        # may not do is act on the answer: `ask` and `--dry-run` both
+        # promise the folder is left alone.
+        note = apply_person_bind(
+            self.project,
+            run.options.task,
+            answer,
+            write=run.options.allow_writes,
+        )
+        if not note:
+            return AgentResult(
+                ok=False,
+                summary=(
+                    f"{question.render()} "
+                    "That answer is still not something this method can return."
+                ),
+                stopped="question",
+                writes=tuple(run.writes),
+            )
+        if not run.options.allow_writes:
+            return AgentResult(
+                ok=True,
+                summary=f"Read-only: would {note}. Nothing written.",
+                stopped="done",
+                writes=(),
+            )
+        named = named_project_file(run.options.task, self.project)
+        if named and named not in run.writes:
+            run.writes.append(named)
+        verdict, test_output = _verify_mechanical(self.project)
+        run.options.emit("result", test_output)
+        if verdict not in {"passed", "no suite"}:
+            # The name is bound, but the project is red. A red suite is
+            # never a finished run: the mechanical pass hands the real
+            # failure to the model, and so does this.
+            run.test_note = test_output
+            return None
+        tail = (
+            "Tests passed."
+            if verdict == "passed"
+            else "This project has no tests to check it against."
+        )
+        return AgentResult(
+            ok=True,
+            summary=f"{note}. {tail}",
+            stopped="done",
+            writes=tuple(run.writes),
+        )
 
     # -- what is left is what the model is for --------------------------
 
@@ -374,7 +420,11 @@ class Agent:
             instructions=_instruction_lines(pre),
             scope=options.scope,
             autofixed=bool(pre.autofix),
-            wrote_something=bool(pre.autofix),
+            # Anything already written counts, not only the mechanical
+            # pass: a person's answer to an unbindable typo is written
+            # before the model starts, and leaving that out let the model
+            # say `done` over a suite nobody had run.
+            wrote_something=bool(pre.autofix or run.writes),
             design_report=(
                 render_design_review(self.project, options.scope)
                 if looks_like_design_loop(options.task)
@@ -462,67 +512,22 @@ def leftover_bind_question(task: str, project) -> Question | None:
     Binding it writes `return status`, still a NameError, in a tenth of a
     second and reports success. Sending it to the model instead spent
     twenty steps and left `return stauts` untouched. A person has to say
-    what was meant.
+    what was meant. Their answer is written as a Constant or an in-scope
+    name. The method name is still refused.
 
     Only a name that looks like a typo counts. Any other undefined name
     is work the model can do: a missing import, or something the task is
     asking to be written. Asking about those would stop a run that had
     every chance of finishing.
     """
-    from pathlib import Path
-
-    from harness.act.autofix import _is_typo, typo_pairs
-
-    if not looks_like_bugfix(task):
+    found = unbound_typo(task, project)
+    if found is None:
         return None
-    named = named_project_file(task, project)
-    if not named:
-        return None
-    path = Path(project) / named
-    leftover = undefined_in_file(path)
-    if not leftover:
-        return None
-    try:
-        source = path.read_text(encoding="utf-8")
-    except OSError:
-        return None
-    if typo_pairs(source):
-        return None  # a unique bind exists, so the mechanical pass has it
-    known = _names_in_file(source)
-    for bad in leftover:
-        near = sorted(name for name in known if _is_typo(bad, name))
-        if near:
-            shown = ", ".join(f"`{name}`" for name in near[:3])
-            return Question(
-                f"`{bad}` in {named} looks like {shown}, but none of those "
-                "is in scope where it is used. What did you mean?",
-            )
-    return None
-
-
-def _names_in_file(source: str) -> set[str]:
-    """Every name the file defines, wherever it defines it."""
-    import ast
-
-    try:
-        tree = ast.parse(source)
-    except (SyntaxError, ValueError):
-        return set()
-    found: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-            found.add(node.id)
-        elif isinstance(
-            node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
-        ):
-            found.add(node.name)
-            for arg in (
-                *node.args.args,
-                *node.args.posonlyargs,
-                *node.args.kwonlyargs,
-            ) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) else ():
-                found.add(arg.arg)
-    return found
+    shown = ", ".join(f"`{name}`" for name in found.near[:3])
+    return Question(
+        f"`{found.bad}` in {found.rel} looks like {shown}, but none of those "
+        "is in scope where it is used. What did you mean?",
+    )
 
 
 def opening_question(task: str, pre) -> Question | None:
