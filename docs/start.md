@@ -116,21 +116,12 @@ Do not call the project everyday-ready until `scripts/eval_everyday.py --live` b
 ## GitHub account (co-author)
 
 When python-vibe commits, **you** stay the author. The harness adds a
-`Co-authored-by` trailer for the [python-vibe](https://github.com/python-vibe)
-GitHub user so that account appears on the commit. Create it once (a person
-has to sign up; the harness cannot):
-
-1. Open [github.com/signup](https://github.com/signup).
-2. Username: `python-vibe` (still unused as of 29 Aug 2026).
-3. Use a mailbox you control. Verify the email.
-4. Settings → Emails → keep the noreply address
-   `python-vibe@users.noreply.github.com`.
-5. Bio: point at [YauhenBichel/python-vibe](https://github.com/YauhenBichel/python-vibe).
-   Do not give this user write access to other people’s repos. It is only
-   for attribution.
-
-Until that user exists, GitHub still stores the trailer but does not show
-an avatar.
+`Co-authored-by` trailer for the live
+[python-vibe](https://github.com/python-vibe) user (`322567521`) so that
+account appears on the commit. Keep
+`322567521+python-vibe@users.noreply.github.com` as the private noreply
+address. Do not give this user write access to other people’s repos. It is
+only for attribution.
 
 ## Tiny sidecar (not daily work)
 

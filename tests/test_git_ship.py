@@ -91,7 +91,7 @@ class AttributionTest(unittest.TestCase):
         from harness.ship.identity import with_co_author
 
         self.assertTrue(CO_AUTHOR.startswith("Co-authored-by:"))
-        self.assertIn("python-vibe <python-vibe@users.noreply.github.com>", CO_AUTHOR)
+        self.assertIn("python-vibe <322567521+python-vibe@users.noreply.github.com>", CO_AUTHOR)
         once = with_co_author("Explain why the print changed.")
         twice = with_co_author(once)
         self.assertEqual(once.count("Co-authored-by:"), 1)
@@ -121,4 +121,7 @@ class AttributionTest(unittest.TestCase):
                 cwd=root, capture_output=True, text=True, check=False,
             ).stdout
         self.assertEqual(author, "A Person")
-        self.assertIn("Co-authored-by: python-vibe <python-vibe@users.noreply.github.com>", body)
+        self.assertIn(
+            "Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>",
+            body,
+        )
