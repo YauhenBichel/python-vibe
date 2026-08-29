@@ -14,7 +14,10 @@ work as a daily user would type them?
 **Answer.** After the same-evening harness work: **yes, on `demo/orders`**,
 for ask / already-covered tests / a unique NameError / add a count next
 to `prices`. A named leftover NameError (`stauts` in `def status`) asks
-what to return. It does not invent `return "ok"`.
+what to return. It does not invent `return "ok"`. If you answer `ok`,
+that literal is written and the model still does not load. Under
+`--dry-run`, and under `ask`, it says what it would write and writes
+nothing.
 
 Related: [Live scenarios]({{ '/scenarios/' | relative_url }}) ·
 [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) ·
@@ -59,7 +62,9 @@ instead of twenty patches.
 **No**, for a real review.
 
 - `stauts` inside `def status`: the method name is not in scope. Binding
-  it still raises. The harness asks what to return.
+  it still raises. The harness asks what to return. The person's answer
+  is written as a constant; `status` as an answer is still refused.
+  A read-only run reports the change instead of making it.
 - Logic bugs that still parse.
 - A hundred-file walk (once: a hundred “no issues”).
 - “Find code smells” with no symbol. The 8B has invented names that were
@@ -71,8 +76,9 @@ The four Start commands went from 0/4 shippable to 4/4 working on this
 tree **without new weights**. Three of the four finish with no model call
 at all, which is why they take a tenth of a second and give the same
 answer every time; `ask` still calls the model, and is held to an answer
-that says what the function computes. The leftover controller job became
-a question, not a guessed literal.
+that says what the function computes. The leftover controller job asks
+what to return; a given answer is written as that literal, still
+without a model.
 
 Read those four as four commands, not as a score. Running the fifteen
 benchmark cases three times on unchanged code changed the verdict on ten

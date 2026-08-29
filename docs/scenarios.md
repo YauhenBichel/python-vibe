@@ -47,11 +47,12 @@ def total_lines(prices: list[int]) -> int:
 | `python-vibe run "find a real NameError in src/orders.py and fix it"` | Bound `subtotl` → `subtotal`. No model. | passed | 0.1 s |
 | `python-vibe run "add a function total_lines(prices) that counts the prices, and a unit test"` | Same result as the short wording, by the same mechanical route. No model. | passed | 0.1 s |
 | `python-vibe run "write tests for OrderService in src/orders_service.py"` | Six steps. New file `tests/test_OrderService.py`. The summary was the single word `done`. | passed | 23 s |
-| `python-vibe run "find the NameError in src/orders_controller.py and fix it"` | `stauts` reads as `status`, which is the method's own name and not in scope in its body. The harness asks what was meant rather than writing code that still raises. No model. | question, nothing written | instant |
+| `python-vibe run "find the NameError in src/orders_controller.py and fix it"` | `stauts` reads as `status`, which is the method's own name and not in scope in its body. The harness asks what was meant. Answering `ok` writes `return "ok"`. Answering `status` is still refused. With `--dry-run`, or through `ask`, it reports what it would write and changes nothing. No model. | question until you answer; then the literal you gave | instant |
 
 The short `add` command now matches the precise one: both write
 `total_lines(prices)` and a test. The controller NameError still has no
 safe mechanical bind; the harness asks instead of guessing `return "ok"`.
+If you answer, that answer is written without loading the model.
 
 ## What the harness will not guess
 
@@ -64,6 +65,8 @@ nearest name to `stauts` is `status`, which is the **method's own name**.
 It is not in scope inside the method body, so binding to it would produce
 `return status` — code that still raises, from a repair that takes a tenth
 of a second and reports success. The harness asks what it should return.
+A given answer is written as that value. `status` as the answer is still
+refused.
 
 ## Reproduce
 

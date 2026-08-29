@@ -11,8 +11,10 @@ from harness.act.autofix import (
     apply_cover_test,
     apply_function_rename,
     apply_mechanical,
+    apply_person_bind,
     apply_typo_fixes,
     levenshtein,
+    replacement_from_answer,
     typo_pairs,
     usual_first_arg,
 )
@@ -33,6 +35,15 @@ def total_with_tax(prices: list[int]) -> float:
 UTIL = """def calc(x: int, y: int) -> int:
     return x * y
 """
+
+
+def _scripted_done(summary: str):
+    """Stand in for the model: say done straight away."""
+
+    def generate(_prompt: str) -> str:
+        return f"Action: done\nSummary: {summary}"
+
+    return lambda *a, **k: ("scripted", generate)
 
 
 class TypoFixTest(unittest.TestCase):
@@ -636,6 +647,145 @@ class MethodNameIsNotInScopeTest(unittest.TestCase):
         self.assertEqual(body, self.SOURCE)
         self.assertNotIn("return status", body)
 
+    def test_the_persons_literal_is_bound_without_a_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            dest = root / "src" / "orders_controller.py"
+            dest.write_text(self.SOURCE, encoding="utf-8")
+            options = AgentOptions(
+                project=root,
+                task="find the NameError in src/orders_controller.py and fix it",
+                on_question=lambda q: "ok",
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError(
+                    "model must not load after the person answered"
+                ),
+            ):
+                result = Agent(options).run()
+            body = dest.read_text(encoding="utf-8")
+        self.assertEqual(result.stopped, "done")
+        self.assertTrue(result.ok)
+        self.assertRegex(body, r"""return ['"]ok['"]""")
+        self.assertNotIn("stauts", body)
+        self.assertNotIn("return status", body)
+
+    def test_the_method_name_is_still_refused_as_an_answer(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            dest = root / "src" / "orders_controller.py"
+            dest.write_text(self.SOURCE, encoding="utf-8")
+            options = AgentOptions(
+                project=root,
+                task="find the NameError in src/orders_controller.py and fix it",
+                on_question=lambda q: "status",
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError(
+                    "model must not load when the answer is the method name"
+                ),
+            ):
+                result = Agent(options).run()
+            body = dest.read_text(encoding="utf-8")
+        self.assertEqual(result.stopped, "question")
+        self.assertFalse(result.ok)
+        self.assertIn("still not something this method can return", result.summary)
+        self.assertEqual(body, self.SOURCE)
+
+    def test_a_quoted_return_is_the_same_as_the_bare_word(self) -> None:
+        self.assertEqual(
+            replacement_from_answer('return "ok"', set(), {"status"}),
+            replacement_from_answer("ok", set(), {"status"}),
+        )
+        self.assertIsNone(replacement_from_answer("status", set(), {"status"}))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            dest = root / "src" / "orders_controller.py"
+            dest.write_text(self.SOURCE, encoding="utf-8")
+            note = apply_person_bind(
+                root,
+                "find the NameError in src/orders_controller.py and fix it",
+                "ok",
+                write=False,
+            )
+            self.assertIn("`stauts`", note)
+            self.assertEqual(dest.read_text(encoding="utf-8"), self.SOURCE)
+
+    def test_a_read_only_run_says_what_it_would_do_and_writes_nothing(self) -> None:
+        """`ask` and `--dry-run` promise the folder is left alone.
+
+        Asking is not writing, so a read-only run may still put the
+        question. Acting on the answer is writing. Applying it regardless
+        of `allow_writes` changed the file and left a `.bak` behind under
+        both `--dry-run` and `ask`, which the CLI runs with writes off.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            target = root / "src" / "ctl.py"
+            target.write_text(self.SOURCE, encoding="utf-8")
+            before = target.read_text(encoding="utf-8")
+            result = Agent(
+                AgentOptions(
+                    project=root,
+                    task="find the NameError in src/ctl.py and fix it",
+                    model="no-such-model:0",
+                    steps=2,
+                    allow_writes=False,
+                    on_question=lambda question: "ok",
+                )
+            ).run()
+            self.assertEqual(target.read_text(encoding="utf-8"), before)
+            self.assertEqual(list((root / "src").glob("*.bak")), [])
+        self.assertTrue(result.ok)
+        self.assertIn("Read-only", result.summary)
+        self.assertIn("Nothing written", result.summary)
+        self.assertEqual(result.writes, ())
+
+    def test_a_red_suite_is_never_a_finished_run(self) -> None:
+        """The answer went in, but the project is not green.
+
+        Reporting `ok` here meant exit code 0 with a failing suite, the
+        only place in the project that did. The mechanical pass hands the
+        real failure to the model instead, and so does this.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "__init__.py").write_text("", encoding="utf-8")
+            (root / "tests" / "__init__.py").write_text("", encoding="utf-8")
+            (root / "src" / "ctl.py").write_text(self.SOURCE, encoding="utf-8")
+            (root / "tests" / "test_ctl.py").write_text(
+                "import unittest\n\n"
+                "from src.ctl import Controller\n\n\n"
+                "class TestController(unittest.TestCase):\n"
+                "    def test_status_says_ready(self) -> None:\n"
+                "        self.assertEqual(Controller().status(), 'ready')\n",
+                encoding="utf-8",
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                _scripted_done("nothing more to do"),
+            ):
+                result = Agent(
+                    AgentOptions(
+                        project=root,
+                        task="find the NameError in src/ctl.py and fix it",
+                        steps=2,
+                        on_question=lambda question: "ok",
+                    )
+                ).run()
+            body = (root / "src" / "ctl.py").read_text(encoding="utf-8")
+        # The answer is applied either way; what must not happen is a
+        # green verdict over a red suite.
+        self.assertIn("'ok'", body)
+        self.assertFalse(result.ok, result.summary)
 
     def test_a_name_that_is_not_a_typo_goes_to_the_model(self) -> None:
         """Asking is for a misspelling nobody can safely bind.
