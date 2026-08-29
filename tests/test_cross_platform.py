@@ -6,9 +6,12 @@ paths and copies them back, and the skills and prompts are all written with
 forward slashes, so the two styles must not mix.
 """
 
+import re
 import tempfile
 import unittest
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
 
 from harness.act.tools import glob_py, grep_py, map_py
 from harness.paths import as_project_rel, rel_posix, venv_python
@@ -192,6 +195,56 @@ class DoneWithoutChangeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             state = self._state(_project(tmp), "what does compute_total return?")
             self.assertEqual(refuse_done_without_change(state, None), "")
+
+
+class AstNodesExistOnTheOldestPythonTest(unittest.TestCase):
+    """`ast` grew node types after 3.11, and pyproject supports 3.11.
+
+    `ast.TypeAlias` is 3.12. Naming it in an isinstance check raised
+    AttributeError on every 3.11 job while passing locally on 3.13, so
+    the break was invisible until CI ran. Look such names up with
+    getattr and skip the check when the attribute is missing.
+    """
+
+    # Added in 3.12 (PEP 695) and 3.13. Anything here is unavailable on 3.11.
+    TOO_NEW = ("TypeAlias", "TypeVar", "ParamSpec", "TypeVarTuple", "TypeIs")
+
+    def test_no_module_names_a_node_type_newer_than_3_11(self) -> None:
+        pattern = re.compile(r"\bast\.(" + "|".join(self.TOO_NEW) + r")\b")
+        offenders = []
+        for path in sorted((ROOT / "src").rglob("*.py")):
+            for number, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(), 1
+            ):
+                if pattern.search(line) and "getattr(ast" not in line:
+                    offenders.append(f"{path.relative_to(ROOT)}:{number}: {line.strip()}")
+        self.assertEqual(offenders, [], offenders)
+
+    def test_the_checker_still_works_without_the_3_12_node(self) -> None:
+        """Simulate 3.11: the module must import and behave."""
+        import ast as ast_module
+        import importlib
+
+        from harness.scan import names as names_module
+
+        saved = getattr(ast_module, "TypeAlias", None)
+        try:
+            if saved is not None:
+                del ast_module.TypeAlias
+            reloaded = importlib.reload(names_module)
+            self.assertIsNone(reloaded._TYPE_ALIAS)
+            source = (
+                "from typing import TYPE_CHECKING\n\n"
+                "if TYPE_CHECKING:\n"
+                "    from rich.markdown import Markdown\n\n\n"
+                "def build(text: str) -> 'Markdown':\n"
+                "    return text\n"
+            )
+            self.assertEqual(reloaded.undefined_names(source), [])
+        finally:
+            if saved is not None:
+                ast_module.TypeAlias = saved
+            importlib.reload(names_module)
 
 
 if __name__ == "__main__":

@@ -37,6 +37,10 @@ def _store_names(node: ast.AST) -> set[str]:
     return names
 
 
+# 3.12 added `type X = ...`. Absent on 3.11, which this project supports.
+_TYPE_ALIAS = getattr(ast, "TypeAlias", None)
+
+
 def _assign_names(node: ast.AST) -> set[str]:
     if isinstance(node, ast.Assign):
         names: set[str] = set()
@@ -63,7 +67,9 @@ def _assign_names(node: ast.AST) -> set[str]:
     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
         return {node.name}
     # `type Properties = dict[str, JsonValue]`, the 3.12 alias spelling.
-    if isinstance(node, ast.TypeAlias):
+    # The node type does not exist before 3.12, and this project runs on
+    # 3.11 as well, so it is looked up rather than named.
+    if _TYPE_ALIAS is not None and isinstance(node, _TYPE_ALIAS):
         return _store_names(node.name)
     # `case InputSubmitted(text):` binds `text` for the branch body.
     if isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
