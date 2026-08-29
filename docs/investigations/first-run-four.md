@@ -19,7 +19,8 @@ that literal is written and the model still does not load. Under
 `--dry-run`, and under `ask`, it says what it would write and writes
 nothing.
 
-Related: [Live scenarios]({{ '/scenarios/' | relative_url }}) ·
+Related: [Experiments]({{ '/investigations/experiments/' | relative_url }}) ·
+[Live scenarios]({{ '/scenarios/' | relative_url }}) ·
 [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) ·
 [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) ·
 [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}).
@@ -95,5 +96,6 @@ on parse **and** a real ≥1 KB fix.
 Do not train more 0.5B steps. Do not train an 8B LoRA on thirty seed
 rows. See [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
 
-A copy-paste article from these measurements is kept in `drafts/` in
+The catalog of every run is [Experiments]({{ '/investigations/experiments/' | relative_url }}).
+A Medium article from that table is `drafts/medium-experiments.md` in
 the repository, so it is not published here as well.

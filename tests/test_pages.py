@@ -44,6 +44,8 @@ class PagesInvestigationsTest(unittest.TestCase):
             "investigations/model-lanes.md",
             "investigations/hub-models.md",
             "investigations/first-run-four.md",
+            "investigations/experiments.md",
+            "investigations/cloud-weights.md",
         )
         missing = [name for name in required if not (DOCS / name).is_file()]
         self.assertEqual(missing, [])
@@ -321,6 +323,59 @@ class FirstRunOutputTest(unittest.TestCase):
             text = self._brief(root)
         self.assertIn("--scope", text)
         self.assertNotIn("Action:", text)
+
+class NoCommercialPlanTest(unittest.TestCase):
+    """This repository is personal public OSS. It holds no business plan.
+
+    A control plane — per-customer API keys, a usage ledger, GPU metering,
+    a platform fee — is a different job from a local write jail, and it
+    carries customer secrets and money. It belongs in a private repository
+    in the molecare org. A note about it was written into `drafts/` here
+    and referenced from a published page, which put an unbuilt commercial
+    plan on a personal open-source site.
+
+    `--engine openai` stays: pointing the harness at a host you rent, with
+    your own token, is a feature of the tool, not a business.
+    """
+
+    # Words that only appear when the commercial layer is being described.
+    COMMERCIAL = (
+        "control plane",
+        "control-plane",
+        "per-customer",
+        "usage ledger",
+        "platform fee",
+        "invoice",
+        "customer account",
+    )
+    # Real code that happens to use the word, and the guard's own text.
+    ALLOWED = {"tests/test_pages.py"}
+
+    def test_no_page_or_draft_describes_a_control_plane(self) -> None:
+        offenders = []
+        for path in sorted(ROOT.rglob("*.md")):
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith(".git/") or rel in self.ALLOWED:
+                continue
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word in self.COMMERCIAL:
+                if word in lowered:
+                    offenders.append(f"{rel}: {word}")
+        self.assertEqual(
+            offenders,
+            [],
+            f"commercial plan text in a public personal repo: {offenders}",
+        )
+
+    def test_billing_words_are_not_in_the_source(self) -> None:
+        offenders = []
+        for path in sorted((ROOT / "src").rglob("*.py")):
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word in ("per-customer", "usage ledger", "platform fee"):
+                if word in lowered:
+                    offenders.append(f"{path.relative_to(ROOT)}: {word}")
+        self.assertEqual(offenders, [], offenders)
+
 
 
 if __name__ == "__main__":

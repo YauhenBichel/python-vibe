@@ -23,7 +23,7 @@ Do not train more 0.5B weights expecting agency. Do not describe a 100-file stub
 
 ## When to use
 
-Use python-vibe when you want an offline loop on a small Python tree (≤40 first-party text files, ≤200 KB), writes jailed, no cloud API. Jail suffixes include .py, .md, and platform config (.toml, .yml, .json). Secret names are refused.
+Use python-vibe when you want an offline loop on a small Python tree (≤40 first-party text files, ≤200 KB), writes jailed, and no cloud API unless you ask for one with --engine openai, which sends the prompt, and the code in it, to that host. Jail suffixes include .py, .md, and platform config (.toml, .yml, .json). Secret names are refused.
 
 Use a hosted IDE agent when the job is multi-file across languages, needs extra tools or a browser, or you must quote more than one call site.
 
@@ -128,7 +128,9 @@ A free bash tool does not transfer to an 8B on a laptop working tree.
 Home {{ '/' | absolute_url }}
 Start {{ '/start/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
+Experiments {{ '/investigations/experiments/' | absolute_url }}
 First-run four {{ '/investigations/first-run-four/' | absolute_url }}
+Cloud weights {{ '/investigations/cloud-weights/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
 Same jobs {{ '/investigations/same-jobs/' | absolute_url }}
 What to improve {{ '/investigations/what-to-improve/' | absolute_url }}

@@ -38,7 +38,11 @@ def main() -> None:
     parser.add_argument("--scope", default="")
     parser.add_argument("--brief", action="store_true")
     parser.add_argument("--skill", action="append", default=[], metavar="NAME")
-    parser.add_argument("--engine", default="ollama")
+    parser.add_argument(
+        "--engine",
+        default="ollama",
+        help="ollama (local or OLLAMA_HOST), mlx, or openai (remote weights)",
+    )
     parser.add_argument("--tiny", action="store_true")
     parser.add_argument("--model", default=DEFAULT_EVERYDAY_OLLAMA)
     parser.add_argument("--max-tokens", type=int, default=700)

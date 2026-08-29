@@ -1,7 +1,7 @@
 # Four jobs on a laptop (and what the harness had to do)
 
-*Draft for Medium. Kept out of `docs/` so the site does not publish a
-second copy of an article meant to be posted elsewhere.*
+*Superseded as the public Medium post by `medium-experiments.md`.
+Kept as the shorter first-run-only draft.*
 
 I wanted a cheap everyday loop for small Python: ask a question, write a
 test, fix a one-line bug, add one small function. On my machine. Only
