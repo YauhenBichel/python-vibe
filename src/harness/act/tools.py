@@ -13,6 +13,7 @@ from harness.paths import is_secret_name, rel_posix, suffix_globs
 from harness.act.patch_fix import align_indent, find_match, miss_message
 from harness.skillkit.style import (
     refuse_layout,
+    refuse_stdlib_shadow,
     refuse_platform_draft,
     refuse_rename_incomplete,
     refuse_shell_fetch,
@@ -159,6 +160,9 @@ def repair_unittest_append(original: str, append: str) -> str | None:
 def _style_blocks(
     task: str, rel: str, original: str, draft: str, fragment: str = ""
 ) -> str:
+    blocked = refuse_stdlib_shadow(rel, original)
+    if blocked:
+        return blocked
     blocked = refuse_layout(rel, original, draft)
     if blocked:
         return blocked

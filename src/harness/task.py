@@ -215,10 +215,16 @@ _PLATFORM = re.compile(
 )
 
 
+def _without_paths(task: str) -> str:
+    """Drop file paths so `tests/cli/foo.py` is not a CLI-script job."""
+    text = re.sub(r"\b[\w.-]+(?:/[\w.-]+)+\b", " ", task)
+    return re.sub(r"\S+\.py\b", " ", text)
+
+
 def looks_like_script(task: str) -> bool:
     if looks_like_question(task) or looks_like_new_package(task) or looks_like_ship(task):
         return False
-    return bool(_SCRIPT.search(task))
+    return bool(_SCRIPT.search(_without_paths(task)))
 
 
 def looks_like_http_client(task: str) -> bool:
@@ -303,9 +309,12 @@ def looks_like_write_tests(task: str) -> bool:
     """Cover an existing function. Not “add X and a test” (that is add-feature)."""
     if looks_like_question(task) or looks_like_new_package(task) or looks_like_ship(task):
         return False
-    if looks_like_add_feature(task):
+    if not _WRITE_TESTS.search(task):
         return False
-    return bool(_WRITE_TESTS.search(task))
+    # "add multiply and a unit test" starts with add. "write tests for X" covers X.
+    if _ADD_START.search(task.strip().lower()) and not covered_symbol(task):
+        return False
+    return True
 
 
 def covered_symbol(task: str) -> str:
@@ -323,6 +332,8 @@ def covered_symbol(task: str) -> str:
 def looks_like_add_feature(task: str) -> bool:
     text = task.strip().lower()
     if looks_like_question(text):
+        return False
+    if looks_like_write_tests(task):
         return False
     if (
         looks_like_new_package(text)

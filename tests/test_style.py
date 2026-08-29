@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from harness.task import looks_like_fix_smell, looks_like_new_package, rename_target, smell_symbol
 from harness.skillkit.style import (
+    refuse_stdlib_shadow,
     refuse_layout,
     refuse_opaque_names,
     refuse_package_done,
@@ -230,3 +231,29 @@ class WeakTestCalibrationTest(unittest.TestCase):
             "        self.assertEqual(divide(6, 3), 2)\n"
         )
         self.assertEqual(refuse_weak_test("tests/t.py", draft), "")
+
+
+class StdlibShadowTest(unittest.TestCase):
+    """A new module must not hide one from the standard library.
+
+    Asked for a clamp helper, the model created `pkg/math.py`. Every later
+    `import math` in that project then finds the new file, and the failure
+    shows up far from the change that caused it.
+    """
+
+    def test_a_new_module_named_after_the_standard_library_is_refused(self) -> None:
+        for name in ("pkg/math.py", "pkg/json.py", "src/random.py"):
+            self.assertIn("hide the standard library", refuse_stdlib_shadow(name, ""))
+
+    def test_an_ordinary_name_is_allowed(self) -> None:
+        self.assertEqual(refuse_stdlib_shadow("src/orders.py", ""), "")
+
+    def test_a_module_that_already_exists_is_the_project_s_own_business(self) -> None:
+        self.assertEqual(refuse_stdlib_shadow("pkg/math.py", "def existing():\n    pass\n"), "")
+
+    def test_names_a_project_normally_has_are_allowed(self) -> None:
+        for name in ("src/types.py", "tests/test_x.py", "src/config.py"):
+            self.assertEqual(refuse_stdlib_shadow(name, ""), "")
+
+    def test_the_message_offers_a_name_that_works(self) -> None:
+        self.assertIn("math_helpers.py", refuse_stdlib_shadow("pkg/math.py", ""))

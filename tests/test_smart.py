@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from harness.agent.policy import refuse_wrong_file
 from harness.locate import (
     def_hit_path,
     locate_py,
@@ -14,8 +15,10 @@ from harness.locate import (
     refuse_question_write,
     refuse_redundant_explore,
     refuse_redundant_locate,
+    refuse_invented_review,
     refuse_shallow_done,
     refuse_thin_review,
+    refuse_write_tests_ask,
     return_annotation,
     signature_line,
 )
@@ -48,6 +51,22 @@ class SmartHarnessTest(unittest.TestCase):
             self.assertEqual(path, "pkg/code.py")
             self.assertIn("empty draft", text)
             self.assertIn("# auto-read", text)
+
+    def test_prelude_write_tests_opens_the_symbol(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            pkg.mkdir()
+            (pkg / "cron.py").write_text(
+                "def validate_cron_and_timezone(cron_expr: str, timezone: str) -> None:\n"
+                "    return None\n",
+                encoding="utf-8",
+            )
+            text, path = prelude(root, "write unit tests for validate_cron_and_timezone")
+            self.assertEqual(path, "pkg/cron.py")
+            self.assertIn("write-tests", text)
+            self.assertIn("tests/test_validate_cron_and_timezone.py", text)
+            self.assertIn("Do not ask", text)
 
     def test_prelude_question_and_add(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -181,6 +200,47 @@ class SmartHarnessTest(unittest.TestCase):
             ),
             "",
         )
+
+    def test_write_tests_ask_and_invented_review(self) -> None:
+        self.assertIn(
+            "patch",
+            refuse_write_tests_ask(
+                "write unit tests for validate_cron_and_timezone",
+                "ask",
+            ),
+        )
+        self.assertEqual(
+            refuse_write_tests_ask("what does validate_cron_and_timezone return?", "ask"),
+            "",
+        )
+        body = "def validate_cron_and_timezone(cron_expr: str, timezone: str) -> None:\n"
+        self.assertIn(
+            "compute_total",
+            refuse_invented_review(
+                "find errors in scheduling.py",
+                "compute_total returns 0 for an empty list",
+                body,
+            ),
+        )
+        self.assertEqual(
+            refuse_invented_review(
+                "find errors in scheduling.py",
+                "no errors found in scheduling.py",
+                body,
+            ),
+            "",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertIn(
+                "tests/",
+                refuse_wrong_file(
+                    "write unit tests for validate_cron_and_timezone",
+                    root,
+                    "patch",
+                    "surfaces/cli/commands/misses.py",
+                ),
+            )
 
 
 if __name__ == "__main__":

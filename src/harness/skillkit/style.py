@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 from harness.scan.names import new_undefined, undefined_names
@@ -319,6 +320,30 @@ def refuse_god_target(task: str, project: Path, action: str, path: str) -> str:
     return (
         f"SoC: {rel} already has {count} functions. "
         "Action: edit Path: pkg/<new_concern>.py with only the new function."
+    )
+
+
+_STDLIB = frozenset(sys.stdlib_module_names)
+# A project legitimately has these; only a brand new module is refused.
+_SHADOW_ALLOWED = frozenset({"types", "typing", "test", "tests", "config"})
+
+
+def refuse_stdlib_shadow(rel: str, original: str) -> str:
+    """Refuse a new module whose name hides one from the standard library.
+
+    Asked for a clamp helper, the model created `pkg/math.py`. Every later
+    `import math` in that project then finds the new file, and the failure
+    appears far from the change that caused it. Only new files are checked:
+    a project that already has such a module is its own business.
+    """
+    if original.strip():
+        return ""
+    stem = Path(rel).stem
+    if stem not in _STDLIB or stem in _SHADOW_ALLOWED:
+        return ""
+    return (
+        f"{rel} would hide the standard library module {stem}. "
+        f"Choose another name, such as {stem}_helpers.py."
     )
 
 

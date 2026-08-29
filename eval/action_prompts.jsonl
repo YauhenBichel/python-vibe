@@ -11,3 +11,5 @@
 {"action": "edit", "prompt": "Task: implement binary search\n# skill write-algorithm\nNext Action must be edit Path: pkg/index_of.py with one function.\nDo not write the test in this Action."}
 {"action": "edit", "prompt": "Task: fetch json from the HTTP API\n# skill call-http\nNext Action must be edit Path: pkg/fetch_json.py. urllib only. No curl."}
 {"action": "edit", "prompt": "Task: write a pathlib helper for the venv\n# skill write-paths\nNext Action must be edit Path: pkg/paths.py. pathlib. No os.path.join."}
+{"action": "patch", "prompt": "Task: write unit tests for validate_cron_and_timezone\nDo not ask. Action: patch Path: tests/test_validate_cron_and_timezone.py Append: one AAA test_<unit>_<result> method."}
+{"action": "read", "prompt": "Task: find errors in scheduling.py\nStart with Action: read Path: surfaces/cli/commands/scheduling.py. Do not invent compute_total."}
