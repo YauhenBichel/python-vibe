@@ -2,13 +2,13 @@
   {% assign u = page.url %}
   <a href="{{ '/' | relative_url }}"{% if u == '/' or u == '/index.html' %} aria-current="page"{% endif %}>Home</a>
   <a href="{{ '/start/' | relative_url }}"{% if u contains '/start' %} aria-current="page"{% endif %}>Start</a>
-  <a href="{{ '/scenarios/' | relative_url }}"{% if u contains '/scenarios' %} aria-current="page"{% endif %}>Live</a>
+  <a href="{{ '/scenarios/' | relative_url }}"{% if u contains '/scenarios' %} aria-current="page"{% endif %}>Scenarios</a>
   <a href="{{ '/demo/' | relative_url }}"{% if u contains '/demo' %} aria-current="page"{% endif %}>Demo</a>
   <a href="{{ '/api/' | relative_url }}"{% if u contains '/api' %} aria-current="page"{% endif %}>Using</a>
   <a href="{{ '/cursor/' | relative_url }}"{% if u contains '/cursor' %} aria-current="page"{% endif %}>Cursor</a>
   <a href="{{ '/ide-plugins/' | relative_url }}"{% if u contains '/ide-plugins' or u contains '/local-editor' %} aria-current="page"{% endif %}>Editors</a>
   <a href="{{ '/skills/' | relative_url }}"{% if u contains '/skills' %} aria-current="page"{% endif %}>Skills</a>
-  <a href="{{ '/investigations/' | relative_url }}"{% if u contains '/investigations' or u contains '/research-vibe-review' %} aria-current="page"{% endif %}>Research</a>
+  <a href="{{ '/investigations/experiments/' | relative_url }}"{% if u contains '/investigations' or u contains '/research-vibe-review' %} aria-current="page"{% endif %}>Experiments</a>
   <a href="{{ '/architecture/' | relative_url }}"{% if u contains '/architecture' %} aria-current="page"{% endif %}>Architecture</a>
   <a class="nav-source" href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">GitHub</a>
 </nav>

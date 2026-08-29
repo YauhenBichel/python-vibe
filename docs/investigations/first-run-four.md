@@ -20,7 +20,7 @@ that literal is written and the model still does not load. Under
 nothing.
 
 Related: [Experiments]({{ '/investigations/experiments/' | relative_url }}) ·
-[Live scenarios]({{ '/scenarios/' | relative_url }}) ·
+[Scenarios]({{ '/scenarios/' | relative_url }}) ·
 [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) ·
 [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) ·
 [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}).

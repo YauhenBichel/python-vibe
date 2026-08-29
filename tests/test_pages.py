@@ -417,6 +417,26 @@ class NoPersonalDraftsTest(unittest.TestCase):
         self.assertEqual(offenders, [], offenders)
 
 
+class DatedPagesSayTheDateTest(unittest.TestCase):
+    """A published page cannot say "tonight" and mean anything later.
+
+    Pages carried "Tonight's live run" and "as typed tonight". Read a
+    week after the measurement they claim something that is not true,
+    and the date is already in the front matter and the prose.
+    """
+
+    RELATIVE = ("tonight", "this evening", "this morning", "yesterday")
+
+    def test_no_page_dates_itself_by_the_time_of_day(self) -> None:
+        offenders = []
+        for path in sorted(DOCS.rglob("*.md")):
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word in self.RELATIVE:
+                if word in lowered:
+                    offenders.append(f"{path.relative_to(DOCS)}: {word}")
+        self.assertEqual(offenders, [], offenders)
+
+
 
 if __name__ == "__main__":
     unittest.main()

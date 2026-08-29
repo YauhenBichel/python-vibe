@@ -118,7 +118,7 @@ running the code afterwards. One laptop, 29 August 2026, through Ollama.
 
 | Model | Write a test, add a component, fix a bug | Platform work |
 | --- | --- | --- |
-| `llama3.1:8b` | **9 / 9** | 1 / 4 |
+| `llama3.1:8b` | **6–9 / 9** | 1 / 4 |
 | `qwen2.5-coder:7b` | 7 / 9 | **2 / 4** |
 | `qwen3coder` (30B) | not run | **0 / 4, every case timed out** |
 

@@ -1,11 +1,11 @@
 ---
-title: Live scenarios
-description: A laptop run of the four everyday commands against demo/orders, with a separate check on each result. Add is now mechanical when neighbors take prices.
+title: Scenarios
+description: What you type, and what happened on demo/orders. Four everyday commands, each checked after the run.
 permalink: /scenarios/
 date: 2026-08-29
 ---
 
-# Live scenarios
+# Scenarios
 
 29 August 2026, one laptop, `llama3.1:8b` through Ollama. Each command ran
 against a **fresh copy** of `demo/orders`, so no job could see another's

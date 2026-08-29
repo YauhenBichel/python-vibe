@@ -38,12 +38,27 @@ Measured on one laptop, 29 August 2026, through Ollama.
 
 | Model | Tiers 1, 2, 4, 5 | Tier 6 |
 | --- | --- | --- |
-| `llama3.1:8b` | **9 / 9** | 1 / 4 |
+| `llama3.1:8b` | **6–9 / 9** (six runs) | 1 / 4 |
 | `qwen2.5-coder:7b` | 7 / 9 | **2 / 4** |
 | `qwen3coder` (30B) | not run | **0 / 4, every case timed out** |
 
 The 30B result is not a score. Every case ended in a timeout, so the model
 never produced a usable turn at all.
+
+
+## One run is not a score
+
+After this comparison was published the same nine cases were run six
+times against unchanged code:
+
+    9/9   6/9   8/9   7/9   8/9   7/9
+
+Five of the nine pass every time, and three of those five finish without
+calling the model. Across the whole fifteen-case bench, ten of fifteen
+changed verdict between identical runs and the totals ranged from 7 to
+12. Each model above was measured once, which is enough to show that the
+30B never finished and not enough to separate `llama3.1:8b` from
+`qwen2.5-coder:7b`. Treat a gap smaller than about four cases as noise.
 
 ## What that means
 

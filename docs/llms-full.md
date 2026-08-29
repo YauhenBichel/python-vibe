@@ -49,7 +49,7 @@ python-vibe run  "find a real NameError and fix it"
 Training on Apple Silicon needs MLX, which does not install on Linux or
 Windows: `pip install -e ".[train]"`.
 
-Live laptop run of the four first commands, including misses: {{ '/scenarios/' | absolute_url }}
+What you type, and what happened on demo/orders: {{ '/scenarios/' | absolute_url }}
 
 --tiny is the 0.5B sidecar. Do not use it for daily work. Large trees: pass --scope and start with Action: map.
 

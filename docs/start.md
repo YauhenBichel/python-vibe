@@ -58,8 +58,10 @@ On a large project: `python-vibe run --scope src "write tests for apply_discount
 
 To try a change without writing: add `--dry-run`.
 
-What those four commands did on one laptop tonight:
-[Live scenarios]({{ '/scenarios/' | relative_url }}).
+What those four commands did on one laptop:
+[Scenarios]({{ '/scenarios/' | relative_url }}).
+Every measured run:
+[Experiments]({{ '/investigations/experiments/' | relative_url }}).
 
 ## Later
 
