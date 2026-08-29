@@ -149,3 +149,60 @@ def undefined_in_file(path: Path) -> list[str]:
     except OSError:
         return []
     return undefined_names(source)
+
+
+def _module_file(project: Path, dotted: str) -> Path | None:
+    """The file a `from a.b import c` refers to, if it is in this project."""
+    parts = dotted.split(".")
+    for candidate in (
+        project.joinpath(*parts).with_suffix(".py"),
+        project.joinpath(*parts, "__init__.py"),
+        project.joinpath(*parts[1:]).with_suffix(".py") if len(parts) > 1 else None,
+    ):
+        if candidate is not None and candidate.is_file():
+            return candidate
+    return None
+
+
+def _defined_in(source: str) -> set[str]:
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return set()
+    names: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            names.add(node.name)
+        names.update(_assign_names(node))
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                names.add(alias.asname or alias.name.split(".")[0])
+    return names
+
+
+def missing_import_targets(project: Path, source: str) -> list[tuple[str, str]]:
+    """Imports of names this project's own modules do not define.
+
+    A test that imports a function nobody has written yet reads as valid
+    Python — the import binds the name, so the undefined-name scan sees
+    nothing — and fails only when the suite runs.
+    """
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return []
+    missing: list[tuple[str, str]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom) or node.level or not node.module:
+            continue
+        target = _module_file(Path(project), node.module)
+        if target is None:
+            continue
+        try:
+            defined = _defined_in(target.read_text(encoding="utf-8"))
+        except OSError:
+            continue
+        for alias in node.names:
+            if alias.name != "*" and alias.name not in defined:
+                missing.append((node.module, alias.name))
+    return missing

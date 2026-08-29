@@ -157,6 +157,26 @@ def repair_unittest_append(original: str, append: str) -> str | None:
     return text.rstrip() + "\n\n" + method + "\n"
 
 
+def refuse_missing_import_target(project: Path, rel: str, draft: str) -> str:
+    """Refuse a file importing a name this project has not defined yet.
+
+    Asked to create a module and a test for it, the model wrote only the
+    test, importing a function nobody had written. That reads as valid
+    Python — the import binds the name — and fails when the suite runs. The
+    function has to exist first.
+    """
+    from harness.scan.names import missing_import_targets
+
+    missing = missing_import_targets(project, draft)
+    if not missing:
+        return ""
+    module, name = missing[0]
+    return (
+        f"{module} does not define {name} yet. Write the function first: "
+        f"Action: patch Path: {module.replace('.', '/')}.py Append: def {name}(...)"
+    )
+
+
 def _style_blocks(
     task: str, rel: str, original: str, draft: str, fragment: str = ""
 ) -> str:
@@ -238,7 +258,9 @@ def patch_py(
         if bound != text:
             text = bound
             note = (note + " (harness bound unique NameError typo)").strip()
-    blocked = _style_blocks(task, rel, original, text, fragment=append or replace)
+    blocked = refuse_missing_import_target(project, rel, text)
+    if not blocked:
+        blocked = _style_blocks(task, rel, original, text, fragment=append or replace)
     if blocked:
         return blocked
     apply_source(path, text, original=original)
@@ -251,7 +273,9 @@ def patch_py(
 def edit_py(project: Path, rel: str, source: str, task: str = "") -> str:
     path = resolve_project_file(project, rel)
     original = path.read_text(encoding="utf-8") if path.is_file() else ""
-    blocked = _style_blocks(task, rel, original, source)
+    blocked = refuse_missing_import_target(project, rel, source)
+    if not blocked:
+        blocked = _style_blocks(task, rel, original, source)
     if blocked:
         return blocked
     apply_source(path, source, original=original)

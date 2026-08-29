@@ -301,7 +301,24 @@ _COVERED = re.compile(
     r"([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)\b"
 )
 _COVERED_SKIP = frozenset(
-    {"file", "module", "some", "that", "this", "unit", "tests", "test"}
+    {
+        # Pronouns are not function names. "…and a unit test for it" read as
+        # "cover the function `it`", so a task asking to create a function
+        # was handled as a request to test one that already exists.
+        "everything",
+        "file",
+        "it",
+        "module",
+        "some",
+        "that",
+        "them",
+        "these",
+        "this",
+        "those",
+        "test",
+        "tests",
+        "unit",
+    }
 )
 
 
