@@ -10,6 +10,7 @@ One command with subcommands, so a user does not have to know which file in
     python -m harness serve    --project ~/app
     python -m harness mcp      --project ~/app
     python -m harness editors  cursor --allow-writes
+    python -m harness commit   ~/app "why the change landed"
     python -m harness route    "what does compute_total return?"
 """
 
@@ -140,6 +141,13 @@ def build_parser() -> argparse.ArgumentParser:
     mcp.add_argument("--allow-writes", action="store_true")
     mcp.add_argument("--model", default=AgentOptions(project=Path(".")).model)
 
+    commit = subs.add_parser(
+        "commit",
+        help="record current changes. You stay the author; python-vibe is co-author.",
+    )
+    commit.add_argument("project", type=Path)
+    commit.add_argument("summary", help="why, not what (at least 8 characters)")
+
     editors = subs.add_parser(
         "editors",
         help="write ready-made editor settings into a project",
@@ -213,6 +221,12 @@ def main(argv: list[str] | None = None) -> int:
             allow_writes=args.allow_writes,
             model=args.model,
         )
+
+    if args.command == "commit":
+        from harness.ship.git_ship import commit_changes
+
+        print(commit_changes(args.project.expanduser().resolve(), args.summary))
+        return 0
 
     if args.command == "editors":
         from harness.editor_kit import install_editors, next_steps
