@@ -1,6 +1,6 @@
 ---
 title: Experiments
-description: Every laptop measurement for python-vibe, with the date and the score. 29–30 August 2026. Not everyday-ready.
+description: Small open models for daily Python. What I typed, what the file looked like, and the score. One laptop, 29–30 August 2026.
 permalink: /investigations/experiments/
 date: 2026-08-29
 type: article
@@ -8,60 +8,175 @@ type: article
 
 # Experiments
 
-Every run that produced a number or a yes/no, on one laptop, 29–30
-August 2026. Dates are the day of the measurement. A page that only
-states a decision, with no new run, is listed under notes.
+I tried to use a small open LLM for daily Python: ask, write a test, fix
+a bug, add one function. One laptop. 29–30 August 2026.
 
 **Not everyday-ready.** Everyday-ready still means beating an untuned
 `llama3.1:8b` on live parse **and** a real ≥1 KB fix.
 
-Related: [Live scenarios]({{ '/scenarios/' | relative_url }}) ·
-[Research index]({{ '/investigations/' | relative_url }}) ·
-[Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
+<div class="stats">
+  <div class="stat"><b>0 / 4</b><span>0.5B held-out vibe</span></div>
+  <div class="stat"><b>0 / 4 → 4 / 4</b><span>Four Start commands</span></div>
+  <div class="stat"><b>8 / 15</b><span>8B live first Action</span></div>
+  <div class="stat"><b>6–9 / 9</b><span>8B when the code must run, six runs</span></div>
+</div>
+
+The four commands as typed:
+[Scenarios]({{ '/scenarios/' | relative_url }}).
+Other notes:
+[Research]({{ '/investigations/' | relative_url }}).
+GitHub thread:
+[discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
 
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
 <ol>
-  <li><a href="#measured">Measured</a></li>
-  <li><a href="#protocol-only">Protocol only</a></li>
-  <li><a href="#not-an-experiment">Not an experiment</a></li>
+  <li><a href="#the-05b-as-daily-work">The 0.5B as daily work</a></li>
+  <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
+  <li><a href="#which-small-open-model">Which small open model</a></li>
+  <li><a href="#train-more-or-not">Train more, or not</a></li>
+  <li><a href="#a-larger-open-model">A larger open model</a></li>
 </ol>
 </nav>
 
-## Measured
+## The 0.5B as daily work
 
-| When | What we ran | Result | Write-up |
-| --- | --- | --- | --- |
-| 29 Aug | 0.5B held-out vibe (weekday, count-md, jsonl, docstring) | **0 / 4** | [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }}) |
-| 29 Aug | 0.5B parsed `Action:` | **0 / 2** | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) |
-| 29 Aug | 0.5B QLoRA val loss | Overfit after step 100. Hub weight is that checkpoint | [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }}) |
-| 29 Aug | 100-file stub walk | A hundred “no issues”. Not a review | [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }}) |
-| 29 Aug | Four Start commands on `demo/orders`, first typing | **0 / 4** shippable | [First-run four]({{ '/investigations/first-run-four/' | relative_url }}) · [Live scenarios]({{ '/scenarios/' | relative_url }}) |
-| 29–30 Aug | Same four commands after harness oracles | **4 / 4** on this tree. Three used no model | [First-run four]({{ '/investigations/first-run-four/' | relative_url }}) |
-| 29–30 Aug | `find the NameError in src/orders_controller.py` | Asks. Does not write `return status`. Answering `ok` writes `return "ok"` with no model | [First-run four]({{ '/investigations/first-run-four/' | relative_url }}) |
-| 29 Aug | `eval_everyday.py --live`, `llama3.1:8b` | **8 / 15** first Actions. Offline fixtures clean. Above the 50% floor | [First-run four]({{ '/investigations/first-run-four/' | relative_url }}) |
-| 29 Aug | `scripts/bench.py` tiers 1, 2, 4, 5 (code must run) | 8B **9 / 9**. 7B coder **7 / 9**. 30B **timeout** | [Which model]({{ '/investigations/which-model/' | relative_url }}) |
-| 29 Aug | Same bench, platform tier 6 | 8B 1 / 4. 7B coder **2 / 4**. 30B 0 / 4 timeout | [Which model]({{ '/investigations/which-model/' | relative_url }}) |
-| 29 Aug | First Action on Hub 1B and 1.5B | **0**. Prose or `# patch`, no `Action:` | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) |
-| 29 Aug | Eleven `demo.py` jobs, 8B vs a hosted IDE agent | Laptop does not match the hosted column | [Same jobs]({{ '/investigations/same-jobs/' | relative_url }}) · [Local vs hosted]({{ '/investigations/local-vs-cloud/' | relative_url }}) |
-| 29 Aug | Named-file review of a compiler finding | Quotes the undefined name. No generate | [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) |
-| 29 Aug | Skills written as one copy-paste `Action:` | 8B copies; essays fail | [Everyday skills]({{ '/investigations/everyday-skills/' | relative_url }}) |
-| 29 Aug | pathlib / both venv layouts / config suffixes | Wired. `os.path.join` and a POSIX-only venv path are refused | [Platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}) |
+**Example.** Public adapter
+[YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b)
+on Qwen2.5-Coder-0.5B. Ask it for a weekday-name helper, a markdown
+file counter, a jsonl line, a docstring. Ask it to emit `Action:`.
 
-Read the four Start commands as four commands, not as a score. The
-fifteen live parse cases changed verdict on ten of them across three
-unchanged reruns. Rows that never call the model hold still.
+**Result**
 
-## Protocol only
+| What I asked | What I got |
+| --- | --- |
+| Held-out vibe (weekday, count-md, jsonl, docstring) | **0 / 4** |
+| Parsed `Action:` that day | **0 / 2** |
+| Walk a hundred stub files | A hundred “no issues”. Not a review |
+| 400-step QLoRA | Overfit after step 100. Hub file is that checkpoint |
 
-These are how the next run will be scored. They do not have a live
-number yet.
+The 0.5B is a style prior. It is not daily work. I am not training more
+0.5B steps.
 
-| Planned run | How it will be scored | Write-up |
+Write-up: [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }})
+· [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}).
+
+## Four jobs, as typed
+
+**Example.** Planted tree `demo/orders`. Two NameErrors sit in the code:
+
+```python
+# src/orders.py
+subtotal = compute_total(prices)
+return subtotl + (subtotl * TAX_RATE)
+
+# src/orders_controller.py
+class OrdersController:
+    def status(self) -> str:
+        return stauts
+```
+
+**Result, first typing (evening)**
+
+| I typed | What I got |
+| --- | --- |
+| `ask "what does compute_total return?"` | `"int"` |
+| `run "write tests for apply_discount"` | A second test below `if __name__`. It never ran |
+| `run "find the NameError and fix it"` | Three files edited |
+| `run "add a function total_lines and a test"` | Opened a file. Suite red. Then it asked |
+
+**0 / 4** I would ship without reading the diff.
+
+**Result, after the harness did the compiler jobs first**
+
+| I typed | What I got | Check |
 | --- | --- | --- |
-| Cloud 14B / 32B via `--engine openai` | Same `demo/orders` checks as the laptop 8B. Beat cell A or keep the 8B | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) |
-| 7B LoRA after ~2k oracle-clean `--record` turns | `eval_everyday.py --live` and `scripts/demo.py`. Lose to the 8B → delete the adapter | [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) |
+| same `ask` | A sentence that quotes `int` and says it sums line prices | nothing written |
+| same write-tests | `already has a test`. No model | suite green |
+| same NameError | `subtotl` → `subtotal` in `orders.py`. No model | `total_with_tax([10])` is `12.0` |
+| same add | `def total_lines(prices)` and an AAA test. No model | `total_lines([10, 20]) == 2` |
+| `run "find the NameError in src/orders_controller.py"` | Asks. Does not write `return status`. Answer `ok` → `return "ok"`. No model | `status` as an answer is refused |
 
-Do not train more 0.5B steps. Do not train an 8B LoRA on thirty seed
-rows. Those are decisions, already written in
-[fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
+Four of those five finish with **no model**. That is why they are the
+same every time. Live first-Action parse the same night
+(`eval_everyday.py --live`, `llama3.1:8b`): **8 / 15**. Offline fixtures
+were clean. Those fifteen cases changed verdict on ten of them across
+three unchanged reruns. A single parse pass is not a score.
+
+Write-up: [First-run four]({{ '/investigations/first-run-four/' | relative_url }})
+· [Scenarios]({{ '/scenarios/' | relative_url }}).
+
+## Which small open model
+
+**Example.** `scripts/bench.py`. A case counts only if the function
+runs and does the job — not if a file appeared.
+
+**Result**
+
+| Model | Write a test / add / fix | Platform paths |
+| --- | --- | --- |
+| `llama3.1:8b` | **6–9 / 9** (six runs) | 1 / 4 |
+| `qwen2.5-coder:7b` | 7 / 9 (one run) | **2 / 4** |
+| 30B-class coder | timed out | **0 / 4** |
+| 1B and 1.5B on disk | no `Action:` (prose or `# patch`) | — |
+
+I did not switch the default. The 7B coder trades two of the daily jobs
+for one extra platform task.
+
+### One run is not a score
+
+The nine cases above were run six times against unchanged code:
+
+    9/9   6/9   8/9   7/9   8/9   7/9
+
+Five of the nine pass every time — `clamp`, `double`, `cover-discount`,
+`cover-shout`, `fix-nameerror` — and three of those five finish without
+calling the model at all. The other four come and go. Over the whole
+fifteen-case bench, ten of fifteen changed verdict between identical
+runs, and the totals ranged from 7 to 12.
+
+So the single figures on this page are worth reading as a rough size,
+not a rank. The comparison between models rests on one run each, which
+is enough to see that the 30B never finished and not enough to separate
+`8b` from `coder:7b`. Anything smaller than about a four-case gap is
+inside the noise.
+
+Same eleven demo tasks against a hosted IDE agent, same wording: the
+laptop column does not match. No browser, no free shell, no any-language
+tree.
+
+Write-up: [Which model]({{ '/investigations/which-model/' | relative_url }})
+· [Same jobs]({{ '/investigations/same-jobs/' | relative_url }}).
+
+## Train more, or not
+
+**Example.** 35 short train pairs. 30 handwritten Action traces.
+`train.py --everyday` is a 7B-class LoRA config. It has not been run.
+
+**Result**
+
+| Idea | What it would teach | Do it? |
+| --- | --- | --- |
+| More 0.5B steps | Tone. Already overfit | No |
+| 8B LoRA on 30 traces | The first `Action:` line | No |
+| 7B LoRA after ~2k oracle-clean `--record` turns | The protocol *and* a finish, if it beats the 8B | Later |
+
+“Patch the leftover name, write a test that calls it, refuse `done`”
+is a harness job. That is what moved the four Start commands from
+0 / 4 to 4 / 4.
+
+Write-up: [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
+
+## A larger open model
+
+**Example.** The 30B already timed out on this laptop. `--engine openai`
+sends only the generate call to a GPU. The jail stays here.
+
+**Result**
+
+| Run | Score |
+| --- | --- |
+| 30B on this laptop | Timeout. 0 / 4 platform cases |
+| 14B / 32B on a GPU | **No live number yet.** Must beat the laptop 8B on the same four jobs |
+
+Write-up: [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).

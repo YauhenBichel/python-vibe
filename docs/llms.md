@@ -14,7 +14,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 
 - [Home]({{ '/' | absolute_url }}): Four jobs. Ask, test, fix, add.
 - [Start]({{ '/start/' | absolute_url }}): Install, then python-vibe brief / ask / run in your project.
-- [Live scenarios]({{ '/scenarios/' | absolute_url }}): Tonight’s laptop run of those four commands. Includes misses.
+- [Scenarios]({{ '/scenarios/' | absolute_url }}): What you type, and what happened on demo/orders. Includes misses.
 - [Using]({{ '/api/' | absolute_url }}): Every command and flag, the Python API, and the read-only HTTP routes.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty kit skills and when the harness loads each one.
@@ -26,7 +26,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 
 ## Research
 
-- [Experiments]({{ '/investigations/experiments/' | absolute_url }}): Every measured run. Dates and scores. 29–30 Aug 2026. Not everyday-ready.
+- [Experiments]({{ '/investigations/experiments/' | absolute_url }}): What I typed, the planted example, and the score. 29–30 Aug 2026. Not everyday-ready.
 - [First-run four jobs]({{ '/investigations/first-run-four/' | absolute_url }}): The four Start commands. First fail, then mechanical pass. 29 Aug 2026.
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.

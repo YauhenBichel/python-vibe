@@ -46,7 +46,44 @@ result.summary, result.writes
 
 Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./docs/architecture.md).
 Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
-What those commands did on one laptop: [Live scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
+What those commands did on one laptop: [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
+Every measured run: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+
+## Experiments
+
+I tried a small open LLM for daily Python: ask, write a test, fix a bug,
+add one function. One laptop. 29–30 August 2026. **Not everyday-ready.**
+
+| Experiment | Example | Result |
+| --- | --- | --- |
+| 0.5B as daily work | weekday helper, count-md, `Action:` | **0 / 4** vibe, **0 / 2** parse |
+| Four Start commands | `demo/orders`, `subtotl` / `stauts` | **0 / 4**, then **4 / 4** after the harness |
+| Which open model | same bench, code must run | 8B **6–9 / 9** over six runs; 7B coder 7 / 9 once; 30B timeout |
+| Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
+| Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
+
+The four commands as typed, first night vs after the harness:
+
+| I typed | First night | After the harness |
+| --- | --- | --- |
+| `ask "what does compute_total return?"` | `"int"` | Type plus what it computes |
+| `run "write tests for apply_discount"` | Dead test below `if __name__` | Already covered. Nothing written |
+| `run "find the NameError and fix it"` | Three files edited | `subtotl` → `subtotal`. No model |
+| `run "add a function total_lines and a test"` | Opened a file. Suite red | `total_lines(prices)` + test. No model |
+
+Live first-Action parse (`eval_everyday.py --live`, `llama3.1:8b`):
+**8 / 15**, one run. Everyday-ready still means beating an untuned 8B on
+parse **and** a real ≥1 KB fix.
+
+Read those as a rough size, not a rank. The nine-case group was run six
+times against unchanged code and gave 9, 6, 8, 7, 8, 7; over the full
+fifteen-case bench ten of fifteen changed verdict between identical
+runs. A gap smaller than about four cases is noise.
+
+Tables with the planted example:
+[Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/)
+· [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
+Thread: [discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
 
 ## Everyday agent
 
