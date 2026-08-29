@@ -206,3 +206,40 @@ def missing_import_targets(project: Path, source: str) -> list[tuple[str, str]]:
             if alias.name != "*" and alias.name not in defined:
                 missing.append((node.module, alias.name))
     return missing
+
+
+# Names a small model reaches for without importing them. The fix for
+# these is an import line, never a rename.
+_IMPORTABLE = {
+    "Path": "from pathlib import Path",
+    "PurePath": "from pathlib import PurePath",
+    "dataclass": "from dataclasses import dataclass",
+    "field": "from dataclasses import field",
+    "Counter": "from collections import Counter",
+    "defaultdict": "from collections import defaultdict",
+    "Any": "from typing import Any",
+    "Iterable": "from collections.abc import Iterable",
+    "Sequence": "from collections.abc import Sequence",
+    "Callable": "from collections.abc import Callable",
+    "datetime": "from datetime import datetime",
+    "date": "from datetime import date",
+    "timedelta": "from datetime import timedelta",
+    "os": "import os",
+    "sys": "import sys",
+    "re": "import re",
+    "json": "import json",
+    "csv": "import csv",
+    "math": "import math",
+    "shutil": "import shutil",
+    "subprocess": "import subprocess",
+    "tempfile": "import tempfile",
+    "zipfile": "import zipfile",
+    "tarfile": "import tarfile",
+    "urllib": "import urllib.request",
+    "unittest": "import unittest",
+}
+
+
+def import_for(name: str) -> str:
+    """The import line that binds `name`, if it is one of the usual ones."""
+    return _IMPORTABLE.get(name, "")
