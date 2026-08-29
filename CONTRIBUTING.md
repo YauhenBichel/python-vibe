@@ -71,14 +71,12 @@ The harness never authors a commit as this project. **You** stay the
 author. When `Action: commit` runs, it adds:
 
 ```
-Co-authored-by: python-vibe <python-vibe@users.noreply.github.com>
+Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>
 ```
 
-Create the user [python-vibe](https://github.com/python-vibe) once at
-[github.com/signup](https://github.com/signup) (username `python-vibe`).
-A person has to do that; CI cannot. After it exists, GitHub links the
-trailer to that profile. Do not grant the account write access to other
-repos — attribution only.
+The user is [python-vibe](https://github.com/python-vibe). GitHub links
+that numbered noreply address to the profile. Do not grant the account
+write access to other repos — attribution only.
 
 ## Project site
 

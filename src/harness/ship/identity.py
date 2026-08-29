@@ -13,11 +13,13 @@ import re
 
 CO_AUTHOR_LOGIN = "python-vibe"
 CO_AUTHOR_NAME = "python-vibe"
-CO_AUTHOR_EMAIL = "python-vibe@users.noreply.github.com"
+# github.com/python-vibe, created 29 Aug 2026. The numbered noreply form
+# is what GitHub links on a Co-authored-by trailer.
+CO_AUTHOR_ID = 322567521
+CO_AUTHOR_EMAIL = f"{CO_AUTHOR_ID}+{CO_AUTHOR_LOGIN}@users.noreply.github.com"
 CO_AUTHOR_URL = "https://github.com/python-vibe"
-# Set once the account exists, to the address GitHub lists for it under
-# Settings, Emails, for example:
-#   export PYTHON_VIBE_COAUTHOR="python-vibe <1234567+python-vibe@users.noreply.github.com>"
+# Override only if the account's noreply address changes.
+#   export PYTHON_VIBE_COAUTHOR="python-vibe <322567521+python-vibe@users.noreply.github.com>"
 COAUTHOR_ENV = "PYTHON_VIBE_COAUTHOR"
 
 
@@ -25,8 +27,7 @@ def co_author_line() -> str:
     """The trailer written on a commit python-vibe made.
 
     Casing does not decide whether GitHub links it; owning the address
-    does. Until the account exists the trailer still records who did the
-    work, it simply shows no avatar.
+    does. The default address is the live github.com/python-vibe account.
     """
     identity = os.environ.get(COAUTHOR_ENV, "").strip()
     if identity:

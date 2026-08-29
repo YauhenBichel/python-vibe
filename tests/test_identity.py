@@ -40,9 +40,23 @@ class TrailerTest(unittest.TestCase):
 class LinkingTest(unittest.TestCase):
     """A trailer that does not link records the work but shows no account."""
 
-    def test_the_placeholder_does_not_link(self) -> None:
+    def test_the_live_account_links(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop(COAUTHOR_ENV, None)
+            self.assertTrue(co_author_links())
+            self.assertIn("322567521+python-vibe@", co_author_email())
+
+    def test_dropping_the_id_stops_it_linking(self) -> None:
+        """The regression this address exists to prevent.
+
+        A bare login noreply address looks right and is not: GitHub cannot
+        resolve it, so every commit would be attributed to nobody, and
+        nothing else in the suite would notice.
+        """
+        with mock.patch.dict(
+            os.environ,
+            {COAUTHOR_ENV: "python-vibe <python-vibe@users.noreply.github.com>"},
+        ):
             self.assertFalse(co_author_links())
 
     def test_a_numbered_noreply_address_links(self) -> None:
