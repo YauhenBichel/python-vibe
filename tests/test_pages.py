@@ -30,6 +30,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "cursor.md",
             "research-vibe-review.md",
             "investigations/index.md",
+            "investigations/which-model.md",
             "investigations/everyday-laptop.md",
             "investigations/everyday-skills.md",
             "investigations/harness-comparison.md",

@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 from harness.paths import SECRET_NAMES
-from harness.ship.identity import CO_AUTHOR_URL, co_author_line, with_co_author
+from harness.ship.identity import co_author_line, with_co_author
 from harness.ship.ticket import identity_from_user_json, parse_ticket, render_ticket
 
 PROTECTED = frozenset({"main", "master"})
@@ -17,8 +17,8 @@ CO_AUTHOR = co_author_line()
 # Says on the pull request itself which tool did the work, the way a
 # commit trailer does for a commit.
 PR_FOOTER = (
-    "\n\n---\nOpened with [python-vibe](https://github.com/YauhenBichel/python-vibe). "
-    f"Co-authored-by [@{CO_AUTHOR_URL.rsplit('/', 1)[-1]}]({CO_AUTHOR_URL}).\n"
+    "\n\n---\nOpened with [python-vibe](https://github.com/YauhenBichel/python-vibe).\n"
+    f"{CO_AUTHOR}\n"
 )
 _TIMEOUT = 45
 
@@ -216,5 +216,18 @@ def merge_pr(project: Path, number: str, *, allowed: bool) -> str:
     blocked = _in_project(project)
     if blocked:
         return blocked
-    code, out = _run(project, ["gh", "pr", "merge", number, "--merge"])
+    code, out = _run(
+        project,
+        [
+            "gh",
+            "pr",
+            "merge",
+            number,
+            "--merge",
+            "--subject",
+            f"Merge pull request #{number}",
+            "--body",
+            with_co_author(f"Merged #{number}."),
+        ],
+    )
     return out or f"merged #{number}" if code == 0 else out

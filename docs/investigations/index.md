@@ -16,6 +16,7 @@ Notes from laptop runs. Dates are the day of the measurement. Public pages do no
 | [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) | How an 8B reaches bigger-model outcomes: oracles, not more training. |
 | [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) | When to train again. Not on 35 pairs. Not on 30 seed traces. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for questions, writes, structure, ship. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Three local models on the same eleven jobs. Keep the 8B; the 30B times out. |
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids to run or tune. 1.5B and 1B do not parse Action:. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
 | [Skills]({{ '/skills/' | relative_url }}) | The twenty kit skills and when each one loads. |
