@@ -157,10 +157,6 @@ class StyleOracleTest(unittest.TestCase):
         self.assertIn("tests/", blocked)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class MethodsAreScannedTest(unittest.TestCase):
     """Every unittest test is a method, and methods were never scanned.
 
@@ -333,3 +329,7 @@ class CoveredSymbolTest(unittest.TestCase):
             )
         )
         self.assertIn("add-feature", names)
+
+
+if __name__ == "__main__":
+    unittest.main()

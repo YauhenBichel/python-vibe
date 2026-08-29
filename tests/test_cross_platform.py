@@ -154,10 +154,6 @@ class NamedFileTest(unittest.TestCase):
         self.assertIn("Next Action must be patch", text)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class DoneWithoutChangeTest(unittest.TestCase):
     """A change task that finishes having changed nothing is refused once."""
 
@@ -196,3 +192,7 @@ class DoneWithoutChangeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             state = self._state(_project(tmp), "what does compute_total return?")
             self.assertEqual(refuse_done_without_change(state, None), "")
+
+
+if __name__ == "__main__":
+    unittest.main()

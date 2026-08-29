@@ -14,6 +14,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 
 - [Home]({{ '/' | absolute_url }}): Four jobs. Ask, test, fix, add.
 - [Start]({{ '/start/' | absolute_url }}): Install, then python-vibe brief / ask / run in your project.
+- [Live scenarios]({{ '/scenarios/' | absolute_url }}): Tonight’s laptop run of those four commands. Includes misses.
 - [Using]({{ '/api/' | absolute_url }}): Every command and flag, the Python API, and the read-only HTTP routes.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty kit skills and when the harness loads each one.

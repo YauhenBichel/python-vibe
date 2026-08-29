@@ -190,10 +190,6 @@ class McpHandshakeTest(unittest.TestCase):
         self.assertIn("read-only", reply["result"]["content"][0]["text"])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class StdioFramingTest(unittest.TestCase):
     """The stdio transport delimits messages by newlines.
 
@@ -439,3 +435,7 @@ class McpReplyTest(unittest.TestCase):
             self._result(writes=("src/app.py", "src/app.py", "tests/test_app.py"))
         )
         self.assertEqual(text.count("src/app.py"), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

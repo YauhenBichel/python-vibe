@@ -149,10 +149,6 @@ class StyleHarnessTest(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class WeakTestCalibrationTest(unittest.TestCase):
     """The rule must not reject the tests this project already ships.
 
@@ -257,3 +253,7 @@ class StdlibShadowTest(unittest.TestCase):
 
     def test_the_message_offers_a_name_that_works(self) -> None:
         self.assertIn("math_helpers.py", refuse_stdlib_shadow("pkg/math.py", ""))
+
+
+if __name__ == "__main__":
+    unittest.main()

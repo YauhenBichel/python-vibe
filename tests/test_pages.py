@@ -21,6 +21,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "_includes/nav.html",
             "index.md",
             "start.md",
+            "scenarios.md",
             "api.md",
             "architecture.md",
             "skills.md",

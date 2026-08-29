@@ -46,6 +46,7 @@ result.summary, result.writes
 
 Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./docs/architecture.md).
 Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
+What those commands did on one laptop: [Live scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
 
 ## Everyday agent
 

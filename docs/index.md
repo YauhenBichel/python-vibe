@@ -11,7 +11,7 @@ computer. It only changes files inside the folder you point it at.
 
 <p class="cta">
   <a href="{{ '/start/' | relative_url }}">Install and run</a>
-  <a href="{{ '/cursor/' | relative_url }}">Add to Cursor</a>
+  <a href="{{ '/scenarios/' | relative_url }}">Tonight’s live run</a>
   <a href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">Source on GitHub</a>
 </p>
 
