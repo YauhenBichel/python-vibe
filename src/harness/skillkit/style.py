@@ -77,10 +77,38 @@ _SHELL_FETCH = re.compile(
 )
 
 
-def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:
-    """Add-a-function next to `prices` is not a file-line counter.
+# A task that names its own arguments has already said what they are.
+_TASK_SIGNATURE = re.compile(r"\b\w+\s*\(\s*([^)]*?)\s*\)")
+# Words that make reading a file the point of the function, not a mistake.
+_ABOUT_FILES = re.compile(
+    r"\b(file|files|path|paths|read|reads|load|loads|parse|parses|"
+    r"open|opens|contents|lines of|\.env|config|json|csv|yaml|toml)\b",
+    re.I,
+)
 
-    Live 8B appended `open(file_path)` for `total_lines` and the suite failed.
+
+def task_names_arguments(task: str) -> str:
+    """The argument list the task itself gives, or ""."""
+    symbol = question_symbol(task)
+    if not symbol:
+        return ""
+    found = re.search(rf"\b{re.escape(symbol)}\s*\(\s*([^)]*?)\s*\)", task)
+    return found.group(1).strip() if found else ""
+
+
+def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:
+    """Counting the prices of an order does not mean opening a file.
+
+    A live 8B read `add a function total_lines` in an orders module as a
+    file-line counter and appended `open(file_path)`.
+
+    The first version of this refused `open(` in any added function and
+    told the model to write `return len(prices)` instead. That is only
+    right for the one task it was written for. `read_env_file(path)` has
+    to open a file — refusing it left a function returning an int where
+    the caller wanted a dict, and the run spent its whole budget being
+    told to write something else. So this now declines to judge whenever
+    the task itself mentions files, or names its own arguments.
     """
     if not looks_like_add_feature(task):
         return ""
@@ -88,10 +116,15 @@ def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:
         return ""
     if not draft or not re.search(r"\bopen\s*\(", draft):
         return ""
+    if _ABOUT_FILES.search(task):
+        return ""
+    if task_names_arguments(task):
+        return ""
     symbol = question_symbol(task) or "the_new_function"
     return (
-        f"Do not open files. Action: patch Path: {rel} "
-        f"Append: def {symbol}(prices: list[int]) -> int: return len(prices)."
+        f"Reading a file is not what {symbol} was asked for. "
+        f"Action: patch Path: {rel} Append: def {symbol}(...) using the "
+        "values the module already has."
     )
 
 

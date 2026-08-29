@@ -48,7 +48,9 @@ class DemoProjectTest(unittest.TestCase):
     def test_the_import_cycle_is_still_there(self) -> None:
         from harness.scan.layout import find_cycles
 
-        self.assertEqual(find_cycles(DEMO_PROJECT), [("render", "report")])
+        self.assertEqual(
+            find_cycles(DEMO_PROJECT), [("src/render.py", "src/report.py")]
+        )
 
     def test_the_suite_passes_before_the_agent_touches_it(self) -> None:
         from harness.act.tools import run_python
@@ -210,7 +212,12 @@ class AddFeatureGoesInTheDomainFileTest(unittest.TestCase):
         text, _path = prelude(DEMO_PROJECT, self.TASK)
         self.assertIn("Path: src/orders.py", text)
         self.assertIn("def total_lines", text)
-        self.assertIn("`prices`", text)
+        # This task spells out `total_lines(prices)`, so the neighbour
+        # hint would only repeat it. The hint is for the wording that
+        # leaves the argument open.
+        self.assertNotIn("Neighbor functions take", text)
+        loose, _ = prelude(DEMO_PROJECT, "add a function total_lines and a test")
+        self.assertIn("Neighbor functions take `prices`", loose)
 
     def test_a_written_function_gets_a_cover_test(self) -> None:
         from harness.agent.loop import _cover_after_add
