@@ -78,11 +78,47 @@ _PREFERRED_SHIP = (
 )
 
 
+# A field name written on the Action line. The model means the action that
+# field belongs to, and every such turn was spent on "unknown Action".
+_FIELD_AS_ACTION = {
+    "append": "patch",
+    "add": "patch",
+    "find": "patch",
+    "replace": "patch",
+    "summary": "done",
+}
+
+
+def _body_after_action(text: str) -> str:
+    """The code below the Action line, with the field lines left out.
+
+    `Action: append` is followed by `Path:` and then the function. Stopping
+    at the first field line returned nothing, so the turn was spent for no
+    reason.
+    """
+    match = _ACTION.search(text)
+    if not match:
+        return ""
+    lines = [
+        line.rstrip()
+        for line in text[match.end():].splitlines()
+        if not _STOP.match(line)
+    ]
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    return "\n".join(lines).strip("\n")
+
+
 def parse_turn(text: str) -> AgentTurn | None:
     match = _ACTION.search(text)
     if not match:
         return None
     action = match.group(1).lower()
+    body_as_append = ""
+    if action in _FIELD_AS_ACTION and action not in KNOWN_ACTIONS:
+        if action in {"append", "add"}:
+            body_as_append = _body_after_action(text)
+        action = _FIELD_AS_ACTION[action]
     fields = {m.group(1).lower(): m.group(2).strip() for m in _FIELD.finditer(text)}
     argv = tuple(part for part in fields.get("argv", "").split() if part)
     source = extract_python(text) if action == "edit" else None
@@ -102,7 +138,7 @@ def parse_turn(text: str) -> AgentTurn | None:
         replace=_block(text, "Replace"),
         scope=fields.get("scope", ""),
         name=fields.get("name", ""),
-        append=_block(text, "Append") or _block(text, "Add"),
+        append=_block(text, "Append") or _block(text, "Add") or body_as_append,
         number=fields.get("number", ""),
         title=fields.get("title", ""),
         body=_block(text, "Body"),
