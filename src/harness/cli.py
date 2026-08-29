@@ -111,7 +111,11 @@ def _add_agent_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--scope", default="", help="work only inside this folder")
     parser.add_argument("--skill", action="append", default=[], metavar="NAME")
     parser.add_argument("--model", default=AgentOptions(project=Path(".")).model)
-    parser.add_argument("--engine", default="ollama")
+    parser.add_argument(
+        "--engine",
+        default="ollama",
+        help="ollama (local or OLLAMA_HOST), mlx, or openai (remote weights)",
+    )
     parser.add_argument("--steps", type=int, default=DEFAULT_STEPS)
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--record", type=Path)

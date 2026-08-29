@@ -10,6 +10,7 @@ Notes from laptop runs. Dates are the day of the measurement. Public pages do no
 
 | Note | What it answers |
 | --- | --- |
+| [Experiments]({{ '/investigations/experiments/' | relative_url }}) | Every measured run, with the date and the score. 29–30 Aug 2026. |
 | [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. First they failed. Then the harness finished them without a model. |
 | [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. Same jobs, measured 29 Aug 2026. |
 | [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) | Eleven demo tasks: laptop 8B vs a hosted IDE agent, 29 Aug 2026 evening. |
@@ -19,6 +20,7 @@ Notes from laptop runs. Dates are the day of the measurement. Public pages do no
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for questions, writes, structure, ship. |
 | [Which model]({{ '/investigations/which-model/' | relative_url }}) | Three local models on the same eleven jobs. Keep the 8B; the 30B times out. |
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids to run or tune. 1.5B and 1B do not parse Action:. |
+| [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | Larger models and a later LoRA on a rented GPU. The harness stays on the laptop. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
 | [Skills]({{ '/skills/' | relative_url }}) | The twenty kit skills and when each one loads. |
 | [Platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}) | Small files that must work on Windows, macOS, and Linux. |

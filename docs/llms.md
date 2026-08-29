@@ -26,6 +26,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 
 ## Research
 
+- [Experiments]({{ '/investigations/experiments/' | absolute_url }}): Every measured run. Dates and scores. 29–30 Aug 2026. Not everyday-ready.
 - [First-run four jobs]({{ '/investigations/first-run-four/' | absolute_url }}): The four Start commands. First fail, then mechanical pass. 29 Aug 2026.
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.
@@ -35,6 +36,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Which model to run]({{ '/investigations/which-model/' | absolute_url }}): Three local models, the same eleven jobs, each checked by running the code. 8B stays.
 - [Model lanes]({{ '/investigations/model-lanes/' | absolute_url }}): Which local weight for which job. Default stays 8B.
 - [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights to run or tune. 1.5B and 1B miss Action:.
+- [Cloud weights]({{ '/investigations/cloud-weights/' | absolute_url }}): Larger models on a rented GPU. Same jail. No 0.5B retrain.
 - [Platform engineering]({{ '/investigations/platform-engineering/' | absolute_url }}): pathlib, both venv layouts, config files, every OS.
 - [Everyday laptop]({{ '/investigations/everyday-laptop/' | absolute_url }}): Why the 0.5B LoRA is not daily work.
 - [Everyday skills]({{ '/investigations/everyday-skills/' | absolute_url }}): Skills are one copy-paste Action, written for an 8B.

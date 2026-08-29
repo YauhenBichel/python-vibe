@@ -164,7 +164,9 @@ this laptop is. The bottleneck is still **finish**.
    change, design scan clean when the task asked for structure.
 3. Redact hostnames and home paths. Do not commit `extra.jsonl`.
 4. Distill from a larger model **in this harness** (same opening step, same
-   refuses), not from a generic chat transcript.
+   refuses), not from a generic chat transcript. A 14B–70B that timed out
+   on the laptop is reached with `--engine openai` or `OLLAMA_HOST`; the
+   jail does not move. See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
 5. Evaluate with `scripts/eval_everyday.py --live` and
    `scripts/demo.py`. Everyday-ready still means: beat the untuned 8B
    on parse **and** pass the independent file checks, including the

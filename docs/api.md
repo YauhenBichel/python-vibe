@@ -30,7 +30,7 @@ result.refusals  # what the harness stopped, and why
 | `project` | required | Directory the agent may read and write inside |
 | `task` | `""` | What you are asking for |
 | `model` | `llama3.1:8b` | Ollama model name |
-| `engine` | `ollama` | `ollama` or `mlx` |
+| `engine` | `ollama` | `ollama`, `mlx`, or `openai` (remote OpenAI-compatible HTTP) |
 | `scope` | `""` | Stay inside this subdirectory |
 | `skills` | `()` | Skill names to load. Empty means choose from the task. Catalog: [Skills]({{ '/skills/' | relative_url }}) |
 | `steps` | `20` | Maximum model turns before the run stops |
@@ -92,6 +92,16 @@ interpreter, no script paths:
 
 Training on Apple Silicon needs extras: `pip install -e ".[train]"`.
 Publishing to the Hub needs `pip install -e ".[hub]"`.
+
+### Remote weights
+
+`--engine openai` sends generate calls to an OpenAI-compatible host
+(Hugging Face Inference, vLLM, or a box you rent). The jail stays on
+this machine. Set `PYTHON_VIBE_BASE_URL` and a token
+(`HF_TOKEN` or `PYTHON_VIBE_API_KEY`). A remote Ollama is the same
+`--engine ollama` with `OLLAMA_HOST` pointed at that box.
+
+See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
 
 Paths are always written with forward slashes, on every platform, because
 the model is shown them and copies them back.

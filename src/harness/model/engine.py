@@ -74,6 +74,10 @@ def make_generate(
         engine = "mlx" if any(has_mlx(p) for p in mlx_pythons()) else "ollama"
     if engine == "mlx":
         return _mlx_generate(max_tokens, system=system)
+    if engine == "openai":
+        return _openai_generate(max_tokens, model=model, system=system)
+    if engine != "ollama":
+        sys.exit(f"unknown engine {engine!r}: use ollama, mlx, or openai")
     return _ollama_generate(model=model, system=system)
 
 
@@ -103,6 +107,31 @@ def _mlx_generate(
 
     generate_once.history = history  # type: ignore[attr-defined]
     return f"mlx-lora:{adapter.name}", generate_once
+
+
+def _openai_generate(
+    max_tokens: int,
+    *,
+    model: str | None = None,
+    system: str | None = None,
+) -> tuple[str, Callable[[str], str]]:
+    from harness.model.openai_generate import OpenAIGenerate
+
+    spec = SPECS["python-vibe"]
+    name = model or spec.ollama_base
+    try:
+        backend = OpenAIGenerate(
+            name, system or spec.system, max_tokens=max_tokens
+        )
+    except ValueError as exc:
+        sys.exit(str(exc))
+    history: list[dict[str, str]] = []
+
+    def generate_once(prompt: str) -> str:
+        return backend(prompt, history)
+
+    generate_once.history = history  # type: ignore[attr-defined]
+    return f"openai:{name}", generate_once
 
 
 def _ollama_generate(

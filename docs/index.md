@@ -6,8 +6,10 @@ date: 2026-08-29
 
 # Everyday Python on a laptop
 
-Four jobs, on your own machine. No account. Nothing you type leaves the
-computer. It only changes files inside the folder you point it at.
+Four jobs, on your own machine. No account, and by default nothing you
+type leaves the computer. It only changes files inside the folder you
+point it at. If you choose `--engine openai` to borrow a bigger model,
+the code in your prompt goes to that host; the default does not.
 
 <p class="cta">
   <a href="{{ '/start/' | relative_url }}">Install and run</a>
@@ -43,4 +45,4 @@ It will not browse the web, run a general shell, or walk a large tree.
 On a big project add `--scope src`. Use a hosted IDE agent when the job
 spans languages, extra tools, or many files at once.
 
-[Start]({{ '/start/' | relative_url }}) · [Skills]({{ '/skills/' | relative_url }}) · [Research]({{ '/investigations/' | relative_url }}) · [Architecture]({{ '/architecture/' | relative_url }})
+[Start]({{ '/start/' | relative_url }}) · [Skills]({{ '/skills/' | relative_url }}) · [Experiments]({{ '/investigations/experiments/' | relative_url }}) · [Research]({{ '/investigations/' | relative_url }}) · [Architecture]({{ '/architecture/' | relative_url }})

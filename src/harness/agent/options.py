@@ -30,7 +30,7 @@ class AgentOptions:
         project: directory the agent may read and write inside.
         task: what the user asked for, in their own words.
         model: name of the Ollama model to use.
-        engine: "ollama" or "mlx".
+        engine: "ollama", "mlx", or "openai" (remote OpenAI-compatible HTTP).
         scope: subdirectory to stay within. Empty means the whole project.
         skills: skill names to load. Empty means choose them from the task.
         steps: maximum number of model turns before the run stops.
