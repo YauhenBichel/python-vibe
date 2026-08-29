@@ -4,7 +4,7 @@ permalink: /llms-full.txt
 ---
 # python-vibe (full context)
 
-> Local explore / edit / run for small Python trees. Not a hosted IDE agent. Not everyday-ready as of 29 Aug 2026.
+> Four jobs on a laptop: ask, write a test, fix a bug, add one small function. Command: python-vibe. Not a hosted IDE agent.
 
 Site: {{ '/' | absolute_url }}
 Code: https://github.com/YauhenBichel/python-vibe
@@ -17,7 +17,7 @@ Cite this file plus the dated research pages. Prefer primary measurements over r
 
 ## Identity
 
-python-vibe is a laptop Python vibe-coding kit: a deterministic harness plus optional small weights. The public Hub model is QLoRA on Qwen2.5-Coder-0.5B (step 100, ~45 short pairs). That adapter is a style prior. It misses Action: lines and failed held-out vibe tasks (0/4). Daily work uses Ollama llama3.1:8b through scripts/agent.py. A 7B-class LoRA (configs/python-vibe-8b.yaml, slug python-vibe-8b) is config only — not trained. Seed tool-loop data is 30 train rows, not 2k traces.
+python-vibe is a laptop Python vibe-coding kit: a deterministic harness plus optional small weights. The public Hub model is QLoRA on Qwen2.5-Coder-0.5B (step 100, ~45 short pairs). That adapter is a style prior. It misses Action: lines and failed held-out vibe tasks (0/4). Daily work is python-vibe plus Ollama llama3.1:8b. A 7B-class LoRA (configs/python-vibe-8b.yaml, slug python-vibe-8b) is config only — not trained. Seed tool-loop data is 30 train rows, not 2k traces.
 
 Do not train more 0.5B weights expecting agency. Do not describe a 100-file stub walk as a review. Do not add medical or lesion features. Name Cursor only on the Cursor setup page.
 
@@ -40,10 +40,10 @@ ollama pull llama3.1:8b
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
 pip install -e .
-python-vibe brief /path/to/your/app
-python-vibe ask   /path/to/your/app "what does compute_total return?"
-python-vibe run   /path/to/your/app --scope src "find a real NameError and fix it"
-python-vibe editors cursor --allow-writes
+cd /path/to/your/app
+python-vibe brief
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "find a real NameError and fix it"
 ```
 
 Training on Apple Silicon needs MLX, which does not install on Linux or

@@ -6,23 +6,13 @@
 [![Pages](https://github.com/YauhenBichel/python-vibe/actions/workflows/pages.yml/badge.svg)](https://yauhenbichel.github.io/python-vibe/)
 [![Contributors](https://img.shields.io/github/contributors/YauhenBichel/python-vibe)](https://github.com/YauhenBichel/python-vibe#contributors)
 
-Everyday Python vibe coding on a laptop. Small repos: explore, edit, run.
-Large repos: a scoped harness so the model never loads the whole tree.
-The public 0.5B LoRA is a **style prior**. Daily work uses an **8B** Ollama
-model plus the jail in `scripts/agent.py`.
+Four jobs on a laptop: **ask**, **write a test**, **fix a bug**, **add one
+small function**. Runs on your machine. Only touches the folder you point
+at. Site: [yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/).
 
-Site: [yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/)
-([llms.txt](https://yauhenbichel.github.io/python-vibe/llms.txt) for coding agents).
-Research: [local loop vs hosted agents](./docs/investigations/local-vs-cloud.md),
-[what to improve](./docs/investigations/what-to-improve.md).
-
-Weights (public tiny): [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b).
-
-| Track | What to run | Role |
-| --- | --- | --- |
-| Everyday (laptop) | `scripts/agent.py` (default `llama3.1:8b`) | Comfortable explore / edit / run; `--scope` on large trees |
-| Cursor / editor | `python-vibe editors cursor --allow-writes` | One command. Then reload and enable MCP. [docs/cursor.md](./docs/cursor.md) |
-| Tiny (Hub / smoke) | `scripts/vibe.py`, `serve.py`, `--tiny` | 0.5B drafts through `PythonVibeGuard` |
+Daily work is `python-vibe` plus Ollama `llama3.1:8b`. The public 0.5B LoRA
+is a style prior, not the everyday path.
+Weights: [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b).
 
 Join: [good first issue](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) ·
 [Discussions](https://github.com/YauhenBichel/python-vibe/discussions) ·
@@ -34,6 +24,19 @@ Vulnerabilities: open a **public** GitHub issue. Do not paste live keys.
 
 ## Use it
 
+From your project folder, after `pip install -e .` and `ollama pull llama3.1:8b`:
+
+```bash
+python-vibe brief
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "write tests for apply_discount"
+python-vibe run  "find the NameError and fix it"
+python-vibe run  "add a function total_lines and a test"
+```
+
+`python-vibe` with no arguments reprints that list. Point at another folder
+by putting it first: `python-vibe ask ~/app "what does add return?"`.
+
 ```python
 from harness import Agent, AgentOptions
 
@@ -41,45 +44,21 @@ result = Agent(AgentOptions(project=Path("~/app"))).run("fix the NameError")
 result.summary, result.writes
 ```
 
-```bash
-python -m harness brief  ~/app                    # no model
-python -m harness layout ~/app                    # no model
-python -m harness run    ~/app "add multiply(a, b) and a test"
-python -m harness serve    --project ~/app          # 127.0.0.1, read-only
-python -m harness editors  cursor --allow-writes    # Cursor MCP + tasks (this folder)
-```
-
-Full settings, read-only runs, and the HTTP routes: [docs/api.md](./docs/api.md).
-Layers and the rule that keeps them: [docs/architecture.md](./docs/architecture.md).
+Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./docs/architecture.md).
+Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
 
 ## Everyday agent
 
-`scripts/agent.py` defaults to `llama3.1:8b`. Pass `--tiny` only for smoke.
-
 **Small** (≤40 first-party text files, ≤200 KB): the agent gets a file list.
 The jail is Python plus a few config suffixes (`.toml`, `.yml`, `.json`);
-secret names are refused. Path helpers use `pathlib` on every OS.
-Questions → read → `Action: done`. Bugs → `Action: patch` → run.
+secret names are refused.
 
-**Large**: the agent gets top-level counts. Start with `Action: map`. Stay
-inside `--scope`. Grep truncates; do not ask it to read the whole repo.
+**Large**: stay in one folder.
 
 ```bash
-ollama pull llama3.1:8b
-cd python-vibe
-
-# see small vs large without calling a model
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app --brief
-
-# small repo — fix or ask
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  "find a real NameError and fix it"
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  "what does compute_total return?"
-
-# large repo — stay in one folder
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  --scope src "what does apply_source refuse?"
+python-vibe brief
+python-vibe ask --scope src "what does apply_source refuse?"
+python-vibe run --scope src "write tests for apply_discount"
 ```
 
 Writes stay under `--project` and go through `PythonVibeGuard` + `.bak`.
@@ -100,9 +79,7 @@ no force, not `main`/`master`, no secret filenames. Full catalog and when
 each one loads: [Skills](https://yauhenbichel.github.io/python-vibe/skills/).
 
 ```bash
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  --skill add-feature \
-  "add a function multiply(a, b) and a unit test"
+python-vibe run --skill add-feature "add a function multiply(a, b) and a unit test"
 ```
 
 Point an OpenAI-compatible editor at the same 8B: [docs/local-editor.md](./docs/local-editor.md).

@@ -230,5 +230,49 @@ class AddFeatureGoesInTheDomainFileTest(unittest.TestCase):
             self.assertIn("total_lines", body)
 
 
+class PublishedCommandTest(unittest.TestCase):
+    """Every command on the demo page must reproduce its own case.
+
+    The page prints a line to copy. Those lines were built from a fixed
+    list of case names, which drifted from the options the cases ran
+    with: the dry-run case printed a plain `run`, so copying it would
+    have let the agent write, under a caption saying writes were off.
+    """
+
+    def test_each_command_parses_back_to_the_options_it_ran_with(self) -> None:
+        import shlex
+
+        from harness.cli import build_parser, resolve_project_task
+
+        demo = _load_demo()
+        parser = build_parser()
+        for case in demo.CASES:
+            if not case.task:
+                continue
+            with self.subTest(case=case.key):
+                argv = shlex.split(demo.case_command(case))[1:]
+                args = parser.parse_args(argv)
+                project, task = resolve_project_task(args.first, args.second or None)
+                self.assertEqual(task, case.task)
+                self.assertEqual(project.name, "orders")
+                self.assertEqual(args.scope, case.options.get("scope", ""))
+                if args.command == "run":
+                    self.assertEqual(
+                        args.allow_writes, case.options.get("allow_writes", True)
+                    )
+
+    def test_a_read_only_case_never_prints_a_writing_command(self) -> None:
+        demo = _load_demo()
+        for case in demo.CASES:
+            if not case.task or not case.expect_no_writes:
+                continue
+            with self.subTest(case=case.key):
+                command = demo.case_command(case)
+                if case.options.get("allow_writes", True) is False:
+                    self.assertTrue(
+                        " ask " in command or "--dry-run" in command, command
+                    )
+
+
 if __name__ == "__main__":
     unittest.main()

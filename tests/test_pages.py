@@ -97,7 +97,12 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertNotIn('rel="stylesheet"', layout)
         self.assertIn('href="#main"', layout)
         self.assertIn('id="main"', layout)
-        self.assertIn("aria-current", (DOCS / "_includes" / "nav.html").read_text(encoding="utf-8"))
+        nav = (DOCS / "_includes" / "nav.html").read_text(encoding="utf-8")
+        self.assertIn("aria-current", nav)
+        labels = re.findall(r">([^<{]+)</a>", nav)
+        labels = [item.strip() for item in labels if item.strip()]
+        self.assertEqual(labels, list(dict.fromkeys(labels)), labels)
+        self.assertEqual(labels.count("Demo"), 1)
         self.assertIn(":focus-visible", css)
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn("prefers-color-scheme: dark", css)
@@ -183,6 +188,39 @@ class SiteFrontMatterTest(unittest.TestCase):
         ]
         self.assertEqual(missing, [])
 
+    def test_every_rendered_page_is_listed_in_llms_txt(self) -> None:
+        """llms.txt names every page, and names each one once.
+
+        It is written by hand, so it drifts: a page added to the site and
+        the sitemap was missing here, and one page was listed twice. The
+        sitemap has had this check; this file had none.
+        """
+        text = (DOCS / "llms.md").read_text(encoding="utf-8")
+        # Only the list entries. The prose above them names "/" as well.
+        listing = "\n".join(
+            line for line in text.splitlines() if line.startswith("- [")
+        )
+        missing, urls = [], []
+        for path in _site_pages():
+            fields = _front_matter(path)
+            if fields.get("layout") == "null" or path.name == "404.md":
+                continue
+            rel = path.relative_to(DOCS)
+            url = fields.get("permalink") or (
+                "/" if rel.name == "index.md" and rel.parent == Path(".")
+                else f"/{rel.parent.as_posix()}/".replace("/./", "/")
+                if rel.name == "index.md"
+                else f"/{rel.with_suffix('').as_posix()}/"
+            )
+            urls.append(url)
+            if f"'{url}'" not in listing:
+                missing.append(f"{rel} -> {url}")
+        self.assertEqual(missing, [])
+        listed = re.findall(r"^- \[([^\]]+)\]", listing, re.MULTILINE)
+        self.assertEqual(listed, list(dict.fromkeys(listed)), "listed twice")
+        for url in urls:
+            self.assertEqual(listing.count(f"'{url}'"), 1, url)
+
     def test_every_rendered_page_is_in_the_sitemap(self) -> None:
         sitemap = (DOCS / "sitemap.xml").read_text(encoding="utf-8") if (
             DOCS / "sitemap.xml"
@@ -203,9 +241,6 @@ class SiteFrontMatterTest(unittest.TestCase):
                 unlisted.append(f"{rel} -> {url}")
         self.assertEqual(unlisted, [])
 
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class CrossPlatformDocsTest(unittest.TestCase):
@@ -284,3 +319,6 @@ class FirstRunOutputTest(unittest.TestCase):
             text = self._brief(root)
         self.assertIn("--scope", text)
         self.assertNotIn("Action:", text)
+
+if __name__ == "__main__":
+    unittest.main()
