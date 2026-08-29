@@ -27,6 +27,42 @@ from harness.scan.layout import render_layout
 from harness.scan.project_brief import classify_project, render_brief_for_person
 from harness.skillkit.catalog import list_skills
 
+# The everyday jobs. Extra commands exist; this is what people should
+# type first. {prog} is filled in from how the tool was started: the
+# installed command is not always on PATH, and printing it when it is
+# not sends a first-time user to a command that does not exist.
+HOW_TO = """\
+{prog} — four jobs, on this machine.
+
+  {prog} brief
+  {prog} ask  "what does compute_total return?"
+  {prog} run  "write tests for apply_discount"
+  {prog} run  "find the NameError and fix it"
+  {prog} run  "add a function total_lines and a test"
+
+Run those inside your project folder. To point at another folder:
+
+  {prog} ask /path/to/project "what does compute_total return?"
+
+ask never writes. run only changes files inside that folder, and keeps a
+.bak of anything it edits. More commands: {prog} --help
+"""
+
+
+def how_to() -> str:
+    """The short list, naming the command this machine can actually run."""
+    return HOW_TO.format(prog=_program_name())
+
+
+def resolve_project_task(first: str, second: str | None) -> tuple[Path, str]:
+    """`ask DIR TASK` or `ask TASK` (DIR is the current folder)."""
+    if second:
+        return Path(first).expanduser().resolve(), second
+    path = Path(first).expanduser()
+    if path.exists() and path.is_dir() and " " not in first.strip():
+        return path.resolve(), ""
+    return Path(".").resolve(), first
+
 
 def _printer(verbose: bool):
     def emit(kind: str, text: str) -> None:
@@ -92,29 +128,33 @@ def _program_name() -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog=_program_name())
-    subs = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(
+        prog=_program_name(),
+        description="Four everyday Python jobs, on this machine.",
+        epilog="Run python-vibe with no arguments for the short how-to.",
+    )
+    subs = parser.add_subparsers(dest="command", required=False)
 
-    brief = subs.add_parser("brief", help="summarise a project. Needs no AI model.")
-    brief.add_argument("project", type=Path)
+    brief = subs.add_parser("brief", help="summarise this folder. Needs no AI model.")
+    brief.add_argument("project", nargs="?", default=".", type=Path)
     brief.add_argument("--scope", default="")
 
     layout = subs.add_parser("layout", help="report what makes a project hard to read. Needs no AI model.")
-    layout.add_argument("project", type=Path)
+    layout.add_argument("project", nargs="?", default=".", type=Path)
 
     route = subs.add_parser(
         "route", help="which local model suits a task. Needs no AI model."
     )
     route.add_argument("task")
 
-    ask = subs.add_parser("ask", help="answer a question about the project. Changes nothing.")
-    ask.add_argument("project", type=Path)
-    ask.add_argument("task")
+    ask = subs.add_parser("ask", help="answer a question. Changes nothing.")
+    ask.add_argument("first", help="the question, or a folder then the question")
+    ask.add_argument("second", nargs="?", default="", help="the question, when the first argument is a folder")
     _add_agent_flags(ask)
 
-    run = subs.add_parser("run", help="make a change, then run the tests")
-    run.add_argument("project", type=Path)
-    run.add_argument("task")
+    run = subs.add_parser("run", help="write tests, fix a bug, or add one small function")
+    run.add_argument("first", help="what to do, or a folder then what to do")
+    run.add_argument("second", nargs="?", default="", help="the task, when the first argument is a folder")
     run.add_argument(
         "--dry-run",
         dest="allow_writes",
@@ -175,6 +215,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if not args.command:
+        print(how_to(), end="")
+        return 0
+
+    if args.command in {"ask", "run"}:
+        project, task = resolve_project_task(args.first, args.second or None)
+        if not task.strip():
+            verb = "a question" if args.command == "ask" else "what to change"
+            print(
+                f"{args.command} needs {verb}, for example:\n"
+                f"  python-vibe {args.command} \"what does add return?\"",
+                file=sys.stderr,
+            )
+            return 2
+        args.project = project
+        args.task = task
 
     if args.command == "brief":
         project = args.project.expanduser().resolve()

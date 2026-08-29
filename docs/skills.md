@@ -18,9 +18,8 @@ the same name in `<project>/skills/` replaces the kit copy.
 See which skills a task would load, with no model:
 
 ```bash
-python-vibe brief /path/to/your/app
-python-vibe run   /path/to/your/app --skill add-feature \
-  "add a function multiply(a, b) and a unit test"
+python-vibe brief
+python-vibe run --skill add-feature "add a function multiply(a, b) and a unit test"
 ```
 
 Mid-loop: `Action: skill` plus `Name: write-tests`, or `Action: write-tests`

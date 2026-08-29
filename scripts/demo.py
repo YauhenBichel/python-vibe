@@ -79,8 +79,10 @@ CASES: tuple[Case, ...] = (
     ),
     Case(
         "question", "Ask what a function does",
-        "what does apply_discount return?",
+        "what does compute_total return?",
         "The function is found and read for the model before its first turn.",
+        options={"allow_writes": False},
+        expect_no_writes=True,
     ),
     Case(
         "bugfix", "Fix a bug no test covers",
@@ -139,12 +141,40 @@ CASES: tuple[Case, ...] = (
         "Searching and listing stay inside the folder given by --scope.",
         options={"scope": "src"},
     ),
+    Case(
+        "cover-service", "Write tests for a class that has none",
+        "write tests for OrderService in src/orders_service.py",
+        "A class with no tests gets a new test file, not a rewrite of an\n"
+        "already-covered function.",
+        check="import pathlib, unittest\n"
+              "root = pathlib.Path('.')\n"
+              "hits = [p for p in root.rglob('test*.py') "
+              "if 'OrderService' in p.read_text() or 'orders_service' in p.read_text()]\n"
+              "assert hits, 'no test mentions OrderService'\n"
+              "loader = unittest.defaultTestLoader\n"
+              "suite = unittest.TestSuite()\n"
+              "for path in hits:\n"
+              "    name = path.with_suffix('').as_posix().replace('/', '.')\n"
+              "    suite.addTests(loader.loadTestsFromName(name))\n"
+              "assert unittest.TextTestRunner(verbosity=0).run(suite).wasSuccessful()",
+    ),
+    Case(
+        "controller-bug", "Fix a NameError in a controller",
+        "find the NameError in src/orders_controller.py and fix it",
+        "The planted typo is `stauts` in OrdersController.status.",
+        check="from src.orders_controller import OrdersController\n"
+              "OrdersController().status()",
+    ),
 )
 
 
 def _fresh_copy(into: Path) -> Path:
     project = into / "orders"
-    shutil.copytree(DEMO_PROJECT, project)
+    shutil.copytree(
+        DEMO_PROJECT,
+        project,
+        ignore=shutil.ignore_patterns("*.bak", "__pycache__"),
+    )
     return project
 
 
@@ -169,6 +199,7 @@ def run_case(case: Case, *, model: str, steps: int) -> dict:
             "task": case.task,
             "shows": case.shows,
             "needs_model": case.needs_model,
+            "command": case_command(case),
         }
         if not case.needs_model:
             row.update(_offline_result(case, project))
@@ -317,10 +348,27 @@ def render_markdown(rows: list[dict], model: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def case_command(case: Case) -> str:
+    """The command a reader can copy to reproduce this case.
+
+    Built from the options the case actually ran with. A fixed list of
+    case names drifted from them: the dry-run case printed a plain
+    `run`, so copying the line let it write, under a caption saying
+    writes were off.
+    """
+    writes = case.options.get("allow_writes", True)
+    verb = "ask" if case.task.rstrip().endswith("?") else "run"
+    flags = "" if verb == "ask" or writes else " --dry-run"
+    scope = case.options.get("scope", "")
+    if scope:
+        flags += f" --scope {scope}"
+    return f'python-vibe {verb}{flags} ./orders "{case.task}"'
+
+
 def _render_case(row: dict) -> list[str]:
     out = ["", f"## {row['case']}", "", f"**{row['title']}.** {row['shows']}", ""]
     if row["task"]:
-        out += ["```", f'python-vibe run ./orders "{row["task"]}"', "```", ""]
+        out += ["```", row["command"], "```", ""]
     if not row["needs_model"]:
         out += ["```", row["output"].rstrip(), "```"]
         if row.get("skills_available"):
