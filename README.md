@@ -77,6 +77,9 @@ Live first-Action parse (`eval_everyday.py --live`, `llama3.1:8b`):
 **8 / 15**, one run. Everyday-ready still means beating an untuned 8B on
 parse **and** a real ≥1 KB fix.
 
+Reproduce any of it with `python scripts/bench.py --repeat 5`, which
+reports a pass rate per case instead of a single verdict.
+
 Read those as a rough size, not a rank. The nine-case group was run six
 times against unchanged code and gave 9, 6, 8, 7, 8, 7; over the full
 fifteen-case bench ten of fifteen changed verdict between identical
