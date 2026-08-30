@@ -8,8 +8,12 @@
   --code: #e8e1d4;
   --focus: #0b57d0;
   --space: clamp(1rem, 3vw, 1.35rem);
-  --measure: 40rem;
-  --wide: 48rem;
+  /* Prose stays near 70 characters, which is where reading is easiest.
+     Everything else — the header, code, tables, diagrams — may use the
+     window. The whole page used to stop at 48rem, so a wide screen showed
+     a narrow strip with most of the glass empty. */
+  --measure: 44rem;
+  --wide: 82rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -305,4 +309,21 @@ ul { padding-left: 1.2rem; }
   a { color: inherit; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; }
   pre, table { overflow: visible; }
+}
+
+/* Wide things earn the full column: a table of results, a code block with
+   four columns, a diagram. Only running prose is held to --measure. */
+.page > :is(pre, table, .stats, svg, .cta, .toc-wide),
+.page > .table-scroll {
+  max-width: 100%;
+}
+
+.page > :is(h1, h2, h3, blockquote) { max-width: var(--measure); }
+
+/* A table wider than the window scrolls itself rather than the page. */
+.page > table { display: block; overflow-x: auto; }
+
+@media (min-width: 60rem) {
+  .nav { flex-wrap: nowrap; }
+  .page { padding-inline: clamp(var(--space), 4vw, 3rem); }
 }
