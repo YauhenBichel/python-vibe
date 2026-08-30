@@ -28,6 +28,9 @@ DEPTH = {
     "locate": 5,
     "observe": 6,
     "agent": 7,
+    # The OpenAI wire format the server speaks. It imports nothing from
+    # this project, so it sits below the server that uses it.
+    "openai_api": 7,
     "server": 8,
     "mcp_stdio": 8,
     "editor_kit": 1,
@@ -248,6 +251,76 @@ class FunctionsStaySmallTest(unittest.TestCase):
         for name, reason in self.KNOWN_LONG.items():
             with self.subTest(function=name):
                 self.assertTrue(reason.strip(), name)
+
+
+class ThreeRingsTest(unittest.TestCase):
+    """An agent is a harness around a model, and the rings stay separate.
+
+    Outermost is what a person or an editor talks to: the command line,
+    the HTTP server, the MCP bridge, the editor files. In the middle is
+    the harness — the loop, the tools, the guards, the skills — which is
+    where nearly all of the behaviour lives. Innermost is the code that
+    talks to a model.
+
+    The rule that makes the picture real is that the outer ring does not
+    reach into the inner one. The command line and the server both did:
+    they imported `harness.model.*` directly, so the model package could
+    not change shape without changing them. `openai_api` used to live in
+    that package as well, though it only knows what a chat request looks
+    like and nothing about weights.
+    """
+
+    DELIVERY = {"cli", "server", "mcp_stdio", "editor_kit", "__main__", "openai_api"}
+    MODEL = "model"
+
+    def _imports(self, path: Path) -> list[tuple[str, int]]:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        found = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and (node.module or "").startswith(
+                "harness."
+            ):
+                found.append((node.module, node.lineno))
+        return found
+
+    def test_the_outer_ring_does_not_reach_into_the_model(self) -> None:
+        offenders = []
+        for path in sorted(HARNESS.rglob("*.py")):
+            rel = path.relative_to(HARNESS).as_posix()
+            name = rel.split("/")[0].removesuffix(".py")
+            if name not in self.DELIVERY:
+                continue
+            for module, line in self._imports(path):
+                if module.split(".")[1] == self.MODEL:
+                    offenders.append(f"{rel}:{line} imports {module}")
+        self.assertEqual(
+            offenders,
+            [],
+            "the command line and the server go through the harness, "
+            f"not into the model package: {offenders}",
+        )
+
+    def test_the_model_package_only_talks_to_a_model(self) -> None:
+        """Nothing in there should be about HTTP shapes or the CLI."""
+        for path in sorted((HARNESS / "model").glob("*.py")):
+            with self.subTest(module=path.name):
+                for module, _line in self._imports(path):
+                    second = module.split(".")[1]
+                    self.assertNotIn(
+                        second,
+                        self.DELIVERY,
+                        f"{path.name} imports the outer ring: {module}",
+                    )
+
+    def test_the_harness_is_what_drives_the_model(self) -> None:
+        """Exactly one place calls for a generator, and it is the loop."""
+        callers = [
+            path.relative_to(HARNESS).as_posix()
+            for path in sorted(HARNESS.rglob("*.py"))
+            if "make_generate" in path.read_text(encoding="utf-8")
+            and path.parent.name != "model"
+        ]
+        self.assertEqual(callers, ["agent/loop.py"], callers)
 
 
 

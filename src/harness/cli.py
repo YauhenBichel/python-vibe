@@ -241,7 +241,7 @@ def _run_layout(args) -> int:
 
 
 def _run_route(args) -> int:
-    from harness.model.route import route_advice
+    from harness import route_advice
 
     print(route_advice(args.task))
     return 0

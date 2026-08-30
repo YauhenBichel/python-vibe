@@ -7,7 +7,7 @@ from pathlib import Path
 
 from harness.editor_kit import install_editors
 from harness.mcp_stdio import handle_rpc
-from harness.model.openai_compat import chat_completion_payload, last_user_text
+from harness.openai_api import chat_completion_payload, last_user_text
 from harness.skillkit.catalog import list_skills, pick_skills
 from harness.locate import prelude, refuse_redundant_locate
 from harness.scan.project_brief import start_hint

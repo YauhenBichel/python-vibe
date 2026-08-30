@@ -19,6 +19,11 @@ Command line and HTTP are the same object:
 """
 
 from harness.agent import Agent, AgentOptions, AgentResult, Question, Step
+
+# The one thing the command line needs from the model package. Going
+# through here keeps that package's shape private: the CLI and the
+# server do not import harness.model.* directly.
+from harness.model.route import route_advice
 from harness.guard.python_vibe import PythonVibeGuard
 from harness.guard.run import complete
 from harness.guard.types import Finding, Outcome
@@ -26,6 +31,7 @@ from harness.guard.types import Finding, Outcome
 __all__ = [
     "Agent",
     "AgentOptions",
+    "route_advice",
     "AgentResult",
     "Question",
     "Step",
