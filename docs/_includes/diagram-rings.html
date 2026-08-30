@@ -1,0 +1,34 @@
+<svg viewBox="0 0 640 300" role="img" aria-labelledby="rings-t rings-d"
+     style="width:100%;max-width:640px;height:auto;display:block;margin:1.4rem auto">
+  <title id="rings-t">Three rings: agent, harness, model</title>
+  <desc id="rings-d">The model sits inside the harness, and the harness inside
+  what a person talks to. Each ring names the parts of this project that live
+  in it.</desc>
+  <style>
+    .box { fill: none; stroke-width: 1.5; rx: 10; }
+    .r1 { stroke: var(--accent, #8a2d0f); }
+    .r2 { stroke: var(--ink, #16140f); opacity: .55; }
+    .r3 { stroke: var(--ink, #16140f); opacity: .8; }
+    .lbl { font: 600 13px ui-monospace, "SF Mono", Menlo, monospace;
+           fill: var(--ink, #16140f); letter-spacing: .04em; }
+    .who { font: 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+           fill: var(--mute, #3f3a33); }
+    .note { font: italic 12px Georgia, serif; fill: var(--mute, #3f3a33); }
+  </style>
+
+  <rect class="box r1" x="8" y="8" width="624" height="284"/>
+  <text class="lbl" x="26" y="32">agent</text>
+  <text class="who" x="26" y="52">what a person or an editor talks to</text>
+  <text class="who" x="26" y="70">cli · server · mcp_stdio · editor_kit</text>
+
+  <rect class="box r2" x="26" y="84" width="588" height="192"/>
+  <text class="lbl" x="44" y="108">harness</text>
+  <text class="who" x="44" y="128">the loop, the tools, the guards, the skills</text>
+  <text class="who" x="44" y="146">agent · act · locate · scan · skillkit · ship · observe · guard</text>
+
+  <rect class="box r3" x="44" y="160" width="552" height="98"/>
+  <text class="lbl" x="62" y="184">model</text>
+  <text class="who" x="62" y="204">the code that talks to a model, and nothing else</text>
+  <text class="who" x="62" y="222">engine · ollama · mlx · openai · route</text>
+  <text class="note" x="62" y="246">nearly all the behaviour is the middle ring</text>
+</svg>
