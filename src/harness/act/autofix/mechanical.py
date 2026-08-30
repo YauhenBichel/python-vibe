@@ -25,6 +25,7 @@ from harness.act.autofix.additions import (
     apply_add_function,
     apply_function_rename,
 )
+from harness.act.autofix.moves import apply_file_move
 from harness.act.autofix.conflicts import _resolve_conflict, looks_like_conflict
 from harness.act.autofix.cover import apply_cover_test
 from harness.act.autofix.names import apply_typo_fixes, typo_pairs
@@ -82,6 +83,9 @@ def apply_mechanical(
         cover = apply_cover_test(project, task, write=write)
         if cover:
             notes.append(cover)
+    moved = apply_file_move(project, task, write=write)
+    if moved:
+        notes.append(moved)
     if path is not None and path.is_file() and looks_like_conflict(task):
         note = _resolve_conflict(path, rel, original, write=write)
         if note:
