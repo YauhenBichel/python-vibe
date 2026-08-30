@@ -6,10 +6,14 @@ name: Contributors
 # Does not open a pull request. Protected main refuses both a
 # GITHUB_TOKEN push and "Actions may create PRs" (that setting is
 # off). Same-repo PR / feature branches get the commit in place.
-# A fork PR cannot be written (and the contributor is not in the
-# API until merge). After that merge, or any other default-branch
-# run with a stale list, the commit is force-pushed to
-# docs/contributors so the change is not discarded.
+# A fork PR is skipped outright. Nothing here can work on one: the
+# branch lives on the fork, so the checkout cannot fetch it, and there
+# is nowhere to push if it could. The contributor is not in the API
+# until merge either. It used to run anyway and fail while fetching a
+# ref this repository does not have.
+#
+# After a merge, or any other default-branch run with a stale list,
+# the commit is force-pushed to docs/contributors so it is not lost.
 
 on:
   pull_request:
@@ -25,7 +29,10 @@ concurrency:
 
 jobs:
   readme:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]'
+      && (github.event_name != 'pull_request'
+      || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,10 +46,9 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python3 .github/scripts/fill_contributors.py
 
+      # The job only runs where a push is possible, so this needs no
+      # condition of its own.
       - name: Push the list on a writable branch
-        if: >-
-          github.event_name != 'pull_request'
-          || github.event.pull_request.head.repo.full_name == github.repository
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BRANCH: ${{ github.head_ref || github.ref_name }}

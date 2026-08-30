@@ -39,6 +39,22 @@ class ReadmeContributorsTest(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertRegex(text, r"uses: actions/checkout@[0-9a-f]{40}")
 
+    def test_a_fork_pull_request_does_not_run_the_job(self) -> None:
+        """It cannot work on one, and it used to fail rather than skip.
+
+        The branch of a fork pull request lives on the fork, so the
+        checkout cannot fetch it from here. The job ran anyway and died
+        on `git fetch origin +refs/heads/patch-2*`, which showed on the
+        pull request as a failing check that had nothing to do with the
+        change.
+        """
+        text = WORKFLOW.read_text(encoding="utf-8")
+        head, _sep, steps = text.partition("steps:")
+        self.assertIn("head.repo.full_name == github.repository", head)
+        self.assertIn("github.event_name != 'pull_request'", head)
+        # The step-level guard is subsumed by the job-level one.
+        self.assertNotIn("head.repo.full_name", steps)
+
     def test_workflow_keeps_a_fork_merge_on_a_writable_branch(self) -> None:
         """A fork PR cannot be pushed, and protected main cannot either.
 
