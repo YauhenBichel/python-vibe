@@ -13,10 +13,16 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="top">
-    <a class="mark" href="{{ '/' | relative_url }}">python-vibe</a>
-    <p class="tag">Ask · test · fix · add</p>
-    {% include nav.html %}
+    <div class="top-in">
+      <a class="mark" href="{{ '/' | relative_url }}">python-vibe</a>
+      <p class="tag">Ask · test · fix · add</p>
+      <a class="src" href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">GitHub</a>
+    </div>
   </header>
+  <div class="shell">
+    <aside class="side" aria-label="Sections">
+      {% include nav.html %}
+    </aside>
   <main id="main" class="page" tabindex="-1">
     {% assign u = page.url %}
     {% if u != '/' and u != '/index.html' and u != '/start/' and u != '/investigations/' and u != '/404.html' %}
@@ -33,6 +39,7 @@
     {% endif %}
     {{ content }}
   </main>
+  </div>
   <footer class="foot">
     <p>Yauhen Bichel · Apache-2.0 ·
       <a href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">GitHub</a> ·
