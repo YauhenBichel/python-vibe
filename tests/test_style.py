@@ -98,7 +98,6 @@ class StyleHarnessTest(unittest.TestCase):
             ),
             "",
         )
-
     def test_wrap_bare_test_and_package_done(self) -> None:
         wrapped = wrap_bare_unittest(
             "def test_total_price(self):\n    self.assertEqual(total_price(2, 3), 6)\n",
@@ -145,6 +144,16 @@ class StyleHarnessTest(unittest.TestCase):
                 "        left, right = 2, 3\n"
                 "        got = multiply(left, right)\n"
                 "        self.assertEqual(got, 6)\n",
+            ),
+            "",
+        )
+        self.assertEqual(
+            refuse_weak_test(
+                "tests/test_mathy.py",
+                "    def test_weekday_returns_day_name(self) -> None:\n"
+                "        day_index = 2\n"
+                "        got = weekday(day_index)\n"
+                "        self.assertEqual(got, 'Tuesday')\n",
             ),
             "",
         )

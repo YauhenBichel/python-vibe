@@ -113,6 +113,14 @@ class SkillsTest(unittest.TestCase):
         assert named is not None
         self.assertEqual(named.name, "add-feature")
 
+    def test_write_tests_skill_includes_aaa_fixture(self) -> None:
+        skill = get_skill("write-tests", ROOT)
+        self.assertIsNotNone(skill)
+        assert skill is not None
+        self.assertIn("test_weekday_returns_day_name", skill.body)
+        self.assertIn("got = weekday(day_index)", skill.body)
+        self.assertIn("self.assertEqual(got, \"Tuesday\")", skill.body)
+
 
 if __name__ == "__main__":
     unittest.main()
