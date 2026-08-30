@@ -129,6 +129,61 @@ def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:
     )
 
 
+def refuse_stub_body(task: str, rel: str, draft: str) -> str:
+    """Refuse a requested function whose body is `...` or `pass`.
+
+    Asked to create `slugify`, a live 8B wrote
+
+        def slugify(text: str) -> str: ...
+
+    twice. It parses, it passes a name check, and it does nothing. A
+    stub is a reasonable thing to write when someone asked for an
+    interface; it is not what "create a function that lowercases and
+    joins words" asked for.
+
+    Every function in the draft is judged, not only the one the task
+    names. The task wording does not reliably yield that name — for
+    "create a function slugify(text)" it comes back as "create" — and on
+    an add-feature task an empty body is wrong whatever it is called.
+    """
+    if "test" in (rel or "").replace("\\", "/").lower():
+        return ""
+    if not (looks_like_add_feature(task) or looks_like_everyday_code(task)):
+        return ""
+    try:
+        tree = ast.parse(draft or "")
+    except (SyntaxError, ValueError):
+        return ""
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        body = [
+            item
+            for item in node.body
+            if not (
+                isinstance(item, ast.Expr)
+                and isinstance(item.value, ast.Constant)
+                and isinstance(item.value.value, str)
+            )
+        ]
+        empty = all(
+            isinstance(item, ast.Pass)
+            or (
+                isinstance(item, ast.Expr)
+                and isinstance(item.value, ast.Constant)
+                and item.value.value is Ellipsis
+            )
+            for item in body
+        )
+        if body and empty:
+            return (
+                f"def {node.name} has no body. Write what it does, not a "
+                f"placeholder. Action: patch Path: {rel} Append: def "
+                f"{node.name}(...) with a return statement."
+            )
+    return ""
+
+
 def refuse_shell_fetch(rel: str, draft: str) -> str:
     """HTTP helpers use urllib. curl|sh is already PV003; this catches curl alone.
 

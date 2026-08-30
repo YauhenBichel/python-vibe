@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from harness.act.autofix import (
+    append_instead_of_replacing,
     apply_function_rename,
     apply_missing_imports,
     apply_typo_fixes,
@@ -23,6 +24,7 @@ from harness.skillkit.style import (
     refuse_platform_draft,
     refuse_rename_incomplete,
     refuse_shell_fetch,
+    refuse_stub_body,
     refuse_test_in_impl,
     refuse_undefined_draft,
     refuse_weak_test,
@@ -234,6 +236,9 @@ def _style_blocks(
     blocked = refuse_test_in_impl(rel, draft)
     if blocked:
         return blocked
+    blocked = refuse_stub_body(task, rel, draft)
+    if blocked:
+        return blocked
     blocked = refuse_undefined_draft(task, rel, original, draft)
     if blocked:
         return blocked
@@ -241,6 +246,28 @@ def _style_blocks(
     if blocked:
         return blocked
     return refuse_weak_test(rel, fragment or draft)
+
+
+def _already_defined(original: str, append: str, rel: str) -> str:
+    """Refuse appending a definition the file already has, or "".
+
+    Only test methods were checked, so an ordinary function could be
+    added twice: a live run appended `def slugify` to the same file on
+    two separate turns and left both in place.
+    """
+    meth = _TEST_METH.search(append)
+    if meth and re.search(rf"def\s+{re.escape(meth.group(1))}\s*\(", original):
+        return (
+            f"{meth.group(1)} already exists. Action: done Summary: "
+            "that function is already covered."
+        )
+    for name in re.findall(r"(?m)^def\s+(\w+)\s*\(", append):
+        if re.search(rf"(?m)^def\s+{re.escape(name)}\s*\(", original):
+            return (
+                f"{name} is already defined in {rel}. Action: done "
+                "Summary: say what it does, or patch the existing one."
+            )
+    return ""
 
 
 def patch_py(
@@ -286,14 +313,9 @@ def patch_py(
     elif text == original and not append:
         return "patch needs Find: or Append:"
     if append:
-        meth = _TEST_METH.search(append)
-        if meth and re.search(
-            rf"def\s+{re.escape(meth.group(1))}\s*\(", original
-        ):
-            return (
-                f"{meth.group(1)} already exists. Action: done Summary: "
-                "that function is already covered."
-            )
+        already = _already_defined(original, append, rel)
+        if already:
+            return already
         repaired = repair_unittest_append(text, append)
         text = (
             repaired
@@ -334,6 +356,15 @@ def edit_py(project: Path, rel: str, source: str, task: str = "") -> str:
         blocked = _style_blocks(task, rel, original, source)
     if blocked:
         return blocked
+    # A short draft of only-new definitions is an addition, not a rewrite.
+    merged = append_instead_of_replacing(original, source)
+    if merged:
+        apply_source(path, merged, original=original)
+        return (
+            f"appended to {rel_posix(path, project.resolve())} "
+            f"(backup {path.name}.bak) — the draft added new definitions "
+            "rather than replacing the file"
+        )
     apply_source(path, source, original=original)
     return f"wrote {rel_posix(path, project.resolve())} (backup {path.name}.bak)"
 
