@@ -11,6 +11,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 import io
+import os
 import keyword
 import re
 import sys
@@ -624,6 +625,97 @@ def _find_callable(
     return None
 
 
+# What share of a function a sample call has to reach before the test
+# written from it is worth keeping. A one-line function is exercised by
+# any call; a fourteen-line one that returns on its first guard is not,
+# and the test would be a test of the guard.
+MIN_SHARE_REACHED = 0.5
+
+
+def _lines_reached(call, path: Path, first: int, last: int) -> int:
+    """How many lines between `first` and `last` the call actually runs.
+
+    A test built from an argument that returns on the first guard is a
+    test of the guard. Counting what ran is the only way to tell that
+    apart from a test that exercised the function.
+    """
+    seen: set[int] = set()
+    # Compare real paths: a module loaded from /tmp reports /private/tmp
+    # on macOS, and the tracer then matched nothing at all.
+    target = os.path.realpath(path)
+
+    def trace(frame, event, _arg):
+        if os.path.realpath(frame.f_code.co_filename) != target:
+            return None
+        if event == "line" and first <= frame.f_lineno <= last:
+            seen.add(frame.f_lineno)
+        return trace
+
+    previous = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        call()
+    finally:
+        sys.settrace(previous)
+    return len(seen)
+
+
+def _body_lines(func) -> int:
+    """Executable lines in a function, not counting its docstring."""
+    body = list(func.body)
+    if (
+        body
+        and isinstance(body[0], ast.Expr)
+        and isinstance(body[0].value, ast.Constant)
+        and isinstance(body[0].value.value, str)
+    ):
+        body = body[1:]
+    lines = set()
+    for statement in body:
+        for node in ast.walk(statement):
+            if hasattr(node, "lineno"):
+                lines.add(node.lineno)
+    return len(lines) or 1
+
+
+def _candidates(hint: str, arg_name: str, source: str) -> list[object]:
+    """Values worth trying for one argument, best guess first.
+
+    The string literals the module compares against are the ones that
+    reach a branch: a function that checks `text == "yes"` is only
+    exercised by "yes". A placeholder reaches the first return.
+    """
+    if "list" in hint:
+        return [[10, 20], [], [1]]
+    if "dict" in hint:
+        return [{"prices": [10, 20], "percent": 10}, {}]
+    if "float" in hint:
+        return [1.5, 0.0]
+    if "bool" in hint:
+        return [True, False]
+    if "int" in hint:
+        return [2, 0, 100]
+    if "str" in hint or not hint:
+        literals = [
+            node.value
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and 0 < len(node.value) <= 40
+            and "\n" not in node.value
+        ]
+        seen, ordered = set(), []
+        for value in literals:
+            if value not in seen:
+                seen.add(value)
+                ordered.append(value)
+        # Plain values first, so a literal only wins when it genuinely
+        # reaches further into the function. A test reading `shout("x")`
+        # is easier to follow than one reading `shout("!")`.
+        return ["x", "", *ordered[:12]]
+    return [2, 0]
+
+
 def _sample_values(
     path: Path, name: str, *, project: Path | None = None
 ) -> tuple[list[tuple[str, object]], object, str, str] | None:
@@ -638,24 +730,16 @@ def _sample_values(
     class_name, func = found
     if func.args.kwonlyargs or func.args.vararg or func.args.kwarg:
         return None
-    ints = (100, 10, 2, 0)
-    used_ints = 0
-    args: list[tuple[str, object]] = []
+    source = path.read_text(encoding="utf-8")
+    choices: list[tuple[str, list[object]]] = []
     for arg in func.args.args:
         if arg.arg in {"self", "cls"}:
             continue
         hint = ast.unparse(arg.annotation) if arg.annotation else ""
-        if "list" in hint:
-            args.append((arg.arg, [10, 20]))
-        elif "dict" in hint:
-            args.append((arg.arg, {"prices": [10, 20], "percent": 10}))
-        elif "str" in hint:
-            args.append((arg.arg, "x"))
-        elif "float" in hint:
-            args.append((arg.arg, 1.5))
-        else:
-            args.append((arg.arg, ints[used_ints % len(ints)]))
-            used_ints += 1
+        choices.append((arg.arg, _candidates(hint, arg.arg, source)))
+    args: list[tuple[str, object]] = [
+        (name, values[0]) for name, values in choices
+    ]
     token = name.replace(".", "_")
     module_name = f"_vibe_cover_{token}"
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -669,24 +753,48 @@ def _sample_values(
         sys.path.insert(0, inserted)
     try:
         spec.loader.exec_module(module)
-        values = tuple(value for _key, value in args)
         if class_name:
             cls = getattr(module, class_name, None)
             if cls is None:
                 return None
-            expected = getattr(cls(), func.name)(*values)
+            target = getattr(cls(), func.name)
         else:
-            found = getattr(module, func.name, None)
-            if found is None:
+            target = getattr(module, func.name, None)
+            if target is None:
                 return None
-            expected = found(*values)
+        first = func.lineno
+        last = func.end_lineno or func.lineno
+        best_reach, best_args, expected = -1, args, None
+        # Try one argument at a time against the first working set, and
+        # keep whichever call runs the most of the function.
+        for index, (arg_name, values) in enumerate(choices):
+            for value in values[:8]:
+                trial = list(args)
+                trial[index] = (arg_name, value)
+                shot = tuple(v for _k, v in trial)
+                try:
+                    reach = _lines_reached(
+                        lambda: target(*shot), path, first, last
+                    )
+                    outcome = target(*shot)
+                except Exception:
+                    continue
+                if reach > best_reach:
+                    best_reach, best_args, expected = reach, trial, outcome
+            if best_reach > 0:
+                args = list(best_args)
+        if best_reach < max(1, int(_body_lines(func) * MIN_SHARE_REACHED)):
+            # Every value tried returned on a guard, so a test built from
+            # this would asserts the guard rather than the function. Say
+            # nothing rather than write a test that proves nothing.
+            return None
     except Exception:
         return None
     finally:
         sys.modules.pop(module_name, None)
         if inserted and sys.path and sys.path[0] == inserted:
             sys.path.pop(0)
-    return args, expected, class_name, func.name
+    return list(best_args), expected, class_name, func.name
 
 
 def _add_import_symbol(text: str, module: str, name: str) -> str:

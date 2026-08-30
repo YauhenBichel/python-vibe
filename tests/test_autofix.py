@@ -3,10 +3,13 @@
 import tempfile
 import unittest
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
 from unittest import mock
 
 from harness import Agent, AgentOptions
 from harness.act.autofix import (
+    _sample_values,
     append_instead_of_replacing,
     apply_add_function,
     apply_cover_test,
@@ -901,6 +904,80 @@ class ShortDraftIsAnAdditionTest(unittest.TestCase):
 
     def test_an_empty_file_is_left_to_the_normal_path(self) -> None:
         self.assertEqual(append_instead_of_replacing("", self.DRAFT), "")
+
+
+class CoverTestReachesSomethingTest(unittest.TestCase):
+    """A test built from a placeholder argument proves nothing.
+
+    Pointed at its own repository, the harness covered `ticket_job` with
+
+        text = 'x'
+        got = ticket_job(text)
+        self.assertEqual(got, '')
+
+    which runs, passes, and stops on the first guard. Measured over the
+    whole project, the two tests it wrote that day moved coverage by one
+    line. The sample is now chosen by what it reaches, and when nothing
+    reaches the body the harness says nothing at all.
+    """
+
+    def _write(self, tmp: str, source: str) -> Path:
+        path = Path(tmp) / "m.py"
+        path.write_text(source, encoding="utf-8")
+        return path
+
+    def test_it_finds_an_argument_that_passes_the_guard(self) -> None:
+        source = (
+            "def guarded(task: str, other: str) -> str:\n"
+            '    if not task.startswith("review"):\n'
+            '        return ""\n'
+            '    if "god" in other:\n'
+            '        return "found"\n'
+            '    return "clean"\n'
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            got = _sample_values(self._write(tmp, source), "guarded")
+        self.assertIsNotNone(got)
+        args, expected, _cls, _name = got
+        self.assertEqual(dict(args)["task"], "review")
+        self.assertEqual(expected, "clean")
+
+    def test_it_declines_when_nothing_reaches_the_body(self) -> None:
+        """The branches key off another function, so no value gets in."""
+        source = (
+            "def job(text: str) -> str:\n"
+            "    from unknown_helper import decide\n"
+            "    if decide(text):\n"
+            '        return "yes"\n'
+            '    return ""\n'
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(_sample_values(self._write(tmp, source), "job"))
+
+    def test_a_straight_line_function_is_still_covered(self) -> None:
+        source = "def double(n: int) -> int:\n    return n * 2\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            got = _sample_values(self._write(tmp, source), "double")
+        self.assertIsNotNone(got)
+        self.assertEqual(got[1], dict(got[0])["n"] * 2)
+
+    def test_a_plain_value_wins_when_it_reaches_as_far(self) -> None:
+        """`shout("x")` reads better than `shout("!")` and proves as much."""
+        source = 'def shout(text: str) -> str:\n    return text.upper() + "!"\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            got = _sample_values(self._write(tmp, source), "shout")
+        self.assertEqual(dict(got[0])["text"], "x")
+
+    def test_the_two_it_got_wrong_are_now_declined(self) -> None:
+        """The functions from the run that started this."""
+        for module, name in (
+            ("src/harness/ship/ticket.py", "ticket_job"),
+            ("src/harness/locate.py", "refuse_thin_review"),
+        ):
+            with self.subTest(function=name):
+                self.assertIsNone(
+                    _sample_values(ROOT / module, name, project=ROOT)
+                )
 
 
 
