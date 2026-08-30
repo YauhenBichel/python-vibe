@@ -61,7 +61,7 @@ for “undefined name still in the file → patch that name.”
 | add `total_lines` + test | no (step budget) | passed | Extra `pkg/prices.py`; loop did not stop |
 | tests for `apply_discount` | yes | failed | `def test_` landed in the impl file |
 | rename `calc` → `multiply` | yes | failed (`x`) | Old def / broken params |
-| review, do not edit | no | passed (no writes) | Jail held; no useful defect quote |
+| review, do not edit | no | passed (no writes) | Limit held; no useful defect quote |
 | dry-run NameError | yes | passed | Harness named the typo; no write |
 | vague `clean this up` | question | passed | Ask-when-unclear, no model turn |
 

@@ -82,7 +82,7 @@ PYTHONPATH=src python scripts/batch_review.py \
 - `scripts/review.py` — one-file OpenSRE-oriented entry.
 - `scripts/batch_review.py` + `harness/project_scan.py` + `harness/engine.py`
   (one load, many files).
-- `harness/code.py` — extract fence, run, path jail, `.bak`, tiny-overwrite guard.
+- `harness/code.py` — extract fence, run, path check, `.bak`, tiny-overwrite guard.
 - Contributor kit (templates, SECURITY, CoC) and tests for extract / scan / Hub card.
 
 ## What we did not claim

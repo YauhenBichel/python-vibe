@@ -1,6 +1,6 @@
 ---
 title: Platform engineering
-description: How python-vibe treats small files that must work on Windows, macOS, and Linux. Path jail, pathlib skill, and refuses an 8B cannot argue with.
+description: How python-vibe treats small files that must work on Windows, macOS, and Linux. Path limits, pathlib skill, and refuses an 8B cannot argue with.
 permalink: /investigations/platform-engineering/
 date: 2026-08-29
 ---
@@ -17,7 +17,7 @@ python-vibe treats that as a harness problem, not a bigger-model problem.
 
 Every path the model is shown uses forward slashes (`Path.as_posix()`). A
 Windows-style `src\app.py` is accepted as input and rewritten before the
-jail uses it. A virtual environment’s interpreter is `bin/python` on POSIX
+write limit uses it. A virtual environment’s interpreter is `bin/python` on POSIX
 and `Scripts/python.exe` on Windows. Those rules live in `harness/paths.py`
 and are tested on every OS the suite runs on.
 
@@ -30,7 +30,7 @@ and are tested on every OS the suite runs on.
    Live 8B treated “add a CI workflow” as add-feature and wrote a function
    named `workflow` into `src/util.py`. The task kind is now `looks_like_ops`.
    Drafts with `curl|sh`, `0.0.0.0`, or an inline secret are refused.
-3. **Jail text files.** Writes may target `.py`, `.pyi`, `.md`, `.toml`,
+3. **Limit which files may be written.** Writes may target `.py`, `.pyi`, `.md`, `.toml`,
    `.yml`, `.yaml`, `.cfg`, `.ini`, and `.json`. Secret names
    (`.env`, `credentials.json`, `.pypirc`, `secrets.json`) are refused on
    read and write. The map and grep skip them.
@@ -45,7 +45,7 @@ and are tested on every OS the suite runs on.
 A hosted IDE agent remembers “Windows uses backslashes” because the context
 window is huge and the model is large. An 8B on a laptop does not. Classic
 development for that gap is: pin the Path:, refuse the Windows-hostile
-draft, keep config files in the same jail as Python.
+draft, keep config files under the same limit as Python.
 
 The 0.5B LoRA is still a style prior. Do not train it on thirty path rows
 and expect agency. Measure `write-paths` with `scripts/skill_probe.py`
@@ -53,7 +53,7 @@ before calling it everyday-ready.
 
 ## Honest limits
 
-The jail still has no free shell, no package manager, and no cloud API.
+It still has no free shell, no package manager, and no cloud API.
 A `.sh` installer, a remote host, or a secret file is out of scope on
 purpose. Large trees still need `--scope`. Public pages do not name other
 editors or chat products.

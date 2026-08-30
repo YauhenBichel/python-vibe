@@ -1,4 +1,4 @@
-"""Local MCP over stdio so an editor can call the jail without a tunnel.
+"""Local MCP over stdio so an editor can apply the write limit without a tunnel.
 
 This is the editor calling python-vibe. It is not an Action the 8B may emit.
 Stdout is JSON-RPC only. Logs go to stderr.
@@ -24,7 +24,7 @@ PROMPTS = (
     },
     {
         "name": "run",
-        "description": "Explore, edit and run inside the project jail.",
+        "description": "Explore, edit and run inside the project folder.",
         "arguments": [
             {"name": "task", "description": "What to do", "required": True}
         ],
@@ -35,7 +35,7 @@ TOOLS = (
     {
         "name": "ask",
         "description": (
-            "Read-only question about the project. Uses the python-vibe jail. "
+            "Read-only question about the project. Uses the python-vibe write limit. "
             "Does not change files."
         ),
         "inputSchema": {
@@ -47,7 +47,7 @@ TOOLS = (
     {
         "name": "run",
         "description": (
-            "Explore, edit and run inside the project jail. Writes only when "
+            "Explore, edit and run inside the project folder. Writes only when "
             "the server was started with --allow-writes."
         ),
         "inputSchema": {

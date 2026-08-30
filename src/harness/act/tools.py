@@ -1,4 +1,4 @@
-"""Project tools for the agent loop. Jail + no shell."""
+"""Project tools for the agent loop. Write limit, and no shell."""
 
 from __future__ import annotations
 

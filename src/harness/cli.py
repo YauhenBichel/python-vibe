@@ -201,7 +201,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--project",
         type=Path,
         default=Path("."),
-        help="folder to jail (default: current directory)",
+        help="folder it may change (default: current directory)",
     )
     editors.add_argument(
         "--allow-writes",

@@ -77,7 +77,7 @@ puts `total_lines` next to `compute_total`. Size-first pick is the opposite
 of the layout rules this repo already teaches.
 
 **A review that cannot edit still tries to patch.** The named-file prelude
-said `Next Action must be patch`. The write jail then refused. The 8B
+said `Next Action must be patch`. The write limit then refused. The 8B
 spent six turns and closed on a defect that is not in the file. The hosted
 agent never tried to edit.
 

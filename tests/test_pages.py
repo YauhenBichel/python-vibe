@@ -438,6 +438,45 @@ class DatedPagesSayTheDateTest(unittest.TestCase):
         self.assertEqual(offenders, [], offenders)
 
 
+class PlainWordsTest(unittest.TestCase):
+    """Say what a thing does, not what it is called in somebody's slang.
+
+    "jail" came from chroot and had spread to sixty-odd places: the
+    README, the repository description, half the investigation pages and
+    several docstrings. A reader who has not met the term learns nothing
+    from it. "write limit" says the same thing and needs no glossary.
+
+    Add a word here when it turns out to need explaining.
+    """
+
+    JARGON = {
+        "jail": "say what it limits, e.g. 'write limit'",
+        "footgun": "say what goes wrong",
+        "bikeshed": "say what the disagreement is about",
+        "yak shav": "say what the detour was",
+    }
+
+    def _offenders(self, paths) -> list[str]:
+        found = []
+        for path in paths:
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith((".git/", "tests/test_pages.py")):
+                continue
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word, better in self.JARGON.items():
+                if word in lowered:
+                    found.append(f"{rel}: '{word}' — {better}")
+        return found
+
+    def test_pages_and_readme_use_plain_words(self) -> None:
+        pages = sorted(DOCS.rglob("*.md")) + [ROOT / "README.md", ROOT / "CONTRIBUTING.md"]
+        self.assertEqual(self._offenders(pages), [])
+
+    def test_the_source_uses_plain_words_too(self) -> None:
+        """Docstrings are read by whoever maintains this next."""
+        self.assertEqual(self._offenders(sorted((ROOT / "src").rglob("*.py"))), [])
+
+
 
 if __name__ == "__main__":
     unittest.main()

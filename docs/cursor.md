@@ -1,6 +1,6 @@
 ---
 title: Use python-vibe in Cursor
-description: Three commands to add the python-vibe jail to Cursor. Local MCP, no tunnel, no Override OpenAI Base URL.
+description: Three commands to add the python-vibe write limit to Cursor. Local MCP, no tunnel, no Override OpenAI Base URL.
 permalink: /cursor/
 date: 2026-08-29
 ---
@@ -43,7 +43,7 @@ reloads the window gets the same tools.
 
 `ask` never writes. `run` writes only when you passed `--allow-writes`.
 
-A large tree: add a scope (“stay in `src/`”). The jail already refuses
+A large tree: add a scope (“stay in `src/`”). The write limit already refuses
 to load the whole tree.
 
 ## Every workspace on this laptop
@@ -53,7 +53,7 @@ python-vibe editors cursor --global --allow-writes
 ```
 
 Merges `python-vibe` into `~/.cursor/mcp.json`. Other servers stay.
-Each window jails **the folder you have open**.
+Each window limits changes to **the folder you have open**.
 
 ## Clone this repo
 
@@ -65,7 +65,7 @@ Cursor, reload, enable the server. No extra command.
 Do not set **Models → Override OpenAI Base URL** to
 `http://127.0.0.1:8081/v1` or `:8090`. Many Cursor builds send that
 request from a remote backend, which cannot see your loopback. A public
-HTTPS tunnel would reach the jail from the internet.
+HTTPS tunnel would let the internet reach it.
 
 Use MCP or **Run Task**. Both stay on this machine.
 

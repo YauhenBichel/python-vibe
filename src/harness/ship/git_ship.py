@@ -1,4 +1,4 @@
-"""Jailed git and gh. Deterministic. No model. No force. No main."""
+"""Limited git and gh. Deterministic. No model. No force. No main."""
 
 from __future__ import annotations
 
