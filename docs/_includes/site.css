@@ -12,8 +12,9 @@
      Everything else — the header, code, tables, diagrams — may use the
      window. The whole page used to stop at 48rem, so a wide screen showed
      a narrow strip with most of the glass empty. */
-  --measure: 44rem;
-  --wide: 82rem;
+  --measure: 46rem;   /* running prose, about 72 characters */
+  --wide: 84rem;      /* the whole layout, header bar included */
+  --side: 13.5rem;    /* the section list beside the page */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,21 +63,6 @@ body {
 
 .skip:focus { transform: none; }
 
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  width: min(var(--wide), 100%);
-  margin: 0 auto;
-  padding: 0.65rem var(--space) 0.45rem;
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
-}
-
 .mark {
   font: 600 0.95rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   color: var(--ink);
@@ -119,15 +105,6 @@ body {
   box-shadow: inset 0 -2px 0 var(--ink);
 }
 
-.page {
-  flex: 1;
-  width: min(var(--wide), 100%);
-  margin: 0 auto;
-  padding: 1.35rem var(--space) 2.75rem;
-}
-
-.page > :is(p, ul, ol, .lede) { max-width: var(--measure); }
-
 .crumbs {
   font: 0.8rem/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   color: var(--mute);
@@ -145,15 +122,6 @@ body {
 
 .toc p { margin: 0 0 0.35rem; color: var(--mute); font-size: 0.85rem; }
 .toc ol { margin: 0; padding-left: 1.1rem; }
-
-.foot {
-  width: min(var(--wide), 100%);
-  margin: 0 auto;
-  padding: 1rem var(--space) 2.25rem;
-  border-top: 1px solid var(--line);
-  color: var(--mute);
-  font-size: 0.88rem;
-}
 
 .quiet { font-size: 0.8rem; }
 
@@ -311,19 +279,99 @@ ul { padding-left: 1.2rem; }
   pre, table { overflow: visible; }
 }
 
-/* Wide things earn the full column: a table of results, a code block with
-   four columns, a diagram. Only running prose is held to --measure. */
-.page > :is(pre, table, .stats, svg, .cta, .toc-wide),
-.page > .table-scroll {
-  max-width: 100%;
+/* A table wider than the window scrolls itself rather than the page. */
+
+/* ---- the shell -------------------------------------------------------
+   A bar across the top, a list of sections down the left, the page beside
+   it. The site used to be one narrow column down the middle, so a wide
+   screen showed a strip of text with the rest of the glass empty, and the
+   navigation wrapped onto a second row. */
+
+.top-in {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  width: min(var(--wide), 100%);
+  margin: 0 auto;
+  padding: 0.7rem var(--space);
 }
 
-.page > :is(h1, h2, h3, blockquote) { max-width: var(--measure); }
+.top-in .src { margin-left: auto; color: var(--ink); text-decoration: none;
+  font: 0.82rem ui-monospace, "SF Mono", Menlo, monospace; }
+.top-in .src:hover { color: var(--accent); }
 
-/* A table wider than the window scrolls itself rather than the page. */
+.shell {
+  width: min(var(--wide), 100%);
+  margin: 0 auto;
+  padding: 0 var(--space);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 2.5rem;
+  flex: 1;
+}
+
+.side { padding-top: 1.1rem; }
+
+.side .nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.15rem;
+  width: 100%;
+}
+
+@media (min-width: 62rem) {
+  .shell { grid-template-columns: var(--side) minmax(0, 1fr); }
+  .side {
+    position: sticky;
+    top: 3.4rem;
+    align-self: start;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding-top: 1.6rem;
+    border-right: 1px solid var(--line);
+    padding-right: 1rem;
+  }
+  /* One section per line, so nothing wraps and the current page reads. */
+  .side .nav { flex-direction: column; flex-wrap: nowrap; gap: 0.05rem; }
+  .side .nav a { min-height: 2rem; padding: 0.15rem 0.5rem; width: 100%; }
+  .side .nav a[aria-current="page"] {
+    box-shadow: none;
+    border-left: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+}
+
+/* Prose keeps a comfortable line. Everything else may use the column. */
+.page > :is(p, ul, ol, .lede, blockquote) { max-width: var(--measure); }
+.page > :is(pre, table, .stats, svg, .cta) { max-width: 100%; }
 .page > table { display: block; overflow-x: auto; }
 
-@media (min-width: 60rem) {
-  .nav { flex-wrap: nowrap; }
-  .page { padding-inline: clamp(var(--space), 4vw, 3rem); }
+/* ---- sizes ------------------------------------------------------------
+   One column on a phone with the sections as a scrolling strip, two
+   columns once there is room for a list, and a wider text column on a
+   large screen so the line length grows with the glass instead of the
+   margin. */
+
+@media (max-width: 61.99rem) {
+  .side {
+    position: sticky;
+    top: 3.1rem;
+    z-index: 2;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    margin: 0 calc(var(--space) * -1);
+    padding: 0.35rem var(--space);
+  }
+  .side .nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .side .nav::-webkit-scrollbar { display: none; }
+  .side .nav a { white-space: nowrap; }
+  .top-in .tag { display: none; }
+}
+
+@media (min-width: 100rem) {
+  :root { --measure: 52rem; --side: 15rem; }
+}
+
+@media (min-width: 120rem) {
+  :root { --wide: 100rem; }
 }
