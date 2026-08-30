@@ -162,7 +162,7 @@ class McpHandshakeTest(unittest.TestCase):
         assert init is not None and listed is not None
         self.assertEqual(init["result"]["serverInfo"]["name"], "python-vibe")
         names = {tool["name"] for tool in listed["result"]["tools"]}
-        self.assertEqual(names, {"ask", "run"})
+        self.assertEqual(names, {"ask", "run", "brief", "layout"})
         assert prompts is not None
         self.assertEqual(
             {item["name"] for item in prompts["result"]["prompts"]},
@@ -435,6 +435,90 @@ class McpReplyTest(unittest.TestCase):
             self._result(writes=("src/app.py", "src/app.py", "tests/test_app.py"))
         )
         self.assertEqual(text.count("src/app.py"), 1)
+
+class ReadToolsNeedNoModelTest(unittest.TestCase):
+    """The two fastest things this does were not offered to an editor.
+
+    Only `ask` and `run` were exposed, and both load a model. `brief`
+    and `layout` answer in well under a second and cannot be wrong about
+    it, which makes them the ones worth reaching for while you are in a
+    file — and they were reachable only from a terminal.
+    """
+
+    def _project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "src").mkdir()
+        (root / "src" / "orders.py").write_text(
+            "def compute_total(prices):\n    return sum(prices)\n", encoding="utf-8"
+        )
+        return root
+
+    def _call(self, project: Path, name: str) -> str:
+        answer = handle_rpc(
+            {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "tools/call",
+                "params": {"name": name, "arguments": {}},
+            },
+            project=project,
+            allow_writes=False,
+            model="no-such-model:0",
+        )
+        assert answer is not None
+        return "\n".join(
+            part["text"] for part in answer["result"]["content"]
+        )
+
+    def test_brief_answers_without_a_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._call(self._project(tmp), "brief")
+        self.assertIn("files", body.lower())
+
+    def test_layout_answers_without_a_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._call(self._project(tmp), "layout")
+        self.assertTrue(body.strip())
+
+    def test_neither_needs_a_task(self) -> None:
+        """`ask` and `run` refuse an empty task. These take none."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self._project(tmp)
+            for name in ("brief", "layout"):
+                with self.subTest(tool=name):
+                    self.assertNotIn("task required", self._call(project, name))
+
+
+class EditorSettingsAreNotTheProjectTest(unittest.TestCase):
+    """A summary counted the files the tool had just written itself.
+
+    `python-vibe editors cursor` writes `.cursor/mcp.json` and
+    `.vscode/tasks.json`. Asked for a summary straight afterwards, the
+    answer opened with "12 Python and Markdown files" and listed both of
+    them first.
+    """
+
+    def test_editor_folders_are_not_counted(self) -> None:
+        from harness.scan.project_brief import classify_project
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "orders.py").write_text("x = 1\n", encoding="utf-8")
+            plain = classify_project(root)
+            for folder, name in (
+                (".cursor", "mcp.json"),
+                (".vscode", "tasks.json"),
+                (".idea", "workspace.xml"),
+                (".zed", "settings.json"),
+            ):
+                (root / folder).mkdir()
+                (root / folder / name).write_text("{}\n", encoding="utf-8")
+            after = classify_project(root)
+        self.assertEqual(
+            plain.files, after.files, "editor settings changed the count"
+        )
+
 
 
 if __name__ == "__main__":

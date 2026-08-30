@@ -19,6 +19,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty kit skills and when the harness loads each one.
 - [Architecture]({{ '/architecture/' | absolute_url }}): Bottom-up harness layers. Imports only point downward.
+- [In your editor]({{ '/editor-demos/' | absolute_url }}): Four things it does from Cursor or VS Code, with real answers and times. Two need no model.
 - [Cursor]({{ '/cursor/' | absolute_url }}): Three commands. Local MCP. No Override OpenAI Base URL.
 - [Local editor]({{ '/local-editor/' | absolute_url }}): One-command drop-in for Cursor, VS Code tasks, Continue, or Zed. Chat override of localhost is optional.
 - [IDE plugins]({{ '/ide-plugins/' | absolute_url }}): Use the package as-is, or spawn it from an extension. No extra Python deps.
