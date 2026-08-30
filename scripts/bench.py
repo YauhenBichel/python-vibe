@@ -218,6 +218,7 @@ def run(case: Case, model: str, steps: int) -> dict:
                 worked, why = False, "suite red"
         return {"case": case.key, "tier": case.tier,
                 "worked": "yes" if worked else "no", "why": why, "suite": suite,
+                "stopped": result.stopped,
                 "steps": len(result.steps), "writes": list(result.writes),
                 "seconds": round(time.time() - started, 1)}
 
