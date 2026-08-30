@@ -32,6 +32,31 @@ Read a layer top-down and you learn what the harness does. Read it
 bottom-up and you learn what it refuses. The kit skills `skillkit/` loads
 are listed on [Skills]({{ '/skills/' | relative_url }}).
 
+## What a run remembers
+
+`memory/` is one component with one job: decide what a request carries.
+
+It was a bare list on the generate function. Every turn appended the
+prompt and the reply, nothing was ever removed, and the request grew by
+about 130 tokens a turn on top of an opening usually over a thousand.
+Nobody decided where that stopped: the harness sent no context size, so
+Ollama applied its own default of 4096 tokens — for weights that accept
+131072 — and dropped the oldest messages once a run passed it.
+
+The oldest message is the opening, which carries the file the harness
+located and the instruction about it. A long run lost exactly the part
+the harness had done work to assemble, and nothing said so.
+
+`Conversation` decides instead. The opening is kept for the whole run.
+Recent turns are kept, because that is where the run is. What goes is
+the middle, which is where a model has already been told four times that
+it used the wrong verb, and it is counted rather than silently dropped.
+The context size is now stated in the request.
+
+It belongs to the harness, not the model package: what is worth
+remembering is a harness decision. `make_generate` is handed something
+that answers `messages(prompt)` and never imports it.
+
 ## Three rings
 
 An agent is a harness around a model. That is the shape the code keeps.

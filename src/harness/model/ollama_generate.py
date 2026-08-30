@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+# How much the model is told it may read. Ollama's own default is 4096,
+# small enough that a twenty-step run silently lost its opening.
+CONTEXT_TOKENS = 8192
+
 import json
 import os
 import urllib.error
@@ -24,6 +28,8 @@ class OllamaGenerate:
             "/"
         )
 
+    num_ctx = CONTEXT_TOKENS
+
     def __call__(
         self, prompt: str, history: Sequence[dict[str, str]] | None = None
     ) -> str:
@@ -31,11 +37,24 @@ class OllamaGenerate:
         if history:
             messages.extend(history)
         messages.append({"role": "user", "content": prompt})
+        return self.send(messages)
+
+    def send(self, messages: list[dict[str, str]]) -> str:
+        """Post exactly these messages. The caller decides what they are.
+
+        The conversation is assembled by `harness.memory`, which knows
+        what to keep and what to let go. This only sends it.
+        """
         body = json.dumps(
             {
                 "model": self.model,
                 "stream": False,
                 "messages": messages,
+                # Say the size rather than take the server's default. That
+                # default is 4096 for weights that accept 131072, and a run
+                # crossing it had its oldest messages dropped by the server
+                # without saying so. The harness decides what to forget.
+                "options": {"num_ctx": self.num_ctx},
             }
         ).encode("utf-8")
         req = urllib.request.Request(

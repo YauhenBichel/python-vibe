@@ -23,7 +23,9 @@ from harness.agent.options import AgentOptions, AgentResult, Step
 from harness.agent.policy import LoopState, next_prompt, refuse_before, refuse_done
 from harness.agent.prompt import Preamble, build_preamble
 from harness.locate import named_file_review_summary
+from harness.memory import Conversation
 from harness.model.engine import make_generate
+from harness.model.ollama_generate import CONTEXT_TOKENS
 from harness.observe.trace_record import append_turn
 from harness.scan.design import render_design_review
 from harness.task import (
@@ -307,11 +309,17 @@ class Agent:
     def _work_with_the_model(self, run: RunState) -> AgentResult:
         options = run.options
         pre = run.preamble
+        # The run's memory belongs here, not in the model package: what
+        # is kept and what is let go is a harness decision.
+        memory = Conversation(
+            budget_tokens=CONTEXT_TOKENS, system=pre.system or options.system or ""
+        )
         label, generate = make_generate(
             options.engine,
             options.max_tokens,
             model=options.model,
             system=pre.system or options.system,
+            memory=memory,
         )
         options.emit("engine", f"{label}  project {self.project}  mode {pre.brief.kind}")
         state = self._starting_state(run)
@@ -576,8 +584,8 @@ def _with_task(options: AgentOptions, task: str) -> AgentOptions:
 
 
 def _remember(generate, prompt: str, draft: str) -> None:
-    history = getattr(generate, "history", None)
-    if history is None:
+    """Hand the exchange to the run's memory, if it keeps one."""
+    memory = getattr(generate, "memory", None)
+    if memory is None:
         return
-    history.append({"role": "user", "content": prompt})
-    history.append({"role": "assistant", "content": draft})
+    memory.remember(prompt, draft)

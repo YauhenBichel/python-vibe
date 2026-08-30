@@ -17,6 +17,9 @@ DEPTH = {
     # `paths` and `task` are the bottom: they import nothing of their own.
     "paths": 0,
     "task": 0,
+    # What a run remembers. It imports nothing of its own, and the loop
+    # owns it: the model package is handed a memory, it does not make one.
+    "memory": 0,
     "model": 1,
     # `ship` sits above `scan` because reading a ticket means locating what
     # it names in the project.
