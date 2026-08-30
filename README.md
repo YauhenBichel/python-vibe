@@ -62,6 +62,7 @@ add one function. One laptop. 29–30 August 2026. **Not everyday-ready.**
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
 | Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
 | Does a 14B fit? | 9 GB of weights, 18 GB machine | **No.** 12–13 GB of swap, no run finished |
+| On a real repository | 4,580 files, not `demo/orders` | reading works; writing **1 / 12** |
 
 The four commands as typed, first night vs after the harness:
 
