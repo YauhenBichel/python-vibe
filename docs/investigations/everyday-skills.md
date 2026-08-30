@@ -10,7 +10,7 @@ type: article
 The everyday brain is small. It does not follow a 7-step essay. It copies
 **one `Action:` block** — often the first example in the system prompt, or
 it pastes the whole menu. Skills are published only after
-`scripts/skill_probe.py` on this machine.
+`scripts/measure/skill_probe.py` on this machine.
 
 Related: [everyday-laptop](./everyday-laptop.md).
 
@@ -26,7 +26,7 @@ Verbose skills (when-to / numbered steps):
 | same | `Action: write-tests` | Not an action |
 
 Tiny skills + harness prelude + short system prompt
-(`scripts/skill_probe.py`):
+(`scripts/measure/skill_probe.py`):
 
 | Task | prelude | First parsed action | Notes |
 | --- | --- | --- | --- |

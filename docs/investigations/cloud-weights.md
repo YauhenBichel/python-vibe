@@ -94,7 +94,7 @@ changed cell is the generate backend.
 
 Score is the same as the laptop tables: would a daily user ship the
 diff, and does the planted `NameError` stay gone. First-Action parse
-from `scripts/eval_everyday.py --live` is a second number. It flips
+from `scripts/measure/eval_everyday.py --live` is a second number. It flips
 between runs; do not treat one pass as a win.
 
 Everyday-ready still means: beat cell A on parse **and** on a real
@@ -121,8 +121,8 @@ not change with the cloud bill:
    weights stay on that account.
 4. Serve the adapter with vLLM or Ollama on the same box. The laptop
    uses `--engine openai` (or `OLLAMA_HOST`) against that URL.
-5. Evaluate with `scripts/eval_everyday.py --live` and
-   `scripts/demo.py`. If the LoRA loses to cell A, delete the adapter.
+5. Evaluate with `scripts/measure/eval_everyday.py --live` and
+   `scripts/run/demo.py`. If the LoRA loses to cell A, delete the adapter.
 
 `train.py --everyday` on the thirty seed rows is still a no, including
 when someone else is paying for the GPU. That is the C4 cell in

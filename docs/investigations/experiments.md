@@ -110,7 +110,7 @@ Write-up: [First-run four]({{ '/investigations/first-run-four/' | relative_url }
 
 ## Which small open model
 
-**Example.** `scripts/bench.py`. A case counts only if the function
+**Example.** `scripts/measure/bench.py`. A case counts only if the function
 runs and does the job — not if a file appeared.
 
 **Result**

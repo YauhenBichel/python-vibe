@@ -475,5 +475,24 @@ class TestsSitBesideWhatTheyTestTest(unittest.TestCase):
         self.assertEqual(loose, [], f"put these beside what they test: {loose}")
 
 
+    def test_no_script_is_left_loose(self) -> None:
+        """A script directly in scripts/ has no job to belong to.
+
+        Scripts are not components — nothing here belongs to `act` or
+        `scan`. What separates them is why you would run one: point the
+        tool at something, find out whether it is any good, or build the
+        weights it talks to.
+        """
+        loose = sorted(p.name for p in (ROOT / "scripts").glob("*.py"))
+        self.assertEqual(loose, [], f"put these under a job folder: {loose}")
+
+    def test_every_script_folder_is_named_for_a_job(self) -> None:
+        folders = sorted(
+            d.name for d in (ROOT / "scripts").iterdir()
+            if d.is_dir() and not d.name.startswith(("_", "."))
+        )
+        self.assertEqual(folders, ["measure", "run", "weights"])
+
+
 if __name__ == "__main__":
     unittest.main()

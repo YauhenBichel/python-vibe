@@ -4,10 +4,10 @@
 Each case starts from a fresh copy of `demo/orders`, so one case never sees
 another's changes and the checked-in project is never modified.
 
-    python scripts/demo.py                 # every case, needs Ollama
-    python scripts/demo.py --offline       # only the cases that use no model
-    python scripts/demo.py --case question
-    python scripts/demo.py --markdown docs/demo.md
+    python scripts/run/demo.py                 # every case, needs Ollama
+    python scripts/run/demo.py --offline       # only the cases that use no model
+    python scripts/run/demo.py --case question
+    python scripts/run/demo.py --markdown docs/demo.md
 
 Nothing here is staged. The results are whatever the model did, including
 the cases it fails.
@@ -25,7 +25,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness import Agent, AgentOptions  # noqa: E402
@@ -304,7 +304,7 @@ def render_markdown(rows: list[dict], model: str) -> str:
         "",
         "```bash",
         "ollama pull llama3.1:8b",
-        "python scripts/demo.py --markdown docs/demo.md",
+        "python scripts/run/demo.py --markdown docs/demo.md",
         "```",
         "",
         "Two columns matter. **Agent says** is whether it reported that it "

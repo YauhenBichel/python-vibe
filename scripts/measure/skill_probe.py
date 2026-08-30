@@ -4,7 +4,7 @@
 Uses `harness.agent.prompt.build_preamble`, the same builder the real loop
 uses, so what this measures is what the loop actually sends.
 
-  PYTHONPATH=src python3.13 scripts/skill_probe.py \\
+  PYTHONPATH=src python3.13 scripts/measure/skill_probe.py \\
     --project eval/fixtures/add_feature_pkg \\
     --skill add-feature "add a function multiply(a, b) and a unit test"
 """
@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.everyday import DEFAULT_EVERYDAY_OLLAMA  # noqa: E402

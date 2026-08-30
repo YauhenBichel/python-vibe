@@ -5,13 +5,13 @@ Stand-in (this week): FROM llama3.1:8b + agent system prompt.
 After you train python-vibe-8b and fuse: pass --from-gguf or --from-fused.
 
   ollama pull llama3.1:8b
-  PYTHONPATH=src python scripts/export_ollama.py
-  PYTHONPATH=src python scripts/export_ollama.py --create
+  PYTHONPATH=src python scripts/weights/export_ollama.py
+  PYTHONPATH=src python scripts/weights/export_ollama.py --create
 
 Linux GGUF of a fused MLX folder needs llama.cpp convert (not bundled):
 
   python convert_hf_to_gguf.py fused/python-vibe-8b --outfile fused/everyday.gguf
-  PYTHONPATH=src python scripts/export_ollama.py --from-gguf fused/everyday.gguf --create
+  PYTHONPATH=src python scripts/weights/export_ollama.py --from-gguf fused/everyday.gguf --create
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.agent_system import AGENT_SYSTEM  # noqa: E402

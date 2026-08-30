@@ -31,7 +31,7 @@ jobs:
         run: python -m unittest discover -s tests -q
 
       - name: Everyday eval gate (offline)
-        run: python scripts/eval_everyday.py
+        run: python scripts/measure/eval_everyday.py
 
       # Proves the command works with no PYTHONPATH and no repository paths.
       - name: Installed command

@@ -86,7 +86,7 @@ class StyleHarnessTest(unittest.TestCase):
         )
         self.assertIn(
             "scripts",
-            refuse_layout("scripts/chat.py", "", "def helper():\n    return 1\n"),
+            refuse_layout("scripts/run/chat.py", "", "def helper():\n    return 1\n"),
         )
         many = "".join(f"def fn_{i}():\n    return {i}\n\n" for i in range(4))
         self.assertIn(

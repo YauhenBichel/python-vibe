@@ -52,7 +52,7 @@ Ollama already exposes:
 A localhost proxy that defaults to the everyday model (and warns if you pick 0.5B):
 
 ```bash
-PYTHONPATH=src python scripts/openai_compat.py
+PYTHONPATH=src python scripts/run/openai_compat.py
 # http://127.0.0.1:8081/v1/chat/completions
 ```
 
@@ -114,7 +114,7 @@ agent system prompt. That is **not** a trained python-vibe-8b.
 After you fuse a 7B-class MLX adapter to a folder:
 
 1. Convert with [llama.cpp](https://github.com/ggml-org/llama.cpp) `convert_hf_to_gguf.py` (not in this repo).
-2. `PYTHONPATH=src python scripts/export_ollama.py --from-gguf fused/everyday.gguf --create`
+2. `PYTHONPATH=src python scripts/weights/export_ollama.py --from-gguf fused/everyday.gguf --create`
 
-Do not call this everyday-ready until `scripts/eval_everyday.py --live` beats
+Do not call this everyday-ready until `scripts/measure/eval_everyday.py --live` beats
 untuned 8B on Action: parse rate.

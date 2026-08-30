@@ -31,7 +31,7 @@ Measured on one laptop (29 Aug 2026): Ollama `llama3.1:8b`, `qwen2.5-coder:0.5b`
 | 8B first Action on three scoped tasks | 3 / 3 |
 | 8B live eval parse floor | 2 / 3 |
 
-First Action on the same three tasks (`scripts/skill_probe.py` plus one live `agent.py` question). A score of 1 means the first parsed Action was the intended one (`done` on a question, `patch` + `Append:` on add).
+First Action on the same three tasks (`scripts/measure/skill_probe.py` plus one live `agent.py` question). A score of 1 means the first parsed Action was the intended one (`done` on a question, `patch` + `Append:` on add).
 
 | Task | 0.5B | 8B + harness | Hosted IDE agent |
 | --- | --- | --- | --- |

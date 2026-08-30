@@ -52,7 +52,7 @@ for “undefined name still in the file → patch that name.”
 
 ## Measured on this laptop (29 Aug 2026, evening)
 
-`scripts/demo.py` against `demo/orders` with `llama3.1:8b`, eight steps.
+`scripts/run/demo.py` against `demo/orders` with `llama3.1:8b`, eight steps.
 
 | Job | Agent said done | Independent check | What the oracle should have caught |
 | --- | --- | --- | --- |
@@ -77,7 +77,7 @@ name in the file you named blocks `done`, even if `run` exited 0.
    harness opens first is quoted in the prompt.
 3. Add an oracle: `ast` / undefined names / unittest / “old def gone.”
 4. Refuse `done` until the oracle is quiet.
-5. Run `scripts/skill_probe.py` and `scripts/demo.py --case …` on this machine.
+5. Run `scripts/measure/skill_probe.py` and `scripts/run/demo.py --case …` on this machine.
 6. Publish the skill only if the first Action is the intended one.
 
 That is how a small LLM works like a bigger one on a laptop tree: not by

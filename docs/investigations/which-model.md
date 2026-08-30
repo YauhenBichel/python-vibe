@@ -16,7 +16,7 @@ Related: [model lanes](./model-lanes.md) ·
 
 ## How this was measured
 
-`scripts/bench.py` runs tasks in six tiers and then **runs the code it
+`scripts/measure/bench.py` runs tasks in six tiers and then **runs the code it
 wrote**. A case counts as working when the function does the job — not when
 a file appears.
 

@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def _load_serve():
     spec = importlib.util.spec_from_file_location(
-        "python_vibe_serve", ROOT / "scripts" / "serve.py"
+        "python_vibe_serve", ROOT / "scripts" / "run" / "serve.py"
     )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

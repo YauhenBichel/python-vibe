@@ -7,7 +7,7 @@ type: article
 
 # Investigation: what other agent harnesses do, and what this one was missing
 
-**Question.** `scripts/agent.py` is a harness around a model too small to
+**Question.** `scripts/run/agent.py` is a harness around a model too small to
 be trusted with a free-form tool loop. Published harnesses solve the same
 problem for larger models. Which of their design choices transfer to an 8B
 on a laptop, and which are weight-class luxuries?

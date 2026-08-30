@@ -21,7 +21,7 @@ body:
       label: Steps to reproduce
       placeholder: |
         1. PYTHONPATH=src python -m unittest discover -s tests -q
-        2. PYTHONPATH=src python scripts/chat.py "jsonl reader"
+        2. PYTHONPATH=src python scripts/run/chat.py "jsonl reader"
         3. See error
     validations:
       required: true

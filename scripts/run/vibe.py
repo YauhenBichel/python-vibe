@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Real-life vibe coding on this laptop: LoRA (or Ollama) → harness → optional /run.
 
-  PYTHONPATH=src python scripts/vibe.py
-  PYTHONPATH=src python scripts/vibe.py --run "weekday name for argv YYYY-MM-DD" -- 2026-08-29
+  PYTHONPATH=src python scripts/run/vibe.py
+  PYTHONPATH=src python scripts/run/vibe.py --run "weekday name for argv YYYY-MM-DD" -- 2026-08-29
 
 Type a task. After a draft: /run, /reset, /q.
 Uses the step-100 LoRA on MLX when mlx-lm is available (re-execs Python 3.13).
@@ -17,7 +17,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness.act.code import (  # noqa: E402

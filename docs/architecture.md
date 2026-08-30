@@ -121,7 +121,7 @@ move:
 | `no-tests` | code with no `test_*.py` anywhere |
 
 ```bash
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
+PYTHONPATH=src python3.13 scripts/run/agent.py --project /path/to/your/app \
   --skill readable-layout "why is this project hard to follow?"
 ```
 

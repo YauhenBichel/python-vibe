@@ -1,6 +1,6 @@
 # orders — the demo project
 
-A deliberately imperfect little app, used by `scripts/demo.py` to show what
+A deliberately imperfect little app, used by `scripts/run/demo.py` to show what
 python-vibe does on ordinary daily tasks. Every problem here is planted:
 
 - `src/orders.py` has a latent `NameError` in `total_with_tax`, which no

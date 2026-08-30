@@ -8,7 +8,7 @@ type: article
 
 # Same jobs, same evening
 
-The same eleven tasks from `scripts/demo.py` were run on this laptop with
+The same eleven tasks from `scripts/run/demo.py` were run on this laptop with
 `llama3.1:8b` (8 steps) and then walked by a hosted IDE agent on the same
 wording, against `demo/orders`. The hosted column is not a local weight.
 
@@ -29,9 +29,9 @@ Related: [local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | re
 
 ## What was measured
 
-`PYTHONPATH=src python3.13 scripts/demo.py --steps 8` against a fresh copy
+`PYTHONPATH=src python3.13 scripts/run/demo.py --steps 8` against a fresh copy
 of `demo/orders` per case. Independent checks are the `check=` snippets in
-`scripts/demo.py`, not the agent's summary. The hosted agent read the same
+`scripts/run/demo.py`, not the agent's summary. The hosted agent read the same
 files and answered the same prompts in one sitting.
 
 File jobs that have an independent check: **3 / 4 passed** on the first 8B

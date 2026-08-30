@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Everyday gate. Offline always; --live compares an Ollama model.
 
-  PYTHONPATH=src python scripts/eval_everyday.py
-  PYTHONPATH=src python scripts/eval_everyday.py --live --model llama3.1:8b
+  PYTHONPATH=src python scripts/measure/eval_everyday.py
+  PYTHONPATH=src python scripts/measure/eval_everyday.py --live --model llama3.1:8b
 
 Do not claim everyday-ready until --live parse rate and /run pass beat the
 same numbers for an untuned 8B on this machine.
@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.agent_system import AGENT_SYSTEM  # noqa: E402

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write data/agent-loop JSONL from seed tool traces (not 2k live logs).
 
-  PYTHONPATH=src python scripts/build_agent_data.py
+  PYTHONPATH=src python scripts/weights/build_agent_data.py
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.agent_traces import all_pairs, system_prompt  # noqa: E402
@@ -40,7 +40,7 @@ def main() -> None:
     print(dest, counts, "extra", extra.is_file())
     print(
         "Seed + optional extra.jsonl (gitignored). "
-        "Record with: scripts/agent.py --record data/agent-loop/extra.jsonl"
+        "Record with: scripts/run/agent.py --record data/agent-loop/extra.jsonl"
     )
 
 

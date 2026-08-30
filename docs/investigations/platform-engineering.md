@@ -48,7 +48,7 @@ development for that gap is: pin the Path:, refuse the Windows-hostile
 draft, keep config files under the same limit as Python.
 
 The 0.5B LoRA is still a style prior. Do not train it on thirty path rows
-and expect agency. Measure `write-paths` with `scripts/skill_probe.py`
+and expect agency. Measure `write-paths` with `scripts/measure/skill_probe.py`
 before calling it everyday-ready.
 
 ## Honest limits

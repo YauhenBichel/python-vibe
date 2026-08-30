@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Prove python-vibe works: harness always, Ollama/MLX only if asked.
 
-  PYTHONPATH=src python scripts/smoke.py
-  PYTHONPATH=src python scripts/smoke.py --live
-  PYTHONPATH=src python scripts/smoke.py --mlx
+  PYTHONPATH=src python scripts/measure/smoke.py
+  PYTHONPATH=src python scripts/measure/smoke.py --live
+  PYTHONPATH=src python scripts/measure/smoke.py --mlx
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness.guard.fallbacks import PYTHON_VIBE_FALLBACK  # noqa: E402
@@ -86,7 +86,7 @@ def _mlx_python() -> str:
 
 
 def _mlx() -> None:
-    script = ROOT / "scripts" / "generate_mlx.py"
+    script = ROOT / "scripts" / "weights" / "generate_mlx.py"
     cmd = [_mlx_python(), str(script), PROMPT, "--best"]
     env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
     print("+", " ".join(cmd), flush=True)

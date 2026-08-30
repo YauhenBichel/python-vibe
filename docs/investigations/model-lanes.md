@@ -82,7 +82,7 @@ parsed `Action:` cannot sneak into a write.
 
 ## Live write jobs, same afternoon
 
-`scripts/demo.py` on `demo/orders`, `llama3.1:8b`.
+`scripts/run/demo.py` on `demo/orders`, `llama3.1:8b`.
 
 | When | Job | Verified | Seconds | What happened |
 | --- | --- | --- | --- | --- |
@@ -112,7 +112,7 @@ are now **harness jobs**. Before the first generate, the harness:
 2. Use `route` to see the lane. Use `--tiny` only for smoke.
 3. Do not pull the 30B for daily writes. It already lost on latency.
 4. If you want a **write specialist**, pull `qwen2.5-coder:7b` and
-   measure `scripts/demo.py --model qwen2.5-coder:7b --case bugfix`
+   measure `scripts/run/demo.py --model qwen2.5-coder:7b --case bugfix`
    against this afternoon’s 8B log. Keep it only if the independent
    file check passes and the 8B still fails.
 5. A unique typo or rename is finished by the harness. Do not spend
