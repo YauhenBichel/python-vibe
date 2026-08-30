@@ -33,6 +33,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.
 - [Asking a bigger model]({{ '/investigations/asking-a-bigger-model/' | absolute_url }}): A run that stops to ask has failed 3 times out of 3. A spent step budget means nothing half the time.
+- [Small steps, measured]({{ '/investigations/small-steps/' | absolute_url }}): A chain of easy tasks did not beat one hard task, because separate runs do not share a memory.
 - [What to improve]({{ '/investigations/what-to-improve/' | absolute_url }}): Harness work that can close a gap, and work that cannot.
 - [Small models, classic development]({{ '/investigations/small-llm-harness/' | absolute_url }}): Oracles and refuses that make an 8B finish like a careful review.
 - [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | absolute_url }}): When new weights help. Not another 0.5B run. Not 30 seed traces.

@@ -135,4 +135,5 @@ Cloud weights {{ '/investigations/cloud-weights/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
 Same jobs {{ '/investigations/same-jobs/' | absolute_url }}
 Asking a bigger model {{ '/investigations/asking-a-bigger-model/' | absolute_url }}
+Small steps, measured {{ '/investigations/small-steps/' | absolute_url }}
 What to improve {{ '/investigations/what-to-improve/' | absolute_url }}
