@@ -11,9 +11,9 @@ Three easy paths. All stay on `127.0.0.1` unless you choose otherwise.
 | Path | One command | What you get |
 | --- | --- | --- |
 | Cursor (easiest) | `python-vibe editors cursor --allow-writes` | MCP + tasks in this folder. See [Cursor]({{ '/cursor/' | relative_url }}). |
-| Editor tasks | `python-vibe editors vscode` | Command Palette → Run Task → ask / run / brief. Uses the **jail**. |
+| Editor tasks | `python-vibe editors vscode` | Command Palette → Run Task → ask / run / brief. Uses the same **write limit**. |
 | Continue (VS Code) | `python-vibe editors continue` | Chat uses local Ollama 8B. Uses the **editor’s** tools. |
-| Zed | `python-vibe editors zed` | Merges a `context_servers` entry into `.zed/settings.json`. Same jail. |
+| Zed | `python-vibe editors zed` | Merges a `context_servers` entry into `.zed/settings.json`. Same write limit. |
 
 `pip install -e .` first so `python-vibe` is on your PATH. `--project` defaults to the current folder. Files land in `.vscode/`, `.continue/`, or `.cursor/` inside **your** app. This repo already ships `.cursor/mcp.json`.
 
@@ -56,7 +56,7 @@ PYTHONPATH=src python scripts/openai_compat.py
 # http://127.0.0.1:8081/v1/chat/completions
 ```
 
-Or let the **jail** answer chat (writes off unless `--allow-writes`):
+Or let the **write limit** apply to chat (writes off unless `--allow-writes`):
 
 ```bash
 python-vibe serve --project /path/to/your/app
@@ -70,9 +70,9 @@ In the editor’s OpenAI-compatible settings:
 - API key: `ollama` (any non-empty string)
 - Model: `llama3.1:8b`
 
-Some hosted editors send the OpenAI request from a **remote** backend. Those cannot see `127.0.0.1`. Do not open a public tunnel to the jail. Use tasks or the local MCP instead.
+Some hosted editors send the OpenAI request from a **remote** backend. Those cannot see `127.0.0.1`. Do not open a public tunnel to it. Use tasks or the local MCP instead.
 
-## 4. Cursor / local MCP (jail, no tunnel)
+## 4. Cursor / local MCP (write limit, no tunnel)
 
 ```bash
 python-vibe editors cursor --allow-writes
@@ -84,7 +84,7 @@ Stdout is JSON-RPC only. Step-by-step: [Cursor]({{ '/cursor/' | relative_url }})
 
 This is the editor calling python-vibe. It is **not** an Action the 8B may emit.
 
-## 5. CLI (same jail, no editor)
+## 5. CLI (same write limit, no editor)
 
 ```bash
 python-vibe run /path/to/your/app "find a real NameError and fix it"

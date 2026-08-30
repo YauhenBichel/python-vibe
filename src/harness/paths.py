@@ -39,7 +39,7 @@ EVAL_DIR = REPO_ROOT / "eval"
 
 
 def suffix_globs() -> tuple[str, ...]:
-    """rglob patterns for every jail text suffix, sorted for stable tests."""
+    """rglob patterns for every writable text suffix, sorted for stable tests."""
     return tuple(f"*{suffix}" for suffix in sorted(TEXT_SUFFIXES))
 
 

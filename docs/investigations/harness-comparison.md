@@ -38,7 +38,7 @@ of leverage for a small model:
 | Context assembly | file list + sizes | `AGENTS.md`, session tree | linear message history | ranked repo map of signatures |
 | Edit primitive | unique-substring `Find:` | exact match, must hit once | `sed`/heredoc via bash | search-replace blocks |
 | Verification | model must ask for `run` | model runs tests via bash | bash | auto-lint, auto-test |
-| Permission | path jail, `.bak`, no shell | project trust gate | sandbox/container | git commit per change |
+| Permission | path check, `.bak`, no shell | project trust gate | sandbox/container | git commit per change |
 | Skills | `SKILL.md` kit | Agent Skills standard | none | none |
 
 The text protocol is the right call here and stays: an 8B through Ollama
@@ -50,7 +50,7 @@ Dropping to a single `bash` tool does **not** transfer. That design moves
 the whole burden of not destroying the repo onto the model's judgement.
 mini-swe-agent can afford it because it runs frontier models inside a
 container. This harness runs an 8B against a laptop working tree, so the
-jail (`resolve_project_file`, no shell, no `curl | sh`) is the product.
+limit (`resolve_project_file`, no shell, no `curl | sh`) is the product.
 
 ## What the literature says is the biggest lever
 

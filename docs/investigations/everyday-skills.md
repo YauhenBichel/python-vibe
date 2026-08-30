@@ -82,7 +82,7 @@ These kit skills, each a **single copy-paste Action** (no essays):
 - `skills/merge-pr/SKILL.md` — `Action: merge Number: N` only when the
   task says merge
 
-Ship is jailed (`src/harness/ship/git_ship.py`): no `--force`, not
+Ship is limited (`src/harness/ship/git_ship.py`): no `--force`, not
 `main`/`master`, unstage `.env` / `credentials.json`. Order: issue →
 branch → patch → commit → push → pr.
 

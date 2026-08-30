@@ -172,7 +172,7 @@ Write-up: [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | re
 ## A larger open model
 
 **Example.** The 30B already timed out on this laptop. `--engine openai`
-sends only the generate call to a GPU. The jail stays here.
+sends only the generate call to a GPU. The write limit stays here.
 
 **Result**
 

@@ -48,7 +48,7 @@ The 8B still answered `listen_addr` as “a tuple of host and port” and omitte
 | `YauhenBichel/python-vibe-0.5b` | Only published Hub weights. QLoRA on Qwen2.5-Coder-0.5B. Style prior from ~45 pairs. | Adapters on disk. Held-out vibe tasks 0/4. A 100-file stub walk returned “no issues”. | Not a daily coding model. Misses `Action:` lines. Do not train more 0.5B for agency. |
 | `qwen2.5-coder:0.5b` (`--tiny` / `serve.py`) | Base 0.5B without the LoRA. Linux serve is this + harness, not MLX adapters. | Pulled (~400 MB). No parse on `listen_addr` or add-multiply (echoed the skill). | Worse than 8B. Smoke and CI only. |
 | `vibe.py` / `batch_review.py` | One-shot draft or one-file review. No explore loop. | Shipped. A batch of 100 stubs was not a review. | A hosted agent walks many files, applies diffs, and runs tests. |
-| `agent.py` + `llama3.1:8b` | Everyday default. Text Actions + locate prelude + skills + jail. | Pulled (~5 GB). After a hint fix: `done` in one step on `listen_addr`. Add-feature probe: `patch` + `Append:`. Parse eval 2/3. | Closest laptop stand-in. Answers are shallow. No extra tools, no browser, text-file jail (no secrets). 20 steps max. |
+| `agent.py` + `llama3.1:8b` | Everyday default. Text Actions + locate prelude + skills and the write limit. | Pulled (~5 GB). After a hint fix: `done` in one step on `listen_addr`. Add-feature probe: `patch` + `Append:`. Parse eval 2/3. | Closest laptop stand-in. Answers are shallow. No extra tools, no browser, text files only (no secrets). 20 steps max. |
 | `agent.py` + qwen2.5-coder 7B / 14B / 32B | Listed in `everyday.py`. Same harness. | Not pulled. Not measured that day. | Likely stronger Python than 8B. Still a text protocol, not native IDE tools. 32B is RAM-heavy. |
 | `train.py --everyday` (`python-vibe-8b`) | MLX LoRA on Qwen2.5-Coder-7B-Instruct-4bit. Needs ~2k tool traces. | Config only. `adapters/python-vibe-8b` is not trained. Seed data is 30 train rows. | Could teach `Action:` format. Will not grow context, extra tools, or an IDE loop. |
 | `openai_compat.py` | Local OpenAI `/v1` so an editor can pick `llama3.1:8b`. | Docs shipped. Does not add tools. The editor still drives the loop. | Wires a python-vibe brain into an editor chat. Quality stays 8B-class unless you pick a hosted model. |
@@ -63,13 +63,13 @@ A 30B coder may already sit on the same machine as `--model`. It is not in `EVER
 | Add `multiply(a, b)` + test | No parse. Wrote `Action: patch + Append:` as one line. | `patch Path: pkg/mathy.py` + `Append: def multiply…` | Function + test + run. |
 | Held-out vibe (weekday, count-md) | 0 / 4 with harness. | Eval gate exists. Live parse 2/3. Not everyday-ready. | Ordinary edits. |
 | Review a 100-file repo | 100× “no issues” on stubs. | Need `--scope` + `map`. 8B will not walk the tree. | Multi-file, tests, extra tools. |
-| Browser / extra tools / any language | No. `run` is Python argv. Jail is project text files. | No. | Yes. |
+| Browser / extra tools / any language | No. `run` is Python argv. Writes are limited to project text files. | No. | Yes. |
 | Offline / $0 API | Yes. ~400 MB. | Yes. ~5 GB RAM for 8B Q4. | No. Cloud, billed on a usage pool. |
-| Safe writes on a laptop | `PythonVibeGuard` + `.bak` + 2/3 length + `ast.parse`. | Same jail. Questions refuse `patch` / `edit` / `run`. | Editor diff / confirm. No PV00x rules. Relies on you. |
+| Safe writes on a laptop | `PythonVibeGuard` + `.bak` + 2/3 length + `ast.parse`. | Same write limit. Questions refuse `patch` / `edit` / `run`. | Editor diff / confirm. No PV00x rules. Relies on you. |
 
 ## Use python-vibe when
 
-You want a cheap offline loop on a small Python tree (≤40 files, ≤200 KB), writes jailed, no cloud. Default `llama3.1:8b`. Keep 0.5B for Hub demos and CI smoke.
+You want a cheap offline loop on a small Python tree (≤40 files, ≤200 KB), writes limited to one folder, no cloud. Default `llama3.1:8b`. Keep 0.5B for Hub demos and CI smoke.
 
 Pull 7B or 14B if 8B answers stay shallow. Train `python-vibe-8b` only after ~2k redacted traces.
 

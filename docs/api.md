@@ -96,7 +96,7 @@ Publishing to the Hub needs `pip install -e ".[hub]"`.
 ### Remote weights
 
 `--engine openai` sends generate calls to an OpenAI-compatible host
-(Hugging Face Inference, vLLM, or a box you rent). The jail stays on
+(Hugging Face Inference, vLLM, or a box you rent). The write limit stays on
 this machine. Set `PYTHON_VIBE_BASE_URL` and a token
 (`HF_TOKEN` or `PYTHON_VIBE_API_KEY`). A remote Ollama is the same
 `--engine ollama` with `OLLAMA_HOST` pointed at that box.

@@ -1,6 +1,6 @@
 ---
 title: Everyday laptop
-description: The 0.5B LoRA is not daily work. Comfortable explore / edit / run needs a larger local model, tool traces, and a write jail.
+description: The 0.5B LoRA is not daily work. Comfortable explore / edit / run needs a larger local model, tool traces, and a write limit.
 date: 2026-08-29
 type: article
 ---

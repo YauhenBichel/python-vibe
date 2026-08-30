@@ -33,7 +33,7 @@ Cursor: [use python-vibe in Cursor]({{ '/cursor/' | relative_url }}).
 | Zed | `editors zed` | none. Merges `context_servers` |
 | HTTP OpenAI shape | `python-vibe serve --project ~/app` | any OpenAI-compatible client |
 
-Do not add the official MCP Python SDK to *this* repo. The jail stays
+Do not add the official MCP Python SDK to *this* repo. The write limit stays
 stdlib so `pip install -e .` builds nothing on Windows, macOS, or Linux.
 
 ## Write a plugin (other repo)
@@ -46,7 +46,7 @@ Treat python-vibe as a **subprocess**, not as a library you re-implement.
    - `python-vibe mcp --project <abs>` — JSON-RPC on stdin/stdout
    - `python-vibe serve --project <abs>` — `127.0.0.1` only
    - `python-vibe run <abs> "<task>" --json` — one-shot
-3. **Never** tunnel the jail. Hosted chat that cannot see loopback
+3. **Never** expose it to the internet. Hosted chat that cannot see loopback
    should use tasks or a local child process.
 
 ### Packages that are actually useful
@@ -54,7 +54,7 @@ Treat python-vibe as a **subprocess**, not as a library you re-implement.
 | Job | Package | Why |
 | --- | --- | --- |
 | VS Code / compatible extension | `@types/vscode` + `vsce` | Register a task, or register an MCP server definition |
-| Register MCP from an extension | VS Code `lm.registerMcpServerDefinitionProvider` | Points at `python-vibe mcp`. Do not rewrite the jail in TypeScript |
+| Register MCP from an extension | VS Code `lm.registerMcpServerDefinitionProvider` | Points at `python-vibe mcp`. Do not rewrite the write limit in TypeScript |
 | Talk MCP from TypeScript | `@modelcontextprotocol/sdk` | Only if you write a *different* server. To wrap us, spawn stdio |
 | Talk MCP from Python | `mcp` (PyPI, official SDK) | Same: other servers. Our server is already stdlib JSON-RPC |
 | OpenAI-shaped HTTP | official `openai` client | Base URL `http://127.0.0.1:8090/v1`, model `llama3.1:8b` |

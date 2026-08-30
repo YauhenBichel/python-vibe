@@ -1,6 +1,6 @@
 ---
 title: Cloud weights
-description: How to try a larger model or a later LoRA without leaving the python-vibe jail. Inference moves to a GPU box. The harness stays on the laptop.
+description: How to try a larger model or a later LoRA without giving up the python-vibe write limit. Inference moves to a GPU box. The harness stays on the laptop.
 permalink: /investigations/cloud-weights/
 date: 2026-08-29
 type: article
@@ -10,7 +10,7 @@ type: article
 
 **Question.** The laptop 8B is the everyday brain. A 30B timed out here.
 How do we experiment with a stronger model, or a later fine-tune, without
-dropping the jail or training the 0.5B again?
+giving up the write limit or training the 0.5B again?
 
 **Answer.** Keep the harness on the laptop. Move **only the generate
 call** to a GPU you rent. Same `Action:` schema, same oracles, same
@@ -134,7 +134,7 @@ when someone else is paying for the GPU. That is the C4 cell in
 - Change `serve.py` to bind `0.0.0.0`. The sidecar stays loopback.
 - Put tokens, hostnames, or adapter folders in git.
 - Call a remote 32B everyday-ready from one parse pass.
-- Drop `PythonVibeGuard` because the model is larger. The jail is the
+- Drop `PythonVibeGuard` because the model is larger. The write limit is the
   product.
 
 Order of spend: measure cell B on the four Start commands and the

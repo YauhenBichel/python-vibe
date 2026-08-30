@@ -113,7 +113,7 @@ Thread: [discussion #128](https://github.com/YauhenBichel/python-vibe/discussion
 ## Everyday agent
 
 **Small** (≤40 first-party text files, ≤200 KB): the agent gets a file list.
-The jail is Python plus a few config suffixes (`.toml`, `.yml`, `.json`);
+Writes are limited to Python plus a few config suffixes (`.toml`, `.yml`, `.json`);
 secret names are refused.
 
 **Large**: stay in one folder.
@@ -137,7 +137,7 @@ Why each of those: [harness-comparison](./docs/investigations/harness-comparison
 Best-practice skills live in `skills/`. The agent preloads them when the
 task says “add” / “test” / “path” / “venv” / “create a package” / “rename” / “issue” / “PR”,
 or you pass `--skill`. `Action: skill` + `Name:` loads one mid-loop. Ship
-actions (`issue`, `branch`, `commit`, `push`, `pr`, `merge`) are jailed:
+actions (`issue`, `branch`, `commit`, `push`, `pr`, `merge`) are limited:
 no force, not `main`/`master`, no secret filenames. Full catalog and when
 each one loads: [Skills](https://yauhenbichel.github.io/python-vibe/skills/).
 
