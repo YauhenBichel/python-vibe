@@ -16,6 +16,7 @@ rather than another branch inside the loop.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -67,6 +68,12 @@ from harness.task import (
 MAX_QUESTIONS = 2
 # How often the loop may send a summary back for being too thin.
 MAX_THIN_DONE = 2
+# How often a change task may finish without changing anything before the
+# run stops calling it done.
+MAX_EMPTY_DONE = 2
+# A quoted line short enough to appear by chance proves nothing. `return`
+# and `import os` are in half the files in any project.
+MIN_QUOTED_CHARS = 12
 # A Summary this close to a line it was given is an echo, not an answer.
 ECHO_RATIO = 0.75
 
@@ -107,7 +114,7 @@ class LoopState:
     scope: str = ""
     questions_asked: int = 0
     wrote_something: bool = False
-    empty_done_refused: bool = False
+    empty_done_refused: int = 0
     thin_done_refused: int = 0
     instructions: tuple[str, ...] = ()
     guard: LoopGuard = field(default_factory=LoopGuard)
@@ -340,34 +347,147 @@ def _squash(text: str) -> str:
     return " ".join(text.lower().split())
 
 
-def refuse_done_without_change(state: LoopState, turn) -> str:
-    """Reject the first `done` on a change task that changed nothing.
+def change_task_file(state: LoopState) -> str | None:
+    """The file a finish-without-changing would have to point at.
 
-    An 8B told to fix a named file was seen finishing after four steps with
-    no write and a summary describing the project in general. Refused once
-    only: a file that is already correct is a real answer, but the model
-    has to say so rather than drift.
+    None when the task never asked for a change, so finishing without one
+    is a good answer and none of this applies.
     """
-    if state.wrote_something or state.empty_done_refused:
-        return ""
     task = state.task
     if looks_like_question(task) or looks_like_ship(task):
-        return ""
+        return None
+    named = named_project_file(task, state.project)
     wants_change = (
         looks_like_add_feature(task)
         or looks_like_fix_smell(task)
         or looks_like_new_package(task)
-        or bool(named_project_file(task, state.project))
+        or bool(named)
     )
     if not wants_change:
+        return None
+    return named or state.located_path
+
+
+def quotes_a_line_from(summary: str, project: Path, rel: str) -> bool:
+    """True when the summary copies a line that really is in that file.
+
+    Copying a line is something only a reader can do. Saying a file is
+    already correct is something anyone can do, and a model handed the
+    words will hand them back: a run refused once for changing nothing
+    replied "The line is already correct." That names no line, and it
+    was accepted, so the run reported success having done nothing.
+    """
+    if not rel:
+        return False
+    try:
+        text = (project / rel).read_text(encoding="utf-8")
+    except OSError:
+        return False
+    flat = " ".join(summary.split())
+    if not flat:
+        return False
+    for line in text.splitlines():
+        quoted = " ".join(line.split())
+        if len(quoted) >= MIN_QUOTED_CHARS and quoted in flat:
+            return True
+    return False
+
+
+# A dotted or underscored name in the task is something the task is
+# about. Plain words are not: "add the field stopped" is prose, while
+# `result.stopped` is a thing that either is in the file or is not.
+_CODE_NAME = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+\b|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b")
+
+
+def missing_from_file(task: str, project: Path, rel: str) -> str:
+    """A name the task is about that is nowhere in the file.
+
+    Quoting a line proves the model read the file. It does not prove it
+    read the right one: a run asked to add `result.stopped` cleared that
+    bar by quoting `if __name__ == "__main__":`, which is in every
+    script ever written. Nothing can be already correct about adding a
+    name that is not there, and that much is checkable.
+    """
+    if not rel:
         return ""
-    state.empty_done_refused = True
-    named = named_project_file(task, state.project)
-    where = f"Path: {named}" if named else "Path: the file you read"
+    try:
+        text = (project / rel).read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    for name in _CODE_NAME.findall(task):
+        if name.endswith(".py") or name in rel:
+            continue
+        if name not in text:
+            return name
+    return ""
+
+
+def _proved_already_correct(state: LoopState, turn) -> bool:
+    """The claim that nothing needed changing, backed by a line."""
+    rel = change_task_file(state)
+    if not rel:
+        return False
+    if missing_from_file(state.task, state.project, rel):
+        return False
+    summary = getattr(turn, "summary", "") or ""
+    return quotes_a_line_from(summary, state.project, rel)
+
+
+def refuse_done_without_change(state: LoopState, turn) -> str:
+    """Reject a `done` on a change task that changed nothing.
+
+    An 8B told to fix a named file was seen finishing after four steps
+    with no write and a summary describing the project in general. A file
+    that is already correct is a real answer, but the model has to show
+    the line rather than assert it.
+    """
+    if state.wrote_something or change_task_file(state) is None:
+        return ""
+    if state.empty_done_refused and _proved_already_correct(state, turn):
+        return ""
+    if state.empty_done_refused >= MAX_EMPTY_DONE:
+        return ""
+    state.empty_done_refused += 1
+    rel = change_task_file(state) or ""
+    if state.empty_done_refused == 1:
+        where = f"Path: {rel}" if rel else "Path: the file you read"
+        return (
+            f"Nothing was changed. Action: patch {where} with a Find: line "
+            "copied whole from the file and a Replace:. If the file is "
+            "already correct, Action: done Summary: copy the line that "
+            "makes it correct, exactly as it appears."
+        )
+    if not rel:
+        return (
+            "Nothing was changed and the summary shows no line for it. "
+            "Action: patch the file you read, or Action: done Summary: "
+            "quote the line that already does the job."
+        )
     return (
-        f"Nothing was changed. Action: patch {where} with a Find: line "
-        "copied whole from the file and a Replace:. If the file is already "
-        "correct, Action: done Summary: say which line is already correct."
+        f"That summary copies no line from {rel}. Action: read Path: "
+        f"{rel}, then either patch it, or Action: done Summary: paste "
+        "the one line that already does the job."
+    )
+
+
+def done_without_proof(state: LoopState, turn) -> str:
+    """What to report instead of a `done` that has nothing to show.
+
+    Returns the honest summary, or "" when the finish is a real one. The
+    run ends either way. What changes is whether it claims success, and
+    two of nine failures in a 45-run benchmark reported success having
+    written nothing, which no stop reason can catch.
+    """
+    if state.wrote_something or not state.empty_done_refused:
+        return ""
+    if change_task_file(state) is None or _proved_already_correct(state, turn):
+        return ""
+    rel = change_task_file(state) or ""
+    where = f" {rel} was" if rel else " the file was"
+    return (
+        f"Asked for a change,{where} left as it was, and the closing "
+        "summary points at no line that made the change unnecessary. "
+        "Reporting this as unfinished rather than done."
     )
 
 

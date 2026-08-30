@@ -9,6 +9,7 @@ forward slashes, so the two styles must not mix.
 import re
 import tempfile
 import unittest
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +17,13 @@ ROOT = Path(__file__).resolve().parents[1]
 from harness.act.tools import glob_py, grep_py, map_py
 from harness.paths import as_project_rel, rel_posix, venv_python
 from harness.scan.project_brief import classify_project, render_brief
+
+@dataclass
+class _Turn:
+    """The one field these rules read off a model turn."""
+
+    summary: str
+
 
 MODULE = "def compute_total(rows: list[int]) -> int:\n    return sum(rows)\n"
 
@@ -181,13 +189,129 @@ class DoneWithoutChangeTest(unittest.TestCase):
             state.wrote_something = True
             self.assertEqual(refuse_done_without_change(state, None), "")
 
-    def test_refused_only_once(self) -> None:
+    def test_saying_it_is_already_correct_is_not_enough(self) -> None:
+        """The escape hatch was a sentence the refusal handed the model.
+
+        A real run, refused once for changing nothing, came back with
+        "The line is already correct." That names no line. It was
+        accepted, and the run reported success having written nothing.
+        """
         from harness.agent.policy import refuse_done_without_change
 
         with tempfile.TemporaryDirectory() as tmp:
             state = self._state(_project(tmp), "fix src/app.py for Windows")
-            self.assertNotEqual(refuse_done_without_change(state, None), "")
-            self.assertEqual(refuse_done_without_change(state, None), "")
+            self.assertIn("Nothing was changed",
+                          refuse_done_without_change(state, None))
+            second = refuse_done_without_change(state, _Turn("The line is already correct."))
+            self.assertIn("copies no line", second)
+
+    def test_quoting_a_line_from_the_file_is_enough(self) -> None:
+        """A file that needs no change is a real answer, shown not asserted."""
+        from harness.agent.policy import refuse_done_without_change
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state(_project(tmp), "fix src/app.py for Windows")
+            refuse_done_without_change(state, None)
+            turn = _Turn("Already correct: def compute_total(rows: list[int]) -> int:")
+            self.assertEqual(refuse_done_without_change(state, turn), "")
+
+    def test_the_run_stops_claiming_success_when_it_cannot_show_a_line(self) -> None:
+        from harness.agent.policy import done_without_proof, refuse_done_without_change
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state(_project(tmp), "fix src/app.py for Windows")
+            unproven = _Turn("The line is already correct.")
+            refuse_done_without_change(state, unproven)
+            self.assertIn("unfinished", done_without_proof(state, unproven))
+
+    def test_a_shown_line_still_finishes_as_done(self) -> None:
+        from harness.agent.policy import done_without_proof, refuse_done_without_change
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state(_project(tmp), "fix src/app.py for Windows")
+            refuse_done_without_change(state, None)
+            turn = _Turn("Already correct: def compute_total(rows: list[int]) -> int:")
+            self.assertEqual(done_without_proof(state, turn), "")
+
+    def test_a_line_short_enough_to_be_a_coincidence_is_not_proof(self) -> None:
+        """`x = 1` and `return` are in half the files in any project.
+
+        Without a minimum length, a summary that happens to contain one
+        counts as having read the file, which is the whole thing this is
+        meant to establish.
+        """
+        from harness.agent.policy import quotes_a_line_from
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "m.py").write_text(
+                "x = 1\ndef total(rows: list[int]) -> int:\n", encoding="utf-8"
+            )
+            self.assertFalse(quotes_a_line_from("already correct: x = 1", root, "m.py"))
+            self.assertTrue(
+                quotes_a_line_from(
+                    "already correct: def total(rows: list[int]) -> int:",
+                    root,
+                    "m.py",
+                )
+            )
+
+    def test_a_name_the_task_is_about_that_is_not_in_the_file(self) -> None:
+        """Quoting a line proves reading. It does not prove reading the right one.
+
+        A run asked to add `result.stopped` cleared the quote bar with
+        `if __name__ == "__main__":`, which is in every script ever
+        written. Nothing can be already correct about adding a name that
+        is not there.
+        """
+        from harness.agent.policy import missing_from_file
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "m.py").write_text(
+                'result = go()\nif __name__ == "__main__":\n    main()\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                missing_from_file("add result.stopped to m.py", root, "m.py"),
+                "result.stopped",
+            )
+            self.assertEqual(
+                missing_from_file("add result.stopped to m.py", root, "gone.py"), ""
+            )
+
+    def test_prose_is_not_treated_as_a_name(self) -> None:
+        """Only dotted or underscored words are things a file can lack."""
+        from harness.agent.policy import missing_from_file
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "m.py").write_text("x = 1\n", encoding="utf-8")
+            self.assertEqual(missing_from_file("fix m.py for Windows", root, "m.py"), "")
+
+    def test_an_absent_name_beats_a_quoted_line(self) -> None:
+        from harness.agent.policy import refuse_done_without_change
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _project(tmp)
+            state = self._state(project, "add compute_total.cached to src/app.py")
+            refuse_done_without_change(state, None)
+            quoted = _Turn("already correct: def compute_total(rows: list[int]) -> int:")
+            self.assertIn("copies no line", refuse_done_without_change(state, quoted))
+
+    def test_a_file_that_is_not_there_proves_nothing(self) -> None:
+        from harness.agent.policy import quotes_a_line_from
+
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertFalse(quotes_a_line_from("anything", Path(tmp), "gone.py"))
+
+    def test_a_write_is_never_second_guessed(self) -> None:
+        from harness.agent.policy import done_without_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state(_project(tmp), "fix src/app.py for Windows")
+            state.wrote_something = True
+            self.assertEqual(done_without_proof(state, _Turn("changed it")), "")
 
     def test_a_question_is_never_refused_for_not_writing(self) -> None:
         from harness.agent.policy import refuse_done_without_change

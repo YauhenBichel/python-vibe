@@ -318,7 +318,10 @@ class OpeningQuestionTest(unittest.TestCase):
                 result = Agent(options).run()
         self.assertEqual(len(asked), 1)
         self.assertIn("does not name a file", asked[0])
-        self.assertTrue(result.ok)
+        # The scripted model says it tidied the file and writes nothing.
+        # That is the false finish, so the run must not call it a success.
+        self.assertFalse(result.ok)
+        self.assertIn("unfinished", result.summary)
 
     def test_a_clear_task_is_not_asked_about(self) -> None:
         asked = []

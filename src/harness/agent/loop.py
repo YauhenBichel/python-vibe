@@ -20,7 +20,13 @@ from harness.act.tools import run_python
 from harness.scan.names import undefined_in_file
 from harness.agent.dispatch import ACTIONS, run_action
 from harness.agent.options import AgentOptions, AgentResult, Step
-from harness.agent.policy import LoopState, next_prompt, refuse_before, refuse_done
+from harness.agent.policy import (
+    LoopState,
+    done_without_proof,
+    next_prompt,
+    refuse_before,
+    refuse_done,
+)
 from harness.agent.prompt import Preamble, build_preamble
 from harness.locate import named_file_review_summary
 from harness.memory import Conversation
@@ -357,9 +363,12 @@ class Agent:
                     prompt = blocked
                     continue
                 steps.append(Step(number, "done", result=turn.summary, draft=draft))
+                # The model has run out of refusals but still has nothing
+                # to show. Let the run end; do not let it end as a win.
+                unproven = done_without_proof(state, turn)
                 return AgentResult(
-                    ok=True,
-                    summary=turn.summary or "done",
+                    ok=not unproven,
+                    summary=unproven or turn.summary or "done",
                     stopped="done",
                     steps=tuple(steps),
                     writes=tuple(run.writes),
