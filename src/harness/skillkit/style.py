@@ -30,6 +30,7 @@ from harness.skillkit.finish_rules import (
     _a_test_uses,
     refuse_done_oracle,
     refuse_package_done,
+    refuse_unwired_addition,
     refuse_write_done,
 )
 

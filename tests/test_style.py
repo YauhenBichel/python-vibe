@@ -520,5 +520,86 @@ class FileOperationsHaveNoSymbolTest(unittest.TestCase):
 
 
 
+
+class NothingCallsItTest(unittest.TestCase):
+    """A function nobody calls cannot fail, and cannot work either.
+
+    Asked to "add a check in openai_generate.py that refuses to send
+    when the prompt contains a GitHub token", a run wrote
+
+        def reject_github_tokens_in_prompt(prompt: str) -> bool:
+            return 'github_token' in prompt
+
+    and wired it to nothing. The file parsed and the suite stayed green.
+    Whether the body is any good needs a reader; whether anything will
+    ever run it does not.
+    """
+
+    def _project(self, tmp: str, before: str, after: str) -> Path:
+        root = Path(tmp)
+        (root / "tests").mkdir()
+        target = root / "app.py"
+        target.write_text(after, encoding="utf-8")
+        (root / "app.py.bak").write_text(before, encoding="utf-8")
+        return root
+
+    def test_an_addition_nobody_calls_is_refused(self) -> None:
+        from harness.skillkit.style import refuse_unwired_addition
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(
+                tmp,
+                "def send(x):\n    return x\n",
+                "def send(x):\n    return x\n\n\ndef reject_tokens(p):\n    return False\n",
+            )
+            blocked = refuse_unwired_addition(root, "app.py")
+            self.assertIn("reject_tokens", blocked)
+            self.assertIn("nothing calls it", blocked)
+
+    def test_an_addition_the_same_file_calls_is_fine(self) -> None:
+        from harness.skillkit.style import refuse_unwired_addition
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(
+                tmp,
+                "def send(x):\n    return x\n",
+                "def reject_tokens(p):\n    return False\n\n\n"
+                "def send(x):\n    if reject_tokens(x):\n        return ''\n    return x\n",
+            )
+            self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
+
+    def test_a_test_that_calls_it_is_enough(self) -> None:
+        from harness.skillkit.style import refuse_unwired_addition
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(
+                tmp,
+                "def send(x):\n    return x\n",
+                "def send(x):\n    return x\n\n\ndef reject_tokens(p):\n    return False\n",
+            )
+            (root / "tests" / "test_app.py").write_text(
+                "def test_it():\n    assert reject_tokens('x') is False\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
+
+    def test_a_function_that_was_already_there_is_not_this_runs_problem(self) -> None:
+        from harness.skillkit.style import refuse_unwired_addition
+
+        with tempfile.TemporaryDirectory() as tmp:
+            orphan = "def nobody_calls_me(x):\n    return x\n"
+            root = self._project(tmp, orphan, orphan + "\nVALUE = 1\n")
+            self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
+
+    def test_without_the_backup_it_says_nothing(self) -> None:
+        """No original means no way to tell an addition from the rest."""
+        from harness.skillkit.style import refuse_unwired_addition
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "app.py").write_text("def lonely(x):\n    return x\n", encoding="utf-8")
+            self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
+
+
 if __name__ == "__main__":
     unittest.main()
