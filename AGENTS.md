@@ -74,7 +74,7 @@ style prior, not a capability unlock. See investigation
 [45 pairs vs style prior](docs/investigations/style-prior.md).
 
 **HTTP sidecar.** Keep stdlib `http.server`. Cap POST bodies (`MAX_BODY`). New
-routes need a test in `tests/test_serve.py` that does not call Ollama.
+routes need a test in `tests/interfaces/test_serve.py` that does not call Ollama.
 
 **Skills.** `skills/*/SKILL.md` is written for the everyday 8B: one copy-paste
 `Action:` block, no essays. Paths in a skill are `{{module}}` / `{{test}}` /
@@ -97,7 +97,7 @@ Ollama with `scripts/export_ollama.py --create`. Do not spend more 0.5B train
 steps expecting everyday-agent quality.
 
 **Layers.** `src/harness/` is ordered bottom-up and a module may import a
-layer strictly below it, never one above or beside it. `tests/test_architecture.py`
+layer strictly below it, never one above or beside it. `tests/whole/test_architecture.py`
 is the gate: it fails on an upward import, a cycle, a `parents[N]`, or a
 `guard/` module importing anything that writes. New shared predicate about
 the *task*? It goes in `task.py`, not in whichever module needs it first —
@@ -110,7 +110,7 @@ retry, then the closest real lines. Do not add fuzzy matching that guesses
 between two candidates; ambiguity is a refusal.
 
 **Investigations.** New measurement pages go in `docs/investigations/`. Add the
-file to `tests/test_pages.py`. Do not claim the LoRA audited a real repo.
+file to `tests/website/test_pages.py`. Do not claim the LoRA audited a real repo.
 
 **Site.** `docs/` is the public site (Jekyll → GitHub Pages). CSS is inlined
 from `_includes/site.css` (one HTML request, no webfonts, no script). The
@@ -118,7 +118,7 @@ first `Pages` job 404s until you turn the site on in a browser: **Settings →
 Pages → Build and deployment → Source → GitHub Actions**. The default Actions
 token cannot create that site. Then re-run the workflow. Pages publishes from
 the default branch only. Every page needs `title:` and `description:` front
-matter and an entry in `sitemap.md`; `tests/test_pages.py` checks both.
+matter and an entry in `sitemap.md`; `tests/website/test_pages.py` checks both.
 URL: `https://yauhenbichel.github.io/python-vibe/`. `llms.txt` and
 `llms-full.txt` are the map for coding agents (llms.txt v2). Name a
 third-party editor only where this repo ships an integration for it, as

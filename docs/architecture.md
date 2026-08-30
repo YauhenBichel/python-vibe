@@ -8,7 +8,7 @@ date: 2026-08-29
 
 `src/harness/` is ordered bottom-up. **A module may import a layer strictly
 below it, never one above or beside it.** That rule is enforced by
-`tests/test_architecture.py`, so a refactor that rots fails the merge gate
+`tests/whole/test_architecture.py`, so a refactor that rots fails the merge gate
 rather than the next reader.
 
 ```
