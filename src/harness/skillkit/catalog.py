@@ -93,17 +93,6 @@ def get_skill(name: str, project: Path | None = None) -> Skill | None:
     return None
 
 
-def skill_example_path(name: str, project: Path | None = None) -> str:
-    """The Path: line in a kit skill, so the 8B copies a real file name."""
-    skill = get_skill(name, project)
-    if skill is None:
-        return "pkg/<noun>.py"
-    for line in skill.body.splitlines():
-        if line.startswith("Path:"):
-            return line.split(":", 1)[1].strip() or "pkg/<noun>.py"
-    return "pkg/<noun>.py"
-
-
 def skill_from_action(
     action: str, name: str = "", path: str = "", project: Path | None = None
 ) -> Skill | None:
