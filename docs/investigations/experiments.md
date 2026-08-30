@@ -23,6 +23,8 @@ a bug, add one function. One laptop. 29–30 August 2026.
 
 The four commands as typed:
 [Scenarios]({{ '/scenarios/' | relative_url }}).
+The machine, and every run behind these numbers:
+[Bench record]({{ '/investigations/bench-record/' | relative_url }}).
 Other notes:
 [Research]({{ '/investigations/' | relative_url }}).
 GitHub thread:

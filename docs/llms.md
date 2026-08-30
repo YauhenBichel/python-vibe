@@ -27,6 +27,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 ## Research
 
 - [Experiments]({{ '/investigations/experiments/' | absolute_url }}): What I typed, the planted example, and the score. 29–30 Aug 2026. Not everyday-ready.
+- [Bench record]({{ '/investigations/bench-record/' | absolute_url }}): The machine, the models, and every run behind the numbers. 30 Aug 2026.
 - [First-run four jobs]({{ '/investigations/first-run-four/' | absolute_url }}): The four Start commands. First fail, then mechanical pass. 29 Aug 2026.
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.

@@ -45,6 +45,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "investigations/hub-models.md",
             "investigations/first-run-four.md",
             "investigations/experiments.md",
+            "investigations/bench-record.md",
             "investigations/cloud-weights.md",
         )
         missing = [name for name in required if not (DOCS / name).is_file()]

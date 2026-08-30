@@ -130,6 +130,7 @@ Start {{ '/start/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
 Experiments {{ '/investigations/experiments/' | absolute_url }}
 First-run four {{ '/investigations/first-run-four/' | absolute_url }}
+Bench record (machine, models, every run) {{ '/investigations/bench-record/' | absolute_url }}
 Cloud weights {{ '/investigations/cloud-weights/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
 Same jobs {{ '/investigations/same-jobs/' | absolute_url }}

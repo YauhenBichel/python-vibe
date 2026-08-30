@@ -61,6 +61,7 @@ add one function. One laptop. 29–30 August 2026. **Not everyday-ready.**
 | Which open model | same bench, code must run | 8B **6–9 / 9** over six runs; 7B coder 7 / 9 once; 30B timeout |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
 | Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
+| Does a 14B fit? | 9 GB of weights, 18 GB machine | **No.** 12–13 GB of swap, no run finished |
 
 The four commands as typed, first night vs after the harness:
 
@@ -80,9 +81,33 @@ times against unchanged code and gave 9, 6, 8, 7, 8, 7; over the full
 fifteen-case bench ten of fifteen changed verdict between identical
 runs. A gap smaller than about four cases is noise.
 
+Five cases pass every single time — `double`, `clamp`, `cover-discount`,
+`cover-shout`, `fix-nameerror` — and three of those five finish with **no
+model call at all**. That is why they hold still.
+
+### The machine
+
+Apple M3 Pro, 11 cores, **18 GB unified memory**, macOS 26.5.2, Ollama
+0.33.2. Unified memory means the model competes with everything else
+running, so the practical ceiling is about **11–12 GB of model**, not 18.
+
+| Model | On disk | Usable here |
+| --- | --- | --- |
+| `llama3.1:8b` | 4.9 GB | yes, the default |
+| `qwen2.5-coder:7b` | 4.7 GB | yes |
+| `qwen2.5-coder:14b` | 9.0 GB | no — pages to disk |
+| 30B-class MoE | 18.6 GB | no — times out |
+
+The 14B is the one worth knowing about: it clears 18 GB on paper and
+still does not run, because weights are only part of the budget. If you
+are choosing hardware for this, buy memory, and reckon on roughly double
+the model size you want to run.
+
 Tables with the planted example:
 [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/)
 · [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
+The machine, what fits in it, and all six runs case by case:
+[Bench record](https://yauhenbichel.github.io/python-vibe/investigations/bench-record/).
 Thread: [discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
 
 ## Everyday agent
