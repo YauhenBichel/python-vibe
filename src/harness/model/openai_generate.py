@@ -112,6 +112,14 @@ class OpenAIGenerate:
         if history:
             messages.extend(history)
         messages.append({"role": "user", "content": prompt})
+        return self.send(messages)
+
+    def send(self, messages: list[dict[str, str]]) -> str:
+        """Post exactly these messages. The caller decides what they are.
+
+        The conversation is assembled by `harness.memory`, which knows
+        what to keep and what to let go. This only sends it.
+        """
         body = json.dumps(
             {
                 "model": self.model,
