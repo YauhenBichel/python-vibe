@@ -12,8 +12,11 @@ name: Contributors
 # until merge either. It used to run anyway and fail while fetching a
 # ref this repository does not have.
 #
-# After a merge, or any other default-branch run with a stale list,
-# the commit is force-pushed to docs/contributors so it is not lost.
+# main takes changes only through a reviewed pull request, so this
+# cannot commit there. It used to force-push the refresh to a branch
+# called docs/contributors and stop, and nothing merged that branch, so
+# the list never actually reached the README. It opens a pull request
+# now: still one click to land, but visible and landable.
 
 on:
   pull_request:
@@ -22,6 +25,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: contributors-${{ github.head_ref || github.ref_name }}
@@ -52,16 +56,23 @@ jobs:
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BRANCH: ${{ github.head_ref || github.ref_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add README.md
           git diff --cached --quiet && exit 0
-          if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
-            git checkout -B docs/contributors
-            git commit -m "docs: refresh README contributors"
-            git push --force --set-upstream origin docs/contributors
-          else
-            git commit -m "docs: refresh README contributors"
+          git commit -m "docs: refresh README contributors"
+          if [ "$BRANCH" != "$DEFAULT_BRANCH" ]; then
+            # A branch of this repository takes the commit in place.
             git push
+            exit 0
+          fi
+          # main is review-only, so offer the refresh as a pull request.
+          git checkout -B docs/contributors
+          git push --force --set-upstream origin docs/contributors
+          if [ -z "$(gh pr list --head docs/contributors --state open --json number -q '.[0].number')" ]; then
+            gh pr create --base "$DEFAULT_BRANCH" --head docs/contributors \
+              --title "docs: refresh README contributors" \
+              --body "The contributors list changed. Filled from the GitHub contributors API, bots omitted. Opened by the Contributors workflow because main takes changes only through a pull request."
           fi
