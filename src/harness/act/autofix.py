@@ -518,6 +518,20 @@ def apply_add_function(project: Path, task: str, *, write: bool = True) -> str:
     return f"added def {symbol}({name}) in {dest}"
 
 
+def _imports(source: str, name: str) -> bool:
+    """Whether `source` brings `name` in by an import."""
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return False
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                if (alias.asname or alias.name.split(".")[-1]) == name:
+                    return True
+    return False
+
+
 def _test_file_for(
     task: str, project: Path, name: str, dests: list[Path]
 ) -> Path:
@@ -536,8 +550,13 @@ def _test_file_for(
             body = path.read_text(encoding="utf-8")
         except OSError:
             continue
-        if re.search(rf"\bdef test_\w*{re.escape(name)}", body) or (
-            re.search(rf"\b{re.escape(name)}\b", body) and "import" in body
+        # A test named after it, or a file that imports it. Merely
+        # mentioning the name is not enough — a docstring in an unrelated
+        # test file matched and sent the new test there — and a regex is
+        # not enough either, because most of these imports are written
+        # across several lines inside brackets.
+        if re.search(rf"\bdef test_\w*{re.escape(name)}", body) or _imports(
+            body, name
         ):
             return path
     named = named_project_file(task, project)
