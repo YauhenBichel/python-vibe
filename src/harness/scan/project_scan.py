@@ -6,6 +6,13 @@ from pathlib import Path
 
 SKIP_DIR = {
     ".git",
+    # Editor settings, including the ones `python-vibe editors` writes.
+    # A project summary that counts the tool's own configuration as part
+    # of your project is describing itself, not the code.
+    ".cursor",
+    ".vscode",
+    ".idea",
+    ".zed",
     ".venv",
     "venv",
     "node_modules",

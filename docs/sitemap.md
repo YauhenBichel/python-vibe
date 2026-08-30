@@ -13,6 +13,7 @@ permalink: /sitemap.xml
   <url><loc>{{ '/skills/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/local-editor/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>{{ '/cursor/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>{{ '/editor-demos/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/ide-plugins/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>{{ '/research-vibe-review/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>{{ '/investigations/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>

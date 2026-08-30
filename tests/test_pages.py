@@ -29,6 +29,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "local-editor.md",
             "ide-plugins.md",
             "cursor.md",
+            "editor-demos.md",
             "research-vibe-review.md",
             "investigations/index.md",
             "investigations/which-model.md",

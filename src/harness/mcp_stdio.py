@@ -59,7 +59,59 @@ TOOLS = (
             "required": ["task"],
         },
     },
+    # These two need no model and take under a second, which makes them
+    # the ones worth reaching for in an editor. Only ask and run were
+    # offered, so the only tools an editor had were the two slowest and
+    # least certain.
+    {
+        "name": "brief",
+        "description": (
+            "Summarise this project: how large it is, what is in it, and "
+            "whether it is small enough to read whole. Needs no model."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {"scope": {"type": "string"}},
+        },
+    },
+    {
+        "name": "layout",
+        "description": (
+            "Report what makes this project hard to read: import cycles, "
+            "a folder with no grouping, an oversized module. Needs no model."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {"scope": {"type": "string"}},
+        },
+    },
 )
+
+
+def _text(rpc_id, body: str) -> dict[str, Any]:
+    """One plain answer, in the shape an editor expects."""
+    return {
+        "jsonrpc": "2.0",
+        "id": rpc_id,
+        "result": {"content": [{"type": "text", "text": body}]},
+    }
+
+
+def _describe(name: str, project: Path, scope: str) -> str:
+    """Answer brief or layout. Neither loads a model."""
+    from harness.scan.layout import render_layout
+    from harness.scan.project_brief import (
+        classify_project,
+        render_brief_for_person,
+        resolve_scope,
+    )
+
+    if name == "brief":
+        return render_brief_for_person(
+            classify_project(project, scope), scope=scope
+        )
+    base = resolve_scope(project, scope) if scope else project
+    return render_layout(base)
 
 
 def handle_rpc(
@@ -116,6 +168,9 @@ def handle_rpc(
         params = message.get("params") or {}
         name = str(params.get("name") or "")
         args = params.get("arguments") or {}
+        scope = str(args.get("scope") or "").strip()
+        if name in {"brief", "layout"}:
+            return _text(rpc_id, _describe(name, project, scope))
         task = str(args.get("task") or "").strip()
         if not task:
             return _error(rpc_id, "task required")
