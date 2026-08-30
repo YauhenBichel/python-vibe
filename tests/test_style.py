@@ -407,7 +407,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
     def test_every_draft_rule_is_in_the_list(self) -> None:
         import ast
 
-        from harness.act.tools import STYLE_RULES
+        from harness.act.gate import STYLE_RULES
 
         source = (ROOT / "src" / "harness" / "skillkit" / "style.py").read_text(
             encoding="utf-8"
@@ -417,11 +417,11 @@ class EveryRuleIsWiredTest(unittest.TestCase):
             for node in ast.walk(ast.parse(source))
             if isinstance(node, ast.FunctionDef) and node.name.startswith("refuse_")
         }
-        listed = (ROOT / "src" / "harness" / "act" / "tools.py").read_text(
+        listed = (ROOT / "src" / "harness" / "act" / "gate.py").read_text(
             encoding="utf-8"
         )
         start = listed.index("STYLE_RULES")
-        table = listed[start : listed.index("def _style_blocks")]
+        table = listed[start : listed.index("def style_blocks")]
         missing = sorted(
             name
             for name in written - self.NOT_ABOUT_A_DRAFT
@@ -436,7 +436,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
         self.assertEqual(len(STYLE_RULES), 11)
 
     def test_each_entry_is_named_and_callable(self) -> None:
-        from harness.act.tools import STYLE_RULES
+        from harness.act.gate import STYLE_RULES
 
         for name, rule in STYLE_RULES:
             with self.subTest(rule=name):
@@ -444,7 +444,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
                 self.assertTrue(callable(rule))
 
     def test_the_rules_run_in_order_and_stop_at_the_first(self) -> None:
-        from harness.act.tools import ProposedChange, _style_blocks
+        from harness.act.gate import ProposedChange, style_blocks
 
         change = ProposedChange(
             task="add a helper",
@@ -452,7 +452,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
             original="",
             draft="def f():\n    return 1\n",
         )
-        first = _style_blocks(
+        first = style_blocks(
             change.task, change.rel, change.original, change.draft
         )
         self.assertIn("math", first, "the earliest rule should answer")

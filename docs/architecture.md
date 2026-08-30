@@ -17,7 +17,7 @@ server.py    HTTP on 127.0.0.1           /v1/ask, /v1/chat/completions
 mcp_stdio    editor child process        JSON-RPC on stdin/stdout
 observe/     what a run leaves behind    trace_record, report_md, eval_gate
 locate.py    find the symbol before acting
-act/         intent becomes a change     parse, tools, patch_fix, code
+act/         intent becomes a change     parse, tools, gate, patch_fix, code
 skillkit/    the skill kit               catalog, target, style
 scan/        facts about a tree          project_brief, repo_map, layout
 guard/       what ships, what is refused python_vibe, run, types
