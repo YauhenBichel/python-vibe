@@ -57,11 +57,18 @@ from harness.act.autofix.additions import (
 from harness.act.autofix.missing_imports import (
     apply_missing_imports,
 )
+from harness.act.autofix.moves import (
+    apply_file_move,
+    module_name,
+    move_targets,
+)
 from harness.act.autofix.mechanical import (
     apply_mechanical,
 )
 
 __all__ = [
+    "apply_file_move",
+    "move_targets",
     "CONFLICT_END",
     "CONFLICT_MID",
     "CONFLICT_START",
