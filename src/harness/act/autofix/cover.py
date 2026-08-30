@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 from harness.act.code import apply_source
 from harness.task import (
+    looks_like_file_operation,
     covered_symbol,
     looks_like_add_feature,
     named_project_file,
@@ -81,6 +82,10 @@ def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     Returns a note when a test already names the function, so the run can
     finish without the model appending a dead copy after `if __name__`.
     """
+    if looks_like_file_operation(task):
+        # Nothing here is a symbol. Guessing one and finding it in some
+        # test file is how "already has a test for create" happened.
+        return ""
     name = covered_symbol(task) or (
         question_symbol(task) if looks_like_add_feature(task) else ""
     )

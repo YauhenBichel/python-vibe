@@ -458,6 +458,67 @@ class EveryRuleIsWiredTest(unittest.TestCase):
         self.assertIn("math", first, "the earliest rule should answer")
 
 
+class FileOperationsHaveNoSymbolTest(unittest.TestCase):
+    """Moving a file is not a job with a function name in it.
+
+    Asked to "create a new module and move the helpers into it", the
+    harness read `create` as the symbol, looked for a test naming it,
+    found the word somewhere, and answered "already has a test for
+    create". Nothing was created and nothing moved.
+    """
+
+    OPERATIONS = (
+        "create a new module src/x.py and move the helpers into it",
+        "move src/a.py to src/b.py",
+        "rename src/a.py to src/b.py",
+        "split cover.py into two modules",
+        "delete src/old.py",
+    )
+    NOT_OPERATIONS = (
+        "add a function total_lines and a test",
+        "write tests for apply_discount",
+        "fix the NameError in src/orders.py",
+        "review src/orders.py for bugs",
+    )
+
+    def test_a_file_operation_is_recognised(self) -> None:
+        from harness.task import looks_like_file_operation
+
+        for task in self.OPERATIONS:
+            with self.subTest(task=task):
+                self.assertTrue(looks_like_file_operation(task))
+
+    def test_ordinary_work_is_not_mistaken_for_one(self) -> None:
+        from harness.task import looks_like_file_operation
+
+        for task in self.NOT_OPERATIONS:
+            with self.subTest(task=task):
+                self.assertFalse(looks_like_file_operation(task))
+
+    def test_the_opening_verb_is_not_a_symbol(self) -> None:
+        from harness.task import question_symbol
+
+        for task, wanted in (
+            ("create a function slugify(text) that lowercases", "slugify"),
+            ("add a function total_lines and a test", "total_lines"),
+        ):
+            with self.subTest(task=task):
+                self.assertEqual(question_symbol(task), wanted)
+
+    def test_no_cover_test_is_written_for_a_move(self) -> None:
+        from harness.act.autofix import apply_cover_test
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "tests").mkdir()
+            (root / "tests" / "test_x.py").write_text(
+                "def test_create_works():\n    pass\n", encoding="utf-8"
+            )
+            for task in self.OPERATIONS:
+                with self.subTest(task=task):
+                    self.assertEqual(apply_cover_test(root, task, write=False), "")
+
+
 
 if __name__ == "__main__":
     unittest.main()

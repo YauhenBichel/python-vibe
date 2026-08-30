@@ -27,6 +27,19 @@ _SYMBOL = re.compile(r"\b([a-z_][a-z0-9_]{4,})\b")
 _DOES_SYMBOL = re.compile(r"\bdoes\s+([a-z_][a-z0-9_]*)\b")
 _SYMBOL_SKIP = frozenset(
     {
+        # The word a task opens with is what to do, not what to do it to.
+        # Asked to "create a new module and move the helpers into it", the
+        # harness took `create` for a function name, found the word in a
+        # test file and answered "already has a test for create".
+        "build",
+        "create",
+        "delete",
+        "make",
+        "move",
+        "remove",
+        "rename",
+        "split",
+        "write",
         "about",
         "after",
         "and",
@@ -85,6 +98,30 @@ _RENAME = re.compile(
 def looks_like_question(task: str) -> bool:
     text = task.strip().lower()
     return text.endswith("?") or text.startswith(QUESTION_PREFIXES)
+
+
+_FILE_OPERATION = re.compile(
+    r"\b(move|rename|split|delete|remove|extract)\b.{0,60}"
+    r"(\.py\b|\bmodule\b|\bfile\b|\bpackage\b|\bfolder\b)",
+    re.I,
+)
+
+
+def looks_like_file_operation(task: str) -> bool:
+    """Moving, renaming, splitting or deleting a file, not editing one.
+
+    These have no symbol to work on, and guessing one is worse than
+    having none: asked to "create a new module and move the helpers into
+    it", the harness took a word out of the task, looked for a test
+    naming it, found one, and answered "already has a test for create".
+    """
+    lowered = task.lower()
+    if _FILE_OPERATION.search(lowered):
+        return True
+    return bool(
+        re.search(r"\b(create|add)\b.{0,40}\b(new )?(module|file|package)\b", lowered)
+        and re.search(r"\b(move|into it|and put)\b", lowered)
+    )
 
 
 def question_symbol(task: str) -> str:
