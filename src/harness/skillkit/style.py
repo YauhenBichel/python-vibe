@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import ast
 import re
+import sys
 from pathlib import Path
 
 from harness.scan.names import new_undefined, undefined_names
@@ -16,6 +18,7 @@ from harness.task import (
     looks_like_write_tests,
     looks_like_new_package,
     looks_like_refactor,
+    question_symbol,
     rename_pair,
     smell_symbol,
 )
@@ -75,6 +78,112 @@ _SHELL_FETCH = re.compile(
 )
 
 
+# A task that names its own arguments has already said what they are.
+_TASK_SIGNATURE = re.compile(r"\b\w+\s*\(\s*([^)]*?)\s*\)")
+# Words that make reading a file the point of the function, not a mistake.
+_ABOUT_FILES = re.compile(
+    r"\b(file|files|path|paths|read|reads|load|loads|parse|parses|"
+    r"open|opens|contents|lines of|\.env|config|json|csv|yaml|toml)\b",
+    re.I,
+)
+
+
+def task_names_arguments(task: str) -> str:
+    """The argument list the task itself gives, or ""."""
+    symbol = question_symbol(task)
+    if not symbol:
+        return ""
+    found = re.search(rf"\b{re.escape(symbol)}\s*\(\s*([^)]*?)\s*\)", task)
+    return found.group(1).strip() if found else ""
+
+
+def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:
+    """Counting the prices of an order does not mean opening a file.
+
+    A live 8B read `add a function total_lines` in an orders module as a
+    file-line counter and appended `open(file_path)`.
+
+    The first version of this refused `open(` in any added function and
+    told the model to write `return len(prices)` instead. That is only
+    right for the one task it was written for. `read_env_file(path)` has
+    to open a file — refusing it left a function returning an int where
+    the caller wanted a dict, and the run spent its whole budget being
+    told to write something else. So this now declines to judge whenever
+    the task itself mentions files, or names its own arguments.
+    """
+    if not looks_like_add_feature(task):
+        return ""
+    if "test" in (rel or "").replace("\\", "/").lower():
+        return ""
+    if not draft or not re.search(r"\bopen\s*\(", draft):
+        return ""
+    if _ABOUT_FILES.search(task):
+        return ""
+    if task_names_arguments(task):
+        return ""
+    symbol = question_symbol(task) or "the_new_function"
+    return (
+        f"Reading a file is not what {symbol} was asked for. "
+        f"Action: patch Path: {rel} Append: def {symbol}(...) using the "
+        "values the module already has."
+    )
+
+
+def refuse_stub_body(task: str, rel: str, draft: str) -> str:
+    """Refuse a requested function whose body is `...` or `pass`.
+
+    Asked to create `slugify`, a live 8B wrote
+
+        def slugify(text: str) -> str: ...
+
+    twice. It parses, it passes a name check, and it does nothing. A
+    stub is a reasonable thing to write when someone asked for an
+    interface; it is not what "create a function that lowercases and
+    joins words" asked for.
+
+    Every function in the draft is judged, not only the one the task
+    names. The task wording does not reliably yield that name — for
+    "create a function slugify(text)" it comes back as "create" — and on
+    an add-feature task an empty body is wrong whatever it is called.
+    """
+    if "test" in (rel or "").replace("\\", "/").lower():
+        return ""
+    if not (looks_like_add_feature(task) or looks_like_everyday_code(task)):
+        return ""
+    try:
+        tree = ast.parse(draft or "")
+    except (SyntaxError, ValueError):
+        return ""
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        body = [
+            item
+            for item in node.body
+            if not (
+                isinstance(item, ast.Expr)
+                and isinstance(item.value, ast.Constant)
+                and isinstance(item.value.value, str)
+            )
+        ]
+        empty = all(
+            isinstance(item, ast.Pass)
+            or (
+                isinstance(item, ast.Expr)
+                and isinstance(item.value, ast.Constant)
+                and item.value.value is Ellipsis
+            )
+            for item in body
+        )
+        if body and empty:
+            return (
+                f"def {node.name} has no body. Write what it does, not a "
+                f"placeholder. Action: patch Path: {rel} Append: def "
+                f"{node.name}(...) with a return statement."
+            )
+    return ""
+
+
 def refuse_shell_fetch(rel: str, draft: str) -> str:
     """HTTP helpers use urllib. curl|sh is already PV003; this catches curl alone.
 
@@ -85,6 +194,29 @@ def refuse_shell_fetch(rel: str, draft: str) -> str:
     if not draft or not _SHELL_FETCH.search(draft):
         return ""
     return "urllib.request only. Do not emit curl, wget, or os.system."
+
+
+_PIPE_SH = re.compile(r"curl\s+\S+.*\|\s*(sh|bash)|wget\s+\S+.*\|\s*(sh|bash)", re.I)
+_BIND_ALL = re.compile(r"0\.0\.0\.0")
+_INLINE_SECRET = re.compile(
+    r"""(?i)(api[_-]?key|token|password|secret)\s*[:=]\s*['"][^'"]{8,}['"]"""
+)
+
+
+def refuse_ops_draft(rel: str, draft: str) -> str:
+    """Workflow YAML stays a test runner. No installer pipe, no public bind."""
+    suffix = Path(rel or "").suffix.lower()
+    if suffix not in {".yml", ".yaml"} and "workflow" not in (rel or "").lower():
+        return ""
+    if not draft:
+        return ""
+    if _PIPE_SH.search(draft):
+        return "no curl|sh in a workflow. Run unittest only."
+    if _BIND_ALL.search(draft):
+        return "do not bind 0.0.0.0. Keep the sidecar on 127.0.0.1."
+    if _INLINE_SECRET.search(draft):
+        return "no inline secrets. Use the runner's secret store, or omit."
+    return ""
 
 
 _OS_PATH = re.compile(
@@ -256,6 +388,29 @@ def refuse_test_in_impl(rel: str, draft: str) -> str:
     return ""
 
 
+def _undefined_message(rel: str, name: str) -> str:
+    """Say how to bind the name, not just that it is unbound.
+
+    `Path` used without `from pathlib import Path` was answered with
+    "Find: Path Replace: the name you assigned", which asks for a rename
+    when the fix is an import line.
+    """
+    from harness.scan.names import import_for
+
+    line = import_for(name)
+    if line:
+        return (
+            f"{name} is used but never imported. "
+            f"Action: patch Path: {rel} Find: {line.split()[-1]} "
+            f"Replace: {line.split()[-1]}  # then add at the top: {line}"
+        )
+    return (
+        f"undefined name {name}. "
+        f"Action: patch Path: {rel} Find: {name} "
+        "Replace: the name you assigned."
+    )
+
+
 def refuse_undefined_draft(task: str, rel: str, original: str, draft: str) -> str:
     """Refuse a write that adds an unbound name, or a bugfix that leaves one."""
     if not draft or not (rel or "").endswith(".py"):
@@ -263,15 +418,11 @@ def refuse_undefined_draft(task: str, rel: str, original: str, draft: str) -> st
     if looks_like_bugfix(task):
         leftover = undefined_names(draft)
         if leftover:
-            return (
-                f"undefined name {leftover[0]}. "
-                f"Action: patch Path: {rel} Find: {leftover[0]} "
-                "Replace: the name you assigned."
-            )
+            return _undefined_message(rel, leftover[0])
         return ""
     added = new_undefined(original, draft)
     if added:
-        return (
+        return _undefined_message(rel, added[0]) or (
             f"undefined name {added[0]}. "
             f"Action: patch Path: {rel} Find: {added[0]} "
             "Replace: the name you assigned."
@@ -322,6 +473,30 @@ def refuse_god_target(task: str, project: Path, action: str, path: str) -> str:
     )
 
 
+_STDLIB = frozenset(sys.stdlib_module_names)
+# A project legitimately has these; only a brand new module is refused.
+_SHADOW_ALLOWED = frozenset({"types", "typing", "test", "tests", "config"})
+
+
+def refuse_stdlib_shadow(rel: str, original: str) -> str:
+    """Refuse a new module whose name hides one from the standard library.
+
+    Asked for a clamp helper, the model created `pkg/math.py`. Every later
+    `import math` in that project then finds the new file, and the failure
+    appears far from the change that caused it. Only new files are checked:
+    a project that already has such a module is its own business.
+    """
+    if original.strip():
+        return ""
+    stem = Path(rel).stem
+    if stem not in _STDLIB or stem in _SHADOW_ALLOWED:
+        return ""
+    return (
+        f"{rel} would hide the standard library module {stem}. "
+        f"Choose another name, such as {stem}_helpers.py."
+    )
+
+
 def refuse_layout(rel: str, original: str, draft: str) -> str:
     posix = rel.replace("\\", "/").lstrip("./")
     has_impl = bool(re.search(r"^(async\s+)?(def |class )", draft, re.MULTILINE))
@@ -341,6 +516,35 @@ def refuse_layout(rel: str, original: str, draft: str) -> str:
                 "Action: edit Path: pkg/<new_concern>.py with only the new function."
             )
     return ""
+
+
+def _a_test_uses(body: str, symbol: str) -> bool:
+    """True when some `def test_...` in `body` actually mentions `symbol`.
+
+    Asking only whether the name appears anywhere in the test files
+    accepted a file holding one import line and nothing else. On a real
+    module the run wrote exactly that, reported `done`, and `unittest
+    discover` found no tests at all. An import is not coverage.
+    """
+    if not body.strip() or not symbol:
+        return False
+    try:
+        tree = ast.parse(body)
+    except (SyntaxError, ValueError):
+        # Unparsable here means several files concatenated. Fall back to
+        # requiring the name somewhere after a test definition.
+        return bool(re.search(rf"def test_\w*[\s\S]*?\b{re.escape(symbol)}\b", body))
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if not node.name.startswith("test"):
+            continue
+        for child in ast.walk(node):
+            if isinstance(child, ast.Name) and child.id == symbol:
+                return True
+            if isinstance(child, ast.Attribute) and child.attr == symbol:
+                return True
+    return False
 
 
 def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
@@ -363,6 +567,31 @@ def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
                     f"Action: patch Path: {rel} Find: {leftover[0]} "
                     "Replace: the name you assigned."
                 )
+    if looks_like_add_feature(task):
+        symbol = question_symbol(task)
+        if symbol:
+            found = False
+            root = Path(project)
+            from harness.scan.project_brief import iter_text_files
+
+            for path, _size in iter_text_files(root):
+                if path.suffix != ".py":
+                    continue
+                try:
+                    body = path.read_text(encoding="utf-8")
+                except OSError:
+                    continue
+                if re.search(rf"^def {re.escape(symbol)}\b", body, re.MULTILINE):
+                    found = True
+                    break
+            if not found:
+                from harness.skillkit.target import pick_module
+
+                dest = pick_module(root, last_path, task)
+                return (
+                    f"def {symbol} is not in the project. "
+                    f"Action: patch Path: {dest} Append: def {symbol}(...)."
+                )
     if looks_like_write_tests(task):
         symbol = covered_symbol(task)
         if symbol:
@@ -374,12 +603,12 @@ def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
                         body += path.read_text(encoding="utf-8")
                     except OSError:
                         continue
-            if symbol not in body:
+            if not _a_test_uses(body, symbol):
                 test_rel = "tests/test_module.py"
                 if named:
                     test_rel = f"tests/test_{Path(named).stem}.py"
                 return (
-                    f"no test names {symbol}. "
+                    f"no test calls {symbol}. "
                     f"Action: patch Path: {test_rel} "
                     f"Append: one AAA test that calls {symbol}."
                 )

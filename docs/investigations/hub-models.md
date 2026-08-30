@@ -99,4 +99,5 @@ official python-vibe weight without following the Llama 3.1 licence.
 - Name other editors or chat products in public notes.
 
 Order of work: oracles on the 8B this week; optional 7B compare when you
-want a download; 7B MLX LoRA only after clean traces.
+want a download; a 14B–70B only through [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }});
+7B LoRA only after clean traces.

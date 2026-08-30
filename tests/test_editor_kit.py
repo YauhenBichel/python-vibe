@@ -7,17 +7,20 @@ from pathlib import Path
 
 from harness.editor_kit import install_editors
 from harness.mcp_stdio import handle_rpc
-from harness.model.openai_compat import chat_completion_payload, last_user_text
+from harness.openai_api import chat_completion_payload, last_user_text
 from harness.skillkit.catalog import list_skills, pick_skills
 from harness.locate import prelude, refuse_redundant_locate
 from harness.scan.project_brief import start_hint
 from harness.scan.project_brief import classify_project
 from harness.task import (
+    everyday_example_path,
     everyday_skill_name,
+    looks_like_add_feature,
     looks_like_algorithm,
     looks_like_analytics,
     looks_like_http_client,
     looks_like_script,
+    looks_like_write_tests,
 )
 
 
@@ -29,6 +32,24 @@ class EverydayKindsTest(unittest.TestCase):
         self.assertTrue(looks_like_analytics("tally counts by key from a csv"))
         self.assertTrue(looks_like_algorithm("implement binary search"))
         self.assertFalse(looks_like_script("what does weekday_name return?"))
+        self.assertFalse(
+            looks_like_script(
+                "write unit tests for validate_cron_and_timezone in tests/cli/foo.py"
+            )
+        )
+        cover = (
+            "write AAA unit tests for validate_cron_and_timezone; "
+            "add them in tests/cli/test_cron_validation.py"
+        )
+        self.assertTrue(looks_like_write_tests(cover))
+        self.assertFalse(looks_like_add_feature(cover))
+        self.assertNotEqual(everyday_example_path(cover), "pkg/weekday_name.py")
+        self.assertTrue(
+            looks_like_add_feature("add a function multiply(a, b) and a unit test")
+        )
+        self.assertFalse(
+            looks_like_write_tests("add a function multiply(a, b) and a unit test")
+        )
         self.assertEqual(everyday_skill_name("implement binary search"), "write-algorithm")
         self.assertEqual(everyday_skill_name("fetch json from the HTTP API"), "call-http")
 
@@ -167,10 +188,6 @@ class McpHandshakeTest(unittest.TestCase):
         assert reply is not None
         self.assertTrue(reply["result"]["isError"])
         self.assertIn("read-only", reply["result"]["content"][0]["text"])
-
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class StdioFramingTest(unittest.TestCase):
@@ -418,3 +435,7 @@ class McpReplyTest(unittest.TestCase):
             self._result(writes=("src/app.py", "src/app.py", "tests/test_app.py"))
         )
         self.assertEqual(text.count("src/app.py"), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

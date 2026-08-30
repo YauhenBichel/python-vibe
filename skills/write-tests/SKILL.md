@@ -14,3 +14,8 @@ Append:
         left, right = 2, 3
         got = multiply(left, right)
         self.assertEqual(got, 6)
+
+    def test_weekday_returns_day_name(self) -> None:
+        day_index = 2
+        got = weekday(day_index)
+        self.assertEqual(got, "Tuesday")

@@ -26,12 +26,14 @@ from harness.paths import as_project_rel
 from harness.locate import (
     refuse_design_dirty,
     refuse_early_done,
+    refuse_invented_review,
     refuse_question_ask,
     refuse_question_write,
     refuse_redundant_explore,
     refuse_redundant_locate,
     refuse_shallow_done,
     refuse_thin_review,
+    refuse_write_tests_ask,
 )
 from harness.skillkit.catalog import get_skill, render_skill
 from harness.scan.names import undefined_in_file
@@ -42,21 +44,29 @@ from harness.skillkit.style import (
     refuse_write_done,
 )
 from harness.task import (
+    everyday_example_path,
     looks_like_add_feature,
+    looks_like_ops,
+    looks_like_platform,
     looks_like_bugfix,
     looks_like_design_loop,
     named_project_file,
     looks_like_fix_smell,
+    looks_like_write_tests,
+    covered_symbol,
     looks_like_merge,
     looks_like_new_package,
     looks_like_question,
     looks_like_ship,
+    looks_like_ticket,
     question_symbol,
     rename_target,
     smell_symbol,
 )
 
 MAX_QUESTIONS = 2
+# How often the loop may send a summary back for being too thin.
+MAX_THIN_DONE = 2
 # A Summary this close to a line it was given is an echo, not an answer.
 ECHO_RATIO = 0.75
 
@@ -78,6 +88,7 @@ class LoopState:
         autofixed: the harness already applied a rename or unique typo.
         scope: optional subdirectory the run is limited to.
         questions_asked: how many questions the agent has put to the user.
+        thin_done_refused: how often a summary was sent back as too thin.
         instructions: skill lines the model was given, used to detect a
             reply that repeats an instruction instead of answering.
         guard: record of read-only actions already performed.
@@ -97,6 +108,7 @@ class LoopState:
     questions_asked: int = 0
     wrote_something: bool = False
     empty_done_refused: bool = False
+    thin_done_refused: int = 0
     instructions: tuple[str, ...] = ()
     guard: LoopGuard = field(default_factory=LoopGuard)
 
@@ -110,6 +122,60 @@ def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
     """
     if action not in WRITE_ACTIONS or action == "run":
         return ""
+    if looks_like_write_tests(task):
+        got = as_project_rel(path)
+        parts = got.split("/") if got else []
+        if got and "tests" not in parts and not parts[-1].startswith("test_"):
+            symbol = covered_symbol(task)
+            dest = (
+                f"tests/test_{symbol.split('.')[-1]}.py"
+                if symbol
+                else "tests/test_module.py"
+            )
+            return f"Tests go in {dest}. Do not change {got}."
+    # A file the task names outright beats any routing rule below. "in
+    # src/app.py ... fix it for Windows" was being sent to pkg/paths.py,
+    # which ignores the one instruction the person gave.
+    if named_project_file(task, project):
+        return _refuse_other_than_named(task, project, path)
+    if looks_like_platform(task) or looks_like_ops(task):
+        from harness.skillkit.target import pick_module
+
+        wanted = (
+            pick_module(project, "", task)
+            if looks_like_ops(task)
+            else everyday_example_path(task)
+        )
+        got = as_project_rel(path)
+        parts = got.split("/") if got else []
+        if (
+            got
+            and wanted
+            and got != wanted
+            and "tests" not in parts
+            and not parts[-1].startswith("test_")
+        ):
+            return (
+                f"This job writes {wanted}. Do not change {got}. "
+                f"Action: edit Path: {wanted}"
+            )
+    if looks_like_add_feature(task):
+        from harness.skillkit.target import pick_module
+
+        wanted = pick_module(project, "", task)
+        got = as_project_rel(path)
+        parts = got.split("/") if got else []
+        if (
+            got
+            and wanted
+            and got != wanted
+            and "tests" not in parts
+            and not parts[-1].startswith("test_")
+        ):
+            return (
+                f"The new function belongs in {wanted}. Do not change {got}. "
+                f"Action: patch Path: {wanted}"
+            )
     named = named_project_file(task, project)
     if not named:
         return ""
@@ -120,6 +186,22 @@ def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
     # "write tests for apply_discount in src/orders.py" names the source
     # file, but the test belongs beside it, not inside it. A test file is
     # always an allowed destination.
+    parts = got.split("/")
+    if "tests" in parts or parts[-1].startswith("test_"):
+        return ""
+    return (
+        f"The task names {wanted}. Do not change {got}. "
+        f"Action: patch Path: {wanted}"
+    )
+
+
+def _refuse_other_than_named(task: str, project: Path, path: str) -> str:
+    """Allow the named file and its tests; refuse anything else."""
+    named = named_project_file(task, project)
+    wanted = as_project_rel(named)
+    got = as_project_rel(path)
+    if not got or got == wanted or wanted.endswith(got) or got.endswith(wanted):
+        return ""
     parts = got.split("/")
     if "tests" in parts or parts[-1].startswith("test_"):
         return ""
@@ -145,15 +227,27 @@ def refuse_before(state: LoopState, turn) -> str:
             "This run is read-only. Do not patch, edit, or run. "
             "Action: done Summary: say what you would change and why."
         )
-    if turn.action == "ask" and state.ran_tests and state.wrote_something:
+    if turn.action == "ask" and state.wrote_something:
+        # A live run wrote a function and a test, then asked which of two
+        # readings was meant. The question was reasonable and far too
+        # late: the files were already on disk under one of them. Once
+        # something is written, the next move is to run or to report.
+        if state.ran_tests:
+            return (
+                "Tests already passed. Action: done Summary: say what you changed."
+            )
         return (
-            "Tests already passed. Action: done Summary: say what you changed."
+            "You have already changed files, so it is too late to ask. "
+            "Action: run Argv: -m unittest discover -s tests -q"
         )
     if turn.action == "ask" and state.questions_asked >= MAX_QUESTIONS:
         return (
             "You have already asked. Choose the most likely reading, say "
             "which you chose, and continue."
         )
+    blocked = refuse_write_tests_ask(state.task, turn.action)
+    if blocked:
+        return blocked
     blocked = refuse_wrong_file(
         state.task, state.project, turn.action, turn.path or state.last_path
     )
@@ -166,7 +260,9 @@ def refuse_before(state: LoopState, turn) -> str:
             state.task, turn.action, turn.path, state.located_path
         )
     if not blocked:
-        blocked = refuse_redundant_locate(state.task, turn.action, state.prelude_ran)
+        blocked = refuse_redundant_locate(
+            state.task, turn.action, state.prelude_ran, state.project
+        )
     if not blocked:
         blocked = refuse_god_target(
             state.task, state.project, turn.action, turn.path or state.last_path
@@ -196,6 +292,8 @@ def _located_body(state: LoopState) -> str:
 
 
 def _refuse_ship(task: str, action: str) -> str:
+    if action in {"issue", "pr"} and looks_like_ticket(task):
+        return ""
     if not looks_like_ship(task):
         return (
             "Ship actions only when the task is about an issue, PR, commit, "
@@ -279,13 +377,24 @@ def refuse_done(state: LoopState, turn) -> str:
     if not blocked:
         blocked = refuse_early_done(state.task, state.last_path, state.located_path)
     if not blocked:
-        blocked = refuse_shallow_done(
+        # Asking for a fuller sentence is worth two turns, not the whole
+        # budget. A scripted or stubborn model that cannot produce one
+        # otherwise spends every remaining step being told the same thing
+        # and the run fails with the answer already in hand.
+        thin = refuse_shallow_done(
             state.task, turn.summary, state.located_signature
         )
+        if thin and state.thin_done_refused < MAX_THIN_DONE:
+            state.thin_done_refused += 1
+            blocked = thin
     if not blocked:
         blocked = refuse_design_dirty(state.task, state.design_report)
     if not blocked:
         blocked = refuse_thin_review(state.task, turn.summary, state.design_report)
+    if not blocked:
+        blocked = refuse_invented_review(
+            state.task, turn.summary, _located_body(state)
+        )
     if not blocked:
         blocked = refuse_write_done(
             state.task, state.ran_tests, wrote=state.wrote_something
@@ -303,6 +412,10 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
     # Tests passing only means the work is finished if there was some work.
     # An agent that runs the suite first, to see the starting state, would
     # otherwise be told to finish before it had changed anything.
+    if turn.action in {"issue", "pr"}:
+        for line in result.splitlines():
+            if line.startswith("Next:"):
+                return line.split(":", 1)[1].strip() + "\n"
     if (
         turn.action == "run"
         and result.startswith("exit 0")
@@ -340,6 +453,13 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
     if not wrote:
         return ""
     is_test = "test" in path
+    if (
+        looks_like_add_feature(state.task)
+        and turn.action in {"patch", "edit"}
+        and not is_test
+        and "AAA test" in result
+    ):
+        return "Next Action must be run Argv: -m unittest discover -s tests -q\n"
     if (
         (looks_like_add_feature(state.task) or looks_like_bugfix(state.task))
         and turn.action in {"patch", "edit"}

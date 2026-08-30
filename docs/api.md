@@ -30,7 +30,7 @@ result.refusals  # what the harness stopped, and why
 | `project` | required | Directory the agent may read and write inside |
 | `task` | `""` | What you are asking for |
 | `model` | `llama3.1:8b` | Ollama model name |
-| `engine` | `ollama` | `ollama` or `mlx` |
+| `engine` | `ollama` | `ollama`, `mlx`, or `openai` (remote OpenAI-compatible HTTP) |
 | `scope` | `""` | Stay inside this subdirectory |
 | `skills` | `()` | Skill names to load. Empty means choose from the task. Catalog: [Skills]({{ '/skills/' | relative_url }}) |
 | `steps` | `20` | Maximum model turns before the run stops |
@@ -87,11 +87,21 @@ interpreter, no script paths:
 
 | | Before | After |
 | --- | --- | --- |
-| macOS / Linux | `PYTHONPATH=src python3.13 scripts/agent.py --project ~/app "..."` | `python-vibe run ~/app "..."` |
-| Windows | did not work: `PYTHONPATH=src` is not valid in cmd or PowerShell | `python-vibe run C:\app "..."` |
+| macOS / Linux | `PYTHONPATH=src python3.13 scripts/agent.py --project ~/app "..."` | `python-vibe run "…"` in that folder |
+| Windows | did not work: `PYTHONPATH=src` is not valid in cmd or PowerShell | `python-vibe run "…"` in that folder |
 
 Training on Apple Silicon needs extras: `pip install -e ".[train]"`.
 Publishing to the Hub needs `pip install -e ".[hub]"`.
+
+### Remote weights
+
+`--engine openai` sends generate calls to an OpenAI-compatible host
+(Hugging Face Inference, vLLM, or a box you rent). The write limit stays on
+this machine. Set `PYTHON_VIBE_BASE_URL` and a token
+(`HF_TOKEN` or `PYTHON_VIBE_API_KEY`). A remote Ollama is the same
+`--engine ollama` with `OLLAMA_HOST` pointed at that box.
+
+See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
 
 Paths are always written with forward slashes, on every platform, because
 the model is shown them and copies them back.
@@ -111,17 +121,16 @@ suite is then run once, and if it passes the task ends there.
 ## Command line
 
 ```bash
-python -m harness brief  ~/app                              # no model
-python -m harness route  "what does compute_total return?"  # no model
-python -m harness layout ~/app                              # no model
-python -m harness ask    ~/app "what does compute_total return?"
-python -m harness run    ~/app "add multiply(a, b) and a test"
-python -m harness run    ~/app "..." --dry-run --scope src
-python -m harness serve    --project ~/app
-python -m harness mcp      --project ~/app          # stdio, for an editor
-python -m harness editors  cursor --allow-writes    # Cursor MCP + tasks
-python -m harness editors  zed                      # merge .zed/settings.json
+python-vibe                  # the four jobs
+python-vibe brief            # no model
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "write tests for apply_discount"
+python-vibe run  "find the NameError and fix it" --dry-run --scope src
+python-vibe serve --project .
+python-vibe editors cursor --allow-writes
 ```
+
+`python -m harness …` is the same command if the install name is not on PATH.
 
 `brief`, `layout`, and `route` never call a model. `ask` is always read-only. `run`
 writes unless you pass `--dry-run`. Add `--json` for machine-readable
@@ -130,7 +139,7 @@ output, `-v` for tool results.
 ## HTTP server
 
 ```bash
-python -m harness serve --project ~/app --port 8090
+python-vibe serve --project ~/app --port 8090
 ```
 
 Binds `127.0.0.1` only. **File changes are off by default**, because an

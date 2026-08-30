@@ -111,10 +111,67 @@ after that checkpoint.
 
 Base weights: `Qwen/Qwen2.5-Coder-0.5B-Instruct`, Apache-2.0.
 
+## Which model to run it with
+
+Three local models were measured on the same eleven jobs, each checked by
+running the code afterwards. One laptop, 29 August 2026, through Ollama.
+
+| Model | Write a test, add a component, fix a bug | Platform work |
+| --- | --- | --- |
+| `llama3.1:8b` | **6–9 / 9** | 1 / 4 |
+| `qwen2.5-coder:7b` | 7 / 9 | **2 / 4** |
+| `qwen3coder` (30B) | not run | **0 / 4, every case timed out** |
+
+A code-specialised 7B is better at operations work and worse at everything
+else. A 30B does not finish a single task on this hardware. The 8B stays
+the default.
+
+The 8B row is a range because the same nine cases were run six times
+against unchanged code and gave 9, 6, 8, 7, 8, 7. Over the full
+fifteen-case benchmark, ten of fifteen changed verdict between identical
+runs. The other rows are one run each: enough to show that the 30B never
+finished, not enough to rank the two smaller models. Treat a gap under
+about four cases as noise, and run any comparison of your own more than
+once.
+
+The hardware is part of the result. This was an Apple M3 Pro with 18 GB
+of unified memory, shared with the operating system, so the practical
+ceiling is about 11–12 GB of model rather than 18. A 14B at 9 GB clears
+that on paper and still could not be measured: it put the machine into
+12–13 GB of swap and no run finished.
+
+These adapters are not in that table on purpose. They are a style prior:
+they draft one short file, and they miss the `Action:` lines the loop needs.
+
+One more measurement worth having before you try this on your own code:
+on a real 4,580-file repository rather than the demo fixture, reading
+works — a project summary, a structure report and a scoped question were
+all correct — and writing does not. Writing tests and adding functions to
+real modules scored one out of twelve across four tasks run three times
+each. The same tasks pass on the fixture.
+
+## What the harness does that the model does not
+
+The cases that pass every time are the ones finished without asking a model
+at all:
+
+    cover-discount   steps=0   0.2s
+    fix-nameerror    steps=0   0.1s
+
+A misspelled name beside the right one, a missing import for a well-known
+module, a test appended to a file that already has one — those are compiler
+jobs, and doing them deterministically means they cannot be got wrong.
+
+What still fails is reasoning, not formatting: a flag reader that does not
+treat "0" as false, a retry that never calls what it was given. That is the
+argument against reaching for more training first — the protocol is not
+where these runs fail.
+
 ## What was measured
 
 Full write-up:
-[research-vibe-review](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/research-vibe-review.md).
+[which model](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/investigations/which-model.md)
+· [research-vibe-review](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/research-vibe-review.md).
 
 - About 45 training pairs. Validation was best near step 100, which is what
   this repository ships.

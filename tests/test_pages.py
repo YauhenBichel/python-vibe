@@ -21,6 +21,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "_includes/nav.html",
             "index.md",
             "start.md",
+            "scenarios.md",
             "api.md",
             "architecture.md",
             "skills.md",
@@ -30,16 +31,22 @@ class PagesInvestigationsTest(unittest.TestCase):
             "cursor.md",
             "research-vibe-review.md",
             "investigations/index.md",
+            "investigations/which-model.md",
             "investigations/everyday-laptop.md",
             "investigations/everyday-skills.md",
             "investigations/harness-comparison.md",
             "investigations/local-vs-cloud.md",
+            "investigations/same-jobs.md",
             "investigations/what-to-improve.md",
             "investigations/small-llm-harness.md",
             "investigations/platform-engineering.md",
             "investigations/fine-tune-or-harness.md",
             "investigations/model-lanes.md",
             "investigations/hub-models.md",
+            "investigations/first-run-four.md",
+            "investigations/experiments.md",
+            "investigations/bench-record.md",
+            "investigations/cloud-weights.md",
         )
         missing = [name for name in required if not (DOCS / name).is_file()]
         self.assertEqual(missing, [])
@@ -95,7 +102,12 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertNotIn('rel="stylesheet"', layout)
         self.assertIn('href="#main"', layout)
         self.assertIn('id="main"', layout)
-        self.assertIn("aria-current", (DOCS / "_includes" / "nav.html").read_text(encoding="utf-8"))
+        nav = (DOCS / "_includes" / "nav.html").read_text(encoding="utf-8")
+        self.assertIn("aria-current", nav)
+        labels = re.findall(r">([^<{]+)</a>", nav)
+        labels = [item.strip() for item in labels if item.strip()]
+        self.assertEqual(labels, list(dict.fromkeys(labels)), labels)
+        self.assertEqual(labels.count("Demo"), 1)
         self.assertIn(":focus-visible", css)
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn("prefers-color-scheme: dark", css)
@@ -181,6 +193,39 @@ class SiteFrontMatterTest(unittest.TestCase):
         ]
         self.assertEqual(missing, [])
 
+    def test_every_rendered_page_is_listed_in_llms_txt(self) -> None:
+        """llms.txt names every page, and names each one once.
+
+        It is written by hand, so it drifts: a page added to the site and
+        the sitemap was missing here, and one page was listed twice. The
+        sitemap has had this check; this file had none.
+        """
+        text = (DOCS / "llms.md").read_text(encoding="utf-8")
+        # Only the list entries. The prose above them names "/" as well.
+        listing = "\n".join(
+            line for line in text.splitlines() if line.startswith("- [")
+        )
+        missing, urls = [], []
+        for path in _site_pages():
+            fields = _front_matter(path)
+            if fields.get("layout") == "null" or path.name == "404.md":
+                continue
+            rel = path.relative_to(DOCS)
+            url = fields.get("permalink") or (
+                "/" if rel.name == "index.md" and rel.parent == Path(".")
+                else f"/{rel.parent.as_posix()}/".replace("/./", "/")
+                if rel.name == "index.md"
+                else f"/{rel.with_suffix('').as_posix()}/"
+            )
+            urls.append(url)
+            if f"'{url}'" not in listing:
+                missing.append(f"{rel} -> {url}")
+        self.assertEqual(missing, [])
+        listed = re.findall(r"^- \[([^\]]+)\]", listing, re.MULTILINE)
+        self.assertEqual(listed, list(dict.fromkeys(listed)), "listed twice")
+        for url in urls:
+            self.assertEqual(listing.count(f"'{url}'"), 1, url)
+
     def test_every_rendered_page_is_in_the_sitemap(self) -> None:
         sitemap = (DOCS / "sitemap.xml").read_text(encoding="utf-8") if (
             DOCS / "sitemap.xml"
@@ -201,9 +246,6 @@ class SiteFrontMatterTest(unittest.TestCase):
                 unlisted.append(f"{rel} -> {url}")
         self.assertEqual(unlisted, [])
 
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class CrossPlatformDocsTest(unittest.TestCase):
@@ -282,3 +324,159 @@ class FirstRunOutputTest(unittest.TestCase):
             text = self._brief(root)
         self.assertIn("--scope", text)
         self.assertNotIn("Action:", text)
+
+class NoCommercialPlanTest(unittest.TestCase):
+    """This repository is personal public OSS. It holds no business plan.
+
+    A control plane — per-customer API keys, a usage ledger, GPU metering,
+    a platform fee — is a different job from a local write jail, and it
+    carries customer secrets and money. It belongs in a private repository
+    in the molecare org. A note about it was written into this tree and
+    referenced from a published page, which put an unbuilt commercial
+    plan on a personal open-source site.
+
+    `--engine openai` stays: pointing the harness at a host you rent, with
+    your own token, is a feature of the tool, not a business.
+    """
+
+    # Words that only appear when the commercial layer is being described.
+    COMMERCIAL = (
+        "control plane",
+        "control-plane",
+        "per-customer",
+        "usage ledger",
+        "platform fee",
+        "invoice",
+        "customer account",
+    )
+    # Real code that happens to use the word, and the guard's own text.
+    ALLOWED = {"tests/test_pages.py"}
+
+    def test_no_page_or_draft_describes_a_control_plane(self) -> None:
+        offenders = []
+        for path in sorted(ROOT.rglob("*.md")):
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith(".git/") or rel in self.ALLOWED:
+                continue
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word in self.COMMERCIAL:
+                if word in lowered:
+                    offenders.append(f"{rel}: {word}")
+        self.assertEqual(
+            offenders,
+            [],
+            f"commercial plan text in a public personal repo: {offenders}",
+        )
+
+    def test_billing_words_are_not_in_the_source(self) -> None:
+        offenders = []
+        for path in sorted((ROOT / "src").rglob("*.py")):
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word in ("per-customer", "usage ledger", "platform fee"):
+                if word in lowered:
+                    offenders.append(f"{path.relative_to(ROOT)}: {word}")
+        self.assertEqual(offenders, [], offenders)
+
+
+class NoPersonalDraftsTest(unittest.TestCase):
+    """Writing meant for somewhere else is not kept here.
+
+    A `drafts/` directory was added to hold Medium articles, on the
+    reasoning that version control would keep their numbers checkable.
+    That was the wrong call: the articles are the author's own, they are
+    not part of the tool, and a published page ended up pointing readers
+    at a file that only makes sense before it is posted. They live
+    outside this repository now.
+
+    Measurements stay, in `docs/investigations/`. Those are the source
+    the articles are written from, and they belong to the project.
+    """
+
+    def test_there_is_no_drafts_directory(self) -> None:
+        self.assertFalse(
+            (ROOT / "drafts").exists(),
+            "drafts/ is the author's own writing; keep it outside the repo",
+        )
+
+    def test_no_file_is_a_draft_for_another_site(self) -> None:
+        offenders = [
+            path.relative_to(ROOT).as_posix()
+            for path in sorted(ROOT.rglob("*.md"))
+            if ".git/" not in path.as_posix()
+            and path.name.lower().startswith("medium")
+        ]
+        self.assertEqual(offenders, [], offenders)
+
+    def test_nothing_points_at_a_draft(self) -> None:
+        offenders = []
+        for path in sorted(ROOT.rglob("*.md")):
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith(".git/"):
+                continue
+            if "drafts/" in path.read_text(encoding="utf-8"):
+                offenders.append(rel)
+        self.assertEqual(offenders, [], offenders)
+
+
+class DatedPagesSayTheDateTest(unittest.TestCase):
+    """A published page cannot say "tonight" and mean anything later.
+
+    Pages carried "Tonight's live run" and "as typed tonight". Read a
+    week after the measurement they claim something that is not true,
+    and the date is already in the front matter and the prose.
+    """
+
+    RELATIVE = ("tonight", "this evening", "this morning", "yesterday")
+
+    def test_no_page_dates_itself_by_the_time_of_day(self) -> None:
+        offenders = []
+        for path in sorted(DOCS.rglob("*.md")):
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word in self.RELATIVE:
+                if word in lowered:
+                    offenders.append(f"{path.relative_to(DOCS)}: {word}")
+        self.assertEqual(offenders, [], offenders)
+
+
+class PlainWordsTest(unittest.TestCase):
+    """Say what a thing does, not what it is called in somebody's slang.
+
+    "jail" came from chroot and had spread to sixty-odd places: the
+    README, the repository description, half the investigation pages and
+    several docstrings. A reader who has not met the term learns nothing
+    from it. "write limit" says the same thing and needs no glossary.
+
+    Add a word here when it turns out to need explaining.
+    """
+
+    JARGON = {
+        "jail": "say what it limits, e.g. 'write limit'",
+        "footgun": "say what goes wrong",
+        "bikeshed": "say what the disagreement is about",
+        "yak shav": "say what the detour was",
+    }
+
+    def _offenders(self, paths) -> list[str]:
+        found = []
+        for path in paths:
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith((".git/", "tests/test_pages.py")):
+                continue
+            lowered = path.read_text(encoding="utf-8").lower()
+            for word, better in self.JARGON.items():
+                if word in lowered:
+                    found.append(f"{rel}: '{word}' — {better}")
+        return found
+
+    def test_pages_and_readme_use_plain_words(self) -> None:
+        pages = sorted(DOCS.rglob("*.md")) + [ROOT / "README.md", ROOT / "CONTRIBUTING.md"]
+        self.assertEqual(self._offenders(pages), [])
+
+    def test_the_source_uses_plain_words_too(self) -> None:
+        """Docstrings are read by whoever maintains this next."""
+        self.assertEqual(self._offenders(sorted((ROOT / "src").rglob("*.py"))), [])
+
+
+
+if __name__ == "__main__":
+    unittest.main()

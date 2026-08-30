@@ -59,10 +59,25 @@ Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe
 
 | Level | Label | Open examples |
 | --- | --- | --- |
-| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#97](https://github.com/YauhenBichel/python-vibe/issues/97) naming table · [#96](https://github.com/YauhenBichel/python-vibe/issues/96) new-package example |
-| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#100](https://github.com/YauhenBichel/python-vibe/issues/100) demo orders · [#99](https://github.com/YauhenBichel/python-vibe/issues/99) split style.py |
+| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#96](https://github.com/YauhenBichel/python-vibe/issues/96) naming table · [#97](https://github.com/YauhenBichel/python-vibe/issues/97) refuse util.py |
+| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#99](https://github.com/YauhenBichel/python-vibe/issues/99) two god-module rules · [#100](https://github.com/YauhenBichel/python-vibe/issues/100) demo orders |
 
-Open threads: [fused weights](https://github.com/YauhenBichel/python-vibe/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/python-vibe/discussions/12) · [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13) · [train without MLX](https://github.com/YauhenBichel/python-vibe/discussions/14).
+What has been measured, and how many runs each number stands on: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+
+Open threads: [fused weights](https://github.com/YauhenBichel/python-vibe/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/python-vibe/discussions/12) · [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13) · [train without MLX](https://github.com/YauhenBichel/python-vibe/discussions/14) · [experiment results](https://github.com/YauhenBichel/python-vibe/discussions/128).
+
+## GitHub account `python-vibe`
+
+The harness never authors a commit as this project. **You** stay the
+author. When `Action: commit` runs, it adds:
+
+```
+Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>
+```
+
+The user is [python-vibe](https://github.com/python-vibe). GitHub links
+that numbered noreply address to the profile. Do not grant the account
+write access to other repos — attribution only.
 
 ## Project site
 
@@ -83,3 +98,4 @@ Do **not** open a public issue. See [SECURITY.md](./SECURITY.md).
 
 By contributing you agree that your contributions are licensed under the
 [Apache-2.0 licence](./LICENSE) that covers this project.
+ 

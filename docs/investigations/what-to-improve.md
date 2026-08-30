@@ -10,7 +10,7 @@ type: article
 
 The product gap is not closable. The harness gap is.
 
-A hosted IDE agent has native tools, extra servers, a browser, and a large context window. python-vibe is a local loop: twenty typed Actions, a write jail, twenty steps, 700 tokens, project text files only (Python plus a few config suffixes; no secrets). Improving this project means making the **8B loop reliable on small Python and platform trees** — not growing a browser Action or pretending 8B is a frontier model.
+A hosted IDE agent has native tools, extra servers, a browser, and a large context window. python-vibe is a local loop: twenty typed Actions, a write limit, twenty steps, 700 tokens, project text files only (Python plus a few config suffixes; no secrets). Improving this project means making the **8B loop reliable on small Python and platform trees** — not growing a browser Action or pretending 8B is a frontier model.
 
 Related: [local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) · [harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}).
 
@@ -36,7 +36,7 @@ Published harness notes in this repo already said the quiet part: **edit format 
 | Review structure, then one split, then review again | Yes | Design scan + refuse `done` while findings remain | Wired. Prelude allows a one-split edit. After each write the harness re-scans. `done` is refused while findings remain. |
 | Show a repo map of signatures | Yes | `Action: map` (120-line outline) | Wired. Large trees still need `--scope`. |
 | Recover a near-miss edit | Yes | `Find:` whitespace retry + closest-line hint | Wired. Keep exact `Find:` (fails loud). Do not add fuzzy patches. |
-| Extra tools, browser, any language, 100k–1M context | No | None. Jail and step budget stay. | Out of scope on purpose. `openai_compat.py` does not add these. |
+| Extra tools, browser, any language, 100k–1M context | No | None. The write limit and step budget stay. | Out of scope on purpose. `openai_compat.py` does not add these. |
 | Free-form terminal | No | Typed `run` only (no `-c`, pip, pipes) | Correct for an 8B on a laptop tree. |
 | Train the brain to emit the protocol | Later, after traces | `train.py --everyday` on ~2k redacted `--record` turns | 30 train rows + 40 seed templates. No `python-vibe-8b` adapters. |
 
@@ -46,9 +46,10 @@ Score is “would a daily user get the same outcome,” not model size. 0–5. �
 
 | Job | 8B + harness today | After recommended harness | Hosted IDE agent |
 | --- | --- | --- | --- |
-| Typed question | 4 | 4 | 5 |
-| Add a function + test | 4 | 4 | 5 |
-| Rename / smell | 3 | 4 | 5 |
+| Typed question | 3 | 3 | 5 |
+| Add a function + test | 1 (wrong file, 29 Aug evening) | 4 (name-overlap pick + refuse `done` until `def` exists) | 5 |
+| Rename / smell | 5 | 5 | 5 |
+| Named-file review | 2 (invented a defect) | 5 (compiler findings, no model turn) | 5 |
 | One-split refactor | 2 | 3 | 5 |
 | 100-file review | 1 | 2 | 5 |
 | Extra tools / browser / any language | 0 | 0 | 5 |
@@ -67,19 +68,21 @@ Ship these before training another model.
 8. **Editor drop-in.** `python -m harness editors vscode|continue|cursor` copies tasks / Continue / local MCP. `serve` speaks `/v1/chat/completions`. Hosted-editor chat override of loopback is out of scope (no public tunnel).
 9. **Everyday laptop Python.** Skills `write-script`, `call-http`, `analyze-data`, `write-algorithm`. Prelude now quotes the skill `Path:` (`pkg/weekday_name.py`, not `pkg/<noun>.py`). Drafts that emit `curl` / `wget` / `os.system` are refused.
 10. **Compiler oracle.** Undefined-name scan (`scan/names.py`). `done` is refused if a bugfix file still has `subtotl`. Tests in an impl file are refused. A rename that still defines the old name is refused. See [small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}).
-11. **Platform paths.** Skill `write-paths`. Jail includes `.toml` / `.yml` / `.json`. Drafts that use `os.path.join`, a hardcoded home or `/tmp`, or a POSIX-only venv path are refused. See [platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}).
+11. **Platform paths.** Skill `write-paths`. The limit includes `.toml` / `.yml` / `.json`. Drafts that use `os.path.join`, a hardcoded home or `/tmp`, or a POSIX-only venv path are refused. See [platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}).
 12. **Traces, then a 7B LoRA.** Only after a live design loop reaches no structure findings. `--record` into `data/agent-loop/extra.jsonl` (gitignored). Thirty seed rows are not enough. Decision write-up: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
+13. **Named-file review quotes the compiler.** Wired. `review src/orders.py` no longer asks for a patch, then refuses it. Undefined names finish the run with no generate. Measured: [same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}).
+14. **New functions stay with related names.** Wired. `pick_module` no longer prefers the largest file (that was the controller). Prelude pins `Path:`. After the def exists the harness writes the AAA test. `done` is refused until `def <symbol>` exists. A second `orders.py` is refused.
 
 ## What not to spend a week on
 
 - More 0.5B train steps. The adapter is a style prior. Held-out vibe tasks failed. It misses `Action:` lines.
 - Training `python-vibe-8b` on the thirty seed rows and calling it everyday-ready.
-- A bash tool, a browser Action, or extra-tool bridges. Those make the laptop jail weaker and do not move the measured jobs.
+- A bash tool, a browser Action, or extra-tool bridges. Those make the laptop write limit weaker and do not move the measured jobs.
 - Raising `--steps` as a substitute for a review → one-split → review loop.
 
 ## Two success bars
 
 | Bar | python-vibe (local) | Hosted IDE agent |
 | --- | --- | --- |
-| Ready for daily use | Small Python tree. First Action correct on Q&A / add / rename / one-split. Writes jailed. Offline. | Any repo, any language, extra tools, browser. Precise multi-site quotes. You pay a usage pool. |
+| Ready for daily use | Small Python tree. First Action correct on Q&A / add / rename / one-split. Writes limited to one folder. Offline. | Any repo, any language, extra tools, browser. Precise multi-site quotes. You pay a usage pool. |
 | How you know | `skill_probe.py` shows the intended Action with prelude on; live eval beats the 8B baseline; a design loop reaches “no structure findings” without rewriting the tree. | Already there. Pointing an editor at Ollama does not move this bar. |

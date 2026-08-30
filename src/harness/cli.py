@@ -10,6 +10,7 @@ One command with subcommands, so a user does not have to know which file in
     python -m harness serve    --project ~/app
     python -m harness mcp      --project ~/app
     python -m harness editors  cursor --allow-writes
+    python -m harness commit   ~/app "why the change landed"
     python -m harness route    "what does compute_total return?"
 """
 
@@ -25,6 +26,42 @@ from harness.agent.options import DEFAULT_MAX_TOKENS, DEFAULT_STEPS
 from harness.scan.layout import render_layout
 from harness.scan.project_brief import classify_project, render_brief_for_person
 from harness.skillkit.catalog import list_skills
+
+# The everyday jobs. Extra commands exist; this is what people should
+# type first. {prog} is filled in from how the tool was started: the
+# installed command is not always on PATH, and printing it when it is
+# not sends a first-time user to a command that does not exist.
+HOW_TO = """\
+{prog} — four jobs, on this machine.
+
+  {prog} brief
+  {prog} ask  "what does compute_total return?"
+  {prog} run  "write tests for apply_discount"
+  {prog} run  "find the NameError and fix it"
+  {prog} run  "add a function total_lines and a test"
+
+Run those inside your project folder. To point at another folder:
+
+  {prog} ask /path/to/project "what does compute_total return?"
+
+ask never writes. run only changes files inside that folder, and keeps a
+.bak of anything it edits. More commands: {prog} --help
+"""
+
+
+def how_to() -> str:
+    """The short list, naming the command this machine can actually run."""
+    return HOW_TO.format(prog=_program_name())
+
+
+def resolve_project_task(first: str, second: str | None) -> tuple[Path, str]:
+    """`ask DIR TASK` or `ask TASK` (DIR is the current folder)."""
+    if second:
+        return Path(first).expanduser().resolve(), second
+    path = Path(first).expanduser()
+    if path.exists() and path.is_dir() and " " not in first.strip():
+        return path.resolve(), ""
+    return Path(".").resolve(), first
 
 
 def _printer(verbose: bool):
@@ -74,7 +111,11 @@ def _add_agent_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--scope", default="", help="work only inside this folder")
     parser.add_argument("--skill", action="append", default=[], metavar="NAME")
     parser.add_argument("--model", default=AgentOptions(project=Path(".")).model)
-    parser.add_argument("--engine", default="ollama")
+    parser.add_argument(
+        "--engine",
+        default="ollama",
+        help="ollama (local or OLLAMA_HOST), mlx, or openai (remote weights)",
+    )
     parser.add_argument("--steps", type=int, default=DEFAULT_STEPS)
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--record", type=Path)
@@ -91,29 +132,33 @@ def _program_name() -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog=_program_name())
-    subs = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(
+        prog=_program_name(),
+        description="Four everyday Python jobs, on this machine.",
+        epilog="Run python-vibe with no arguments for the short how-to.",
+    )
+    subs = parser.add_subparsers(dest="command", required=False)
 
-    brief = subs.add_parser("brief", help="summarise a project. Needs no AI model.")
-    brief.add_argument("project", type=Path)
+    brief = subs.add_parser("brief", help="summarise this folder. Needs no AI model.")
+    brief.add_argument("project", nargs="?", default=".", type=Path)
     brief.add_argument("--scope", default="")
 
     layout = subs.add_parser("layout", help="report what makes a project hard to read. Needs no AI model.")
-    layout.add_argument("project", type=Path)
+    layout.add_argument("project", nargs="?", default=".", type=Path)
 
     route = subs.add_parser(
         "route", help="which local model suits a task. Needs no AI model."
     )
     route.add_argument("task")
 
-    ask = subs.add_parser("ask", help="answer a question about the project. Changes nothing.")
-    ask.add_argument("project", type=Path)
-    ask.add_argument("task")
+    ask = subs.add_parser("ask", help="answer a question. Changes nothing.")
+    ask.add_argument("first", help="the question, or a folder then the question")
+    ask.add_argument("second", nargs="?", default="", help="the question, when the first argument is a folder")
     _add_agent_flags(ask)
 
-    run = subs.add_parser("run", help="make a change, then run the tests")
-    run.add_argument("project", type=Path)
-    run.add_argument("task")
+    run = subs.add_parser("run", help="write tests, fix a bug, or add one small function")
+    run.add_argument("first", help="what to do, or a folder then what to do")
+    run.add_argument("second", nargs="?", default="", help="the task, when the first argument is a folder")
     run.add_argument(
         "--dry-run",
         dest="allow_writes",
@@ -140,6 +185,13 @@ def build_parser() -> argparse.ArgumentParser:
     mcp.add_argument("--allow-writes", action="store_true")
     mcp.add_argument("--model", default=AgentOptions(project=Path(".")).model)
 
+    commit = subs.add_parser(
+        "commit",
+        help="record current changes. You stay the author; python-vibe is co-author.",
+    )
+    commit.add_argument("project", type=Path)
+    commit.add_argument("summary", help="why, not what (at least 8 characters)")
+
     editors = subs.add_parser(
         "editors",
         help="write ready-made editor settings into a project",
@@ -149,7 +201,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--project",
         type=Path,
         default=Path("."),
-        help="folder to jail (default: current directory)",
+        help="folder it may change (default: current directory)",
     )
     editors.add_argument(
         "--allow-writes",
@@ -165,80 +217,92 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-
-    if args.command == "brief":
-        project = args.project.expanduser().resolve()
-        print(
-            render_brief_for_person(
-                classify_project(project, args.scope), scope=args.scope
-            )
+def _run_brief(args) -> int:
+    project = args.project.expanduser().resolve()
+    print(
+        render_brief_for_person(
+            classify_project(project, args.scope), scope=args.scope
         )
-        # The full catalogue is written for the model, in the model's own
-        # syntax. Printing it here buries the answer the person asked for.
-        count = len(list_skills(project))
-        print()
-        print(
-            f"python-vibe has {count} skills it can apply. It picks them from "
-            "the wording of your task; you do not choose them."
+    )
+    # The full catalogue is written for the model, in the model's own
+    # syntax. Printing it here buries the answer the person asked for.
+    count = len(list_skills(project))
+    print()
+    print(
+        f"python-vibe has {count} skills it can apply. It picks them from "
+        "the wording of your task; you do not choose them."
+    )
+    return 0
+
+
+def _run_layout(args) -> int:
+    print(render_layout(args.project.expanduser().resolve()))
+    return 0
+
+
+def _run_route(args) -> int:
+    from harness import route_advice
+
+    print(route_advice(args.task))
+    return 0
+
+
+def _run_serve(args) -> int:
+    from harness.server import serve
+
+    return serve(
+        args.project.expanduser().resolve(),
+        port=args.port,
+        allow_writes=args.allow_writes,
+        model=args.model,
+    )
+
+
+def _run_mcp(args) -> int:
+    from harness.mcp_stdio import serve_stdio
+
+    return serve_stdio(
+        args.project.expanduser().resolve(),
+        allow_writes=args.allow_writes,
+        model=args.model,
+    )
+
+
+def _run_commit(args) -> int:
+    from harness.ship.git_ship import commit_changes
+
+    print(commit_changes(args.project.expanduser().resolve(), args.summary))
+    return 0
+
+
+def _run_editors(args) -> int:
+    from harness.editor_kit import install_editors, next_steps
+
+    try:
+        written = install_editors(
+            args.project,
+            args.kind,
+            allow_writes=getattr(args, "allow_writes", False),
+            user_wide=getattr(args, "user_wide", False),
         )
-        return 0
-
-    if args.command == "layout":
-        print(render_layout(args.project.expanduser().resolve()))
-        return 0
-
-    if args.command == "route":
-        from harness.model.route import route_advice
-
-        print(route_advice(args.task))
-        return 0
-
-    if args.command == "serve":
-        from harness.server import serve
-
-        return serve(
-            args.project.expanduser().resolve(),
-            port=args.port,
-            allow_writes=args.allow_writes,
-            model=args.model,
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    for path in written:
+        print(path)
+    print()
+    print(
+        next_steps(
+            args.kind,
+            allow_writes=getattr(args, "allow_writes", False),
+            user_wide=getattr(args, "user_wide", False),
         )
+    )
+    return 0
 
-    if args.command == "mcp":
-        from harness.mcp_stdio import serve_stdio
 
-        return serve_stdio(
-            args.project.expanduser().resolve(),
-            allow_writes=args.allow_writes,
-            model=args.model,
-        )
-
-    if args.command == "editors":
-        from harness.editor_kit import install_editors, next_steps
-
-        try:
-            written = install_editors(
-                args.project,
-                args.kind,
-                allow_writes=getattr(args, "allow_writes", False),
-                user_wide=getattr(args, "user_wide", False),
-            )
-        except ValueError as exc:
-            print(str(exc), file=sys.stderr)
-            return 2
-        for path in written:
-            print(path)
-        print()
-        print(
-            next_steps(
-                args.kind,
-                allow_writes=getattr(args, "allow_writes", False),
-                user_wide=getattr(args, "user_wide", False),
-            )
-        )
-        return 0
-
+def _run_agent(args) -> int:
+    """ask and run: the two commands that call the model."""
     interactive = sys.stdin.isatty()
     if args.command == "ask":
         args.allow_writes = False
@@ -252,3 +316,45 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(result.summary)
     return 0 if result.ok else 1
+
+
+# One entry per subcommand. A chain of nine `if args.command ==` tests
+# said the same thing at three times the length, and adding a command
+# meant finding the right place in the middle of it.
+COMMANDS = {
+    "brief": _run_brief,
+    "layout": _run_layout,
+    "route": _run_route,
+    "serve": _run_serve,
+    "mcp": _run_mcp,
+    "commit": _run_commit,
+    "editors": _run_editors,
+    "ask": _run_agent,
+    "run": _run_agent,
+}
+
+
+def _missing_task_message(command: str) -> str:
+    """What to print when ask or run was given no words to work on."""
+    wanted = "a question" if command == "ask" else "what to change"
+    return (
+        f"{command} needs {wanted}, for example:\n"
+        f'  {_program_name()} {command} "what does add return?"'
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    if not args.command:
+        print(how_to(), end="")
+        return 0
+
+    if args.command in {"ask", "run"}:
+        project, task = resolve_project_task(args.first, args.second or None)
+        if not task.strip():
+            print(_missing_task_message(args.command), file=sys.stderr)
+            return 2
+        args.project = project
+        args.task = task
+
+    return COMMANDS[args.command](args)

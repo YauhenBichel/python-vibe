@@ -239,10 +239,6 @@ class AskTest(unittest.TestCase):
         self.assertIn("1. alpha", question.render())
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class EchoedSummaryTest(unittest.TestCase):
     """An 8B pastes the skill line back. That is not an answer."""
 
@@ -374,14 +370,36 @@ class TestsPassedTest(unittest.TestCase):
             self.assertEqual(next_prompt(state, self._run_turn(), "exit 0\nOK"), "")
 
     def test_a_green_suite_after_a_change_ends_the_task(self) -> None:
+        """Only once the function the task asked for actually exists.
+
+        A green suite is not proof on its own: the oracle checks that the
+        named function is in the project, because the existing tests very
+        often do not call the new one.
+        """
+        from harness.agent.policy import next_prompt
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _project(tmp)
+            app = project / "src" / "app.py"
+            app.write_text(
+                app.read_text(encoding="utf-8")
+                + "\n\ndef multiply(a: int, b: int) -> int:\n    return a * b\n",
+                encoding="utf-8",
+            )
+            state = self._state("add multiply(a, b) and a test", project)
+            state.wrote_something = True
+            self.assertIn(
+                "Action: done", next_prompt(state, self._run_turn(), "exit 0\nOK")
+            )
+
+    def test_a_green_suite_is_not_done_if_the_function_is_missing(self) -> None:
         from harness.agent.policy import next_prompt
 
         with tempfile.TemporaryDirectory() as tmp:
             state = self._state("add multiply(a, b) and a test", _project(tmp))
             state.wrote_something = True
-            self.assertIn(
-                "Action: done", next_prompt(state, self._run_turn(), "exit 0\nOK")
-            )
+            got = next_prompt(state, self._run_turn(), "exit 0\nOK")
+        self.assertIn("multiply is not in the project", got)
 
     def test_a_failing_suite_never_ends_the_task(self) -> None:
         from harness.agent.policy import next_prompt
@@ -390,3 +408,95 @@ class TestsPassedTest(unittest.TestCase):
             state = self._state("add multiply(a, b) and a test", _project(tmp))
             state.wrote_something = True
             self.assertEqual(next_prompt(state, self._run_turn(), "exit 1\nE"), "")
+
+
+class LateQuestionTest(unittest.TestCase):
+    """Once files are written, a clarifying question is too late.
+
+    A live run wrote `total_lines` and a test under one reading of an
+    ambiguous task, left the project's suite red, and only then asked
+    which reading was meant. The question was reasonable; the timing
+    made it useless, because the answer could no longer change what was
+    on disk.
+    """
+
+    def test_asking_after_a_write_is_sent_back(self) -> None:
+        asked = []
+        with tempfile.TemporaryDirectory() as tmp:
+            options = AgentOptions(
+                project=_project(tmp),
+                task="add multiply and a unit test",
+                on_question=lambda q: (asked.append(q.text), "either")[1],
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                _scripted(
+                    "Action: patch\nPath: src/app.py\nAppend:\n"
+                    "def multiply(a: int, b: int) -> int:\n    return a * b\n",
+                    "Action: ask\nQuery: which reading did you mean?",
+                    "Action: run\nArgv: -m unittest discover -s tests -q",
+                    "Action: done\nSummary: added multiply to src/app.py",
+                ),
+            ):
+                result = Agent(options).run()
+        self.assertEqual(asked, [], "the question should not reach the user")
+        self.assertTrue(
+            any("too late to ask" in item for item in result.refusals), result.refusals
+        )
+
+    def test_asking_before_any_write_still_reaches_the_user(self) -> None:
+        """The rule is about timing, not about forbidding questions."""
+        asked = []
+        with tempfile.TemporaryDirectory() as tmp:
+            options = AgentOptions(
+                project=_project(tmp),
+                task="add multiply and a unit test",
+                on_question=lambda q: (asked.append(q.text), "src/app.py")[1],
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                _scripted(
+                    "Action: ask\nQuery: which module?",
+                    "Action: patch\nPath: src/app.py\nAppend:\n"
+                    "def multiply(a: int, b: int) -> int:\n    return a * b\n",
+                    "Action: run\nArgv: -m unittest discover -s tests -q",
+                    "Action: done\nSummary: added multiply to src/app.py",
+                ),
+            ):
+                result = Agent(options).run()
+        self.assertEqual(asked, ["which module?"])
+        self.assertTrue(result.ok, result.refusals)
+
+
+class ThinSummaryIsCappedTest(unittest.TestCase):
+    """Sending a summary back for being thin must not cost the whole run.
+
+    The check that a return-type answer says more than the type is worth
+    having: the bare answer was `"int"`. Without a cap it was handed back
+    every turn until the steps ran out, and a run that had the answer in
+    hand reported failure.
+    """
+
+    def test_the_run_finishes_even_if_the_summary_never_improves(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            options = AgentOptions(
+                project=_project(tmp),
+                task="what does compute_total return?",
+                steps=8,
+            )
+            thin = 'Action: done\nSummary: "int"'
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                _scripted(thin, thin, thin, thin, thin, thin),
+            ):
+                result = Agent(options).run()
+        self.assertTrue(result.ok, result.refusals)
+        self.assertLessEqual(
+            sum(1 for item in result.refusals if "too thin" in item),
+            2,
+            result.refusals,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

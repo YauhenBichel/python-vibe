@@ -59,6 +59,10 @@ class SkillsTest(unittest.TestCase):
             ["read-issue"],
         )
         self.assertEqual(
+            [item.name for item in pick_skills("read pr 108", catalog)],
+            ["read-issue"],
+        )
+        self.assertEqual(
             [item.name for item in pick_skills("create a pr for #50", catalog)],
             ["open-pr"],
         )
@@ -87,6 +91,7 @@ class SkillsTest(unittest.TestCase):
             ("tally counts by key from a csv", "analyze-data"),
             ("implement binary search", "write-algorithm"),
             ("write a pathlib helper for the venv", "write-paths"),
+            ("add a CI workflow that runs the unit tests", "write-workflow"),
         ):
             skill = get_skill(name, ROOT)
             assert skill is not None
@@ -107,6 +112,14 @@ class SkillsTest(unittest.TestCase):
         self.assertIsNotNone(named)
         assert named is not None
         self.assertEqual(named.name, "add-feature")
+
+    def test_write_tests_skill_includes_aaa_fixture(self) -> None:
+        skill = get_skill("write-tests", ROOT)
+        self.assertIsNotNone(skill)
+        assert skill is not None
+        self.assertIn("test_weekday_returns_day_name", skill.body)
+        self.assertIn("got = weekday(day_index)", skill.body)
+        self.assertIn("self.assertEqual(got, \"Tuesday\")", skill.body)
 
 
 if __name__ == "__main__":

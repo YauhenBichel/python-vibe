@@ -32,6 +32,58 @@ Read a layer top-down and you learn what the harness does. Read it
 bottom-up and you learn what it refuses. The kit skills `skillkit/` loads
 are listed on [Skills]({{ '/skills/' | relative_url }}).
 
+## What a run remembers
+
+`memory/` is one component with one job: decide what a request carries.
+
+It was a bare list on the generate function. Every turn appended the
+prompt and the reply, nothing was ever removed, and the request grew by
+about 130 tokens a turn on top of an opening usually over a thousand.
+Nobody decided where that stopped: the harness sent no context size, so
+Ollama applied its own default of 4096 tokens — for weights that accept
+131072 — and dropped the oldest messages once a run passed it.
+
+The oldest message is the opening, which carries the file the harness
+located and the instruction about it. A long run lost exactly the part
+the harness had done work to assemble, and nothing said so.
+
+`Conversation` decides instead. The opening is kept for the whole run.
+Recent turns are kept, because that is where the run is. What goes is
+the middle, which is where a model has already been told four times that
+it used the wrong verb, and it is counted rather than silently dropped.
+The context size is now stated in the request.
+
+It belongs to the harness, not the model package: what is worth
+remembering is a harness decision. `make_generate` is handed something
+that answers `messages(prompt)` and never imports it.
+
+## Three rings
+
+An agent is a harness around a model. That is the shape the code keeps.
+
+{% include diagram-rings.html %}
+
+Nearly all of the behaviour is the middle ring, which is the point of the
+project: what the model gets wrong, the harness catches.
+
+The outer ring does not reach into the inner one. The command line and
+the server used to import `harness.model` directly, so the model package
+could not change shape without changing them. They go through the
+harness now, and a test refuses the direct import.
+
+`openai_api` used to sit in the model package. It knows what an
+OpenAI-style chat request looks like and nothing about weights, so it
+belongs beside the server that speaks that format. The model package is
+now only the code that talks to a model, and a test keeps it that way.
+
+What one run does before it loads a model:
+
+{% include diagram-run.html %}
+
+One place asks for a generator, `agent/loop.py`, and a test checks that
+too. If a second appeared, there would be two answers to "which model is
+this run using".
+
 ## Why `task.py` is the bottom
 
 Every layer needs to know whether the user asked a question or asked for a

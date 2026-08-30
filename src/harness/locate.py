@@ -6,9 +6,11 @@ import re
 from pathlib import Path
 
 from harness.act.tools import grep_py, read_py
+from harness.scan.names import undefined_names
 from harness.task import looks_like_question, question_symbol
 from harness.task import looks_like_add_feature
 from harness.task import (
+    covered_symbol,
     everyday_example_path,
     everyday_skill_name,
     named_project_file,
@@ -18,6 +20,7 @@ from harness.task import (
     looks_like_new_package,
     looks_like_refactor,
     looks_like_review,
+    looks_like_write_tests,
     smell_symbol,
 )
 
@@ -51,6 +54,13 @@ def _compact(text: str) -> str:
 
 _ASKS_RETURN = re.compile(r"\b(return|returns|returned|type|give back|output)\b", re.I)
 MIN_DESCRIPTION_WORDS = 4
+# Words a return-type answer must add beyond the type itself. The
+# bare answer to "what does compute_total return?" was `"int"`, which
+# is the annotation read back, not what the function does. Two extra
+# words is enough for "compute_total sums int"; asking for four
+# rejected answers a person would accept, and the loop then spent
+# every remaining step asking again.
+MIN_EXTRA_WORDS = 2
 
 
 def asks_what_it_returns(task: str) -> bool:
@@ -79,12 +89,23 @@ def refuse_shallow_done(task: str, summary: str, signature: str) -> str:
     wanted = return_annotation(signature)
     if not wanted:
         return ""
-    if _compact(wanted) in _compact(summary or ""):
-        return ""
-    return (
-        f"too thin. Action: done Summary: must quote {wanted} "
-        f"from {signature}"
-    )
+    compact = _compact(summary or "")
+    if _compact(wanted) not in compact:
+        return (
+            f"too thin. Action: done Summary: must quote {wanted} "
+            f"from {signature} and say what it computes."
+        )
+    extra = [
+        word
+        for word in re.findall(r"[A-Za-z0-9_]+", summary or "")
+        if _compact(word) not in _compact(wanted)
+    ]
+    if len(extra) < MIN_EXTRA_WORDS:
+        return (
+            f"too thin. Action: done Summary: quote {wanted} and say in a "
+            "sentence what it computes, from the code you read."
+        )
+    return ""
 
 
 def def_hit_path(grep_text: str, symbol: str) -> str:
@@ -116,27 +137,89 @@ def locate_py(project: Path, query: str, scope: str = "") -> tuple[str, str]:
 
 
 def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
-    """Run locate before the model. Small models skip the first grep."""
-    if looks_like_design_loop(task):
-        from harness.scan.design import design_is_clean, render_design_review
+    """Search before the model runs, and say what to do with what was found.
 
-        report = render_design_review(project, scope)
-        kind = "refactor" if looks_like_refactor(task) and not looks_like_review(task) else "review"
-        if design_is_clean(report):
-            next_line = (
-                "Next Action must be done. Summary: quote no structure findings."
-            )
-        else:
-            next_line = (
-                "Next Action must be edit Path: pkg/<new_concern>.py with one function."
-            )
-        return f"Harness design review ({kind})\n{next_line}\n\n{report}", ""
+    Small models skip the first grep, so the harness does it for them and
+    hands over the file with an instruction attached.
+
+    Each kind of task needs a different opening, so each one is its own
+    function below and this only chooses between them. They were a single
+    if-chain of a hundred and forty lines, which made the shared tail at
+    the end read as if it belonged to whichever branch you had just
+    finished reading.
+    """
     if looks_like_new_package(task):
         return "", ""
+    for opening in (
+        _opening_for_design_loop,
+        _opening_for_write_tests,
+        _opening_for_a_named_file,
+    ):
+        found = opening(project, task, scope)
+        if found is not None:
+            return found
+    return _opening_found_by_symbol(project, task, scope)
 
-    # A task that names a file has already said which file to open. Looking
-    # up a word out of that path instead finds every file in the project:
-    # "src/harness/model/engine.py" was searched for as "harness".
+
+def _opening_for_design_loop(
+    project: Path, task: str, scope: str
+) -> tuple[str, str] | None:
+    """A review or refactor starts from the structure report, not a file."""
+    if not looks_like_design_loop(task):
+        return None
+    from harness.scan.design import design_is_clean, render_design_review
+
+    report = render_design_review(project, scope)
+    kind = "refactor" if looks_like_refactor(task) and not looks_like_review(task) else "review"
+    if design_is_clean(report):
+        next_line = (
+            "Next Action must be done. Summary: quote no structure findings."
+        )
+    else:
+        next_line = (
+            "Next Action must be edit Path: pkg/<new_concern>.py with one function."
+        )
+    return f"Harness design review ({kind})\n{next_line}\n\n{report}", ""
+
+
+def _opening_for_write_tests(
+    project: Path, task: str, scope: str
+) -> tuple[str, str] | None:
+    """Writing a test needs the subject located and a destination chosen."""
+    if not looks_like_write_tests(task):
+        return None
+    symbol = covered_symbol(task) or question_symbol(task)
+    dest = named_project_file(task, project)
+    rel = dest.replace("\\", "/").lower()
+    if dest and "test" not in rel and not rel.split("/")[-1].startswith("test_"):
+        dest = ""
+    if not dest and symbol:
+        dest = f"tests/test_{symbol.split('.')[-1]}.py"
+    if not dest:
+        dest = "tests/test_module.py"
+    text, path = locate_py(project, symbol, scope) if symbol else ("", "")
+    header = (
+        f"Harness locate (write-tests) Query: {symbol or 'the function'}\n"
+        f"Next Action must be patch Path: {dest} Append: one AAA "
+        f"test_<unit>_<result> that calls {symbol or 'the function'}.\n"
+        "Do not edit the implementation. Do not ask."
+    )
+    return f"{header}\n\n{text}", path
+
+
+def _opening_for_a_named_file(
+    project: Path, task: str, scope: str
+) -> tuple[str, str] | None:
+    """Open the file the task names, and say what may be done to it.
+
+    A task that names a file has already said which file to open.
+    Looking up a word out of that path instead found every file in the
+    project: "src/harness/model/engine.py" was searched for as
+    "harness".
+
+    `scope` is unused here and kept so every opening has one shape and
+    the caller can try them in turn.
+    """
     named = named_project_file(task, project)
     if named:
         try:
@@ -148,6 +231,14 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
                 next_line = (
                     "Next Action must be done. Quote what this file does. "
                     "Do not grep, read, or edit."
+                )
+            elif reviews_one_named_file(task):
+                findings = named_file_review_summary(project, task)
+                extra = f"\n{findings}" if findings else ""
+                next_line = (
+                    "Next Action must be done. Quote a defect from the "
+                    "findings below. Do not patch, edit, or run."
+                    f"{extra}"
                 )
             else:
                 next_line = (
@@ -162,7 +253,13 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
                 f"# auto-read {named}\n{body}",
                 named,
             )
+    return None
 
+
+def _opening_found_by_symbol(
+    project: Path, task: str, scope: str
+) -> tuple[str, str]:
+    """Nothing named a file, so find the symbol and say what to do with it."""
     symbol = smell_symbol(task) if looks_like_fix_smell(task) else question_symbol(task)
     if not symbol and looks_like_add_feature(task):
         symbol = question_symbol(task) or ""
@@ -178,13 +275,30 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
     else:
         kind = "add-feature"
     header = f"Harness locate ({kind}) Query: {symbol}"
+    header += _what_to_do_next(project, task, symbol, text, path)
+    return f"{header}\n\n{text}", path
+
+
+def _what_to_do_next(
+    project: Path, task: str, symbol: str, text: str, path: str
+) -> str:
+    """The instruction attached to what was found, or "" for none.
+
+    One line per kind of task. An 8B follows the first instruction it
+    sees, so there is exactly one and it names the action, the path and
+    the shape of the edit.
+    """
+    header = ""
     if looks_like_question(task) and path:
         header += (
             "\nNext Action must be done. Do not locate, grep, or read."
         )
         sig = signature_line(text, symbol)
         if return_annotation(sig):
-            header += f"\nSummary must quote the -> type from: {sig}"
+            header += (
+                f"\nSummary must quote the -> type from: {sig} "
+                "and say what the function computes."
+            )
     elif looks_like_fix_smell(task) and path:
         header += (
             "\nNext Action must be patch Find: the old def line "
@@ -197,18 +311,46 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
             "Do not grep. Do not emit curl."
         )
     elif looks_like_add_feature(task):
+        from harness.skillkit.target import pick_module
+
+        dest = path or pick_module(project, path, task)
         header += (
-            "\nNext Action must be patch with Append: (see the skill). "
-            "Do not grep."
+            f"\nNext Action must be patch Path: {dest} "
+            f"Append: def {symbol}(...). Do not grep. Do not create a second "
+            f"{Path(dest).stem}.py."
         )
-    return f"{header}\n\n{text}", path
+        dest_path = Path(project) / dest
+        try:
+            dest_body = dest_path.read_text(encoding="utf-8")
+        except OSError:
+            dest_body = ""
+        names = [
+            name
+            for name in re.findall(r"^def \w+\((\w+)", dest_body, re.M)
+            if name not in {"self", "cls"}
+        ]
+        # Only when the task left the argument open. `read_env_file(path)`
+        # has already said what it takes, and telling the model to use the
+        # neighbours' `prices` instead sent it round the loop until the
+        # steps ran out.
+        from harness.skillkit.style import task_names_arguments
+
+        if names and not task_names_arguments(task):
+            neighbor = max(set(names), key=names.count)
+            header += (
+                f" Neighbor functions take `{neighbor}`. Use the same "
+                "argument unless the task says otherwise."
+            )
+    return header
 
 
 _QUESTION_WRITE = frozenset({"patch", "edit", "run"})
 _QUESTION_REEXPLORE = frozenset({"read", "locate", "grep"})
 
 
-def refuse_redundant_locate(task: str, action: str, prelude_ran: bool) -> str:
+def refuse_redundant_locate(
+    task: str, action: str, prelude_ran: bool, project: Path | None = None
+) -> str:
     if action != "locate" or not prelude_ran:
         return ""
     if looks_like_question(task):
@@ -221,10 +363,94 @@ def refuse_redundant_locate(task: str, action: str, prelude_ran: bool) -> str:
             f"already located. Action: edit Path: {example} with one function."
         )
     if looks_like_add_feature(task):
+        dest = ""
+        if project is not None:
+            from harness.skillkit.target import pick_module
+
+            dest = pick_module(project, "", task)
+        where = f" Path: {dest}" if dest else ""
         return (
-            "already located. Action: patch Path: + Append: the new function."
+            f"already located. Action: patch{where} Append: the new function."
         )
     return ""
+
+
+def refuse_write_tests_ask(task: str, action: str) -> str:
+    """Cover-test jobs name the symbol. Asking where tests live wastes the step."""
+    if action != "ask" or not looks_like_write_tests(task):
+        return ""
+    symbol = covered_symbol(task)
+    dest = f"tests/test_{symbol}.py" if symbol else "tests/test_<unit>.py"
+    return (
+        "Do not ask. Action: patch Path: "
+        f"{dest} Append: one AAA test_<unit>_<result> method."
+    )
+
+
+_INVENTED = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]{5,})\b")
+_INVENTED_SKIP = frozenset(
+    {
+        "function",
+        "returns",
+        "return",
+        "empty",
+        "input",
+        "output",
+        "should",
+        "because",
+        "however",
+        "potential",
+        "defects",
+        "defect",
+        "errors",
+        "found",
+        "change",
+        "would",
+        "summary",
+        "action",
+        "module",
+        "caller",
+        "callers",
+        "formatted",
+        "present",
+        "values",
+        "counts",
+        "measured",
+        "estimated",
+    }
+)
+
+
+def refuse_invented_review(task: str, summary: str, body: str) -> str:
+    """Refuse a review that names a function the file does not contain.
+
+    Live 8B on a real tree invented compute_total and estimate_tokens after
+    reading an unrelated OpenSRE file. Demo-task prior, not a finding.
+    """
+    from harness.task import looks_like_review_code
+
+    if not looks_like_review_code(task):
+        return ""
+    if not (summary or "").strip() or not (body or "").strip():
+        return ""
+    invented: list[str] = []
+    for name in _INVENTED.findall(summary):
+        if name.lower() in _INVENTED_SKIP:
+            continue
+        if name.lower() in task.lower():
+            continue
+        if "_" not in name:
+            continue
+        if name in body or f"def {name}" in body:
+            continue
+        invented.append(name)
+    if not invented:
+        return ""
+    return (
+        f"{invented[0]} is not in the file you read. "
+        "Action: done Summary: quote a name that is in # auto-read, or say "
+        "no defects found."
+    )
 
 
 def refuse_question_ask(task: str, action: str, located_path: str) -> str:
@@ -233,7 +459,8 @@ def refuse_question_ask(task: str, action: str, located_path: str) -> str:
     if not located_path:
         return ""
     return (
-        "already located. Action: done Summary: quote the -> type from # auto-read."
+        "already located. Action: done Summary: quote the -> type from "
+        "# auto-read and say what the function computes."
     )
 
 
@@ -247,6 +474,29 @@ def reviews_one_named_file(task: str) -> bool:
     from harness.task import looks_like_review_code, task_paths
 
     return bool(task_paths(task)) and looks_like_review_code(task)
+
+
+def named_file_review_summary(project: Path, task: str) -> str:
+    """Quote compiler findings in a named file. Empty when there are none.
+
+    Live 8B on `review src/orders.py for bugs` was told to patch, then
+    refused, then burned the step budget. A hosted agent reads the file
+    once and names `subtotl`. This is that read, without a model turn.
+    """
+    if not reviews_one_named_file(task):
+        return ""
+    named = named_project_file(task, project)
+    if not named:
+        return ""
+    try:
+        body = read_py(project, named)
+    except (OSError, ValueError):
+        return ""
+    leftover = undefined_names(body)
+    if not leftover:
+        return ""
+    shown = ", ".join(leftover)
+    return f"Compiler findings: undefined name {shown} in {named} (used, never bound)."
 
 
 def refuse_question_write(task: str, action: str) -> str:

@@ -48,7 +48,9 @@ class DemoProjectTest(unittest.TestCase):
     def test_the_import_cycle_is_still_there(self) -> None:
         from harness.scan.layout import find_cycles
 
-        self.assertEqual(find_cycles(DEMO_PROJECT), [("render", "report")])
+        self.assertEqual(
+            find_cycles(DEMO_PROJECT), [("src/render.py", "src/report.py")]
+        )
 
     def test_the_suite_passes_before_the_agent_touches_it(self) -> None:
         from harness.act.tools import run_python
@@ -106,6 +108,42 @@ class ReviewDoesNotEditTest(unittest.TestCase):
         blocked = refuse_question_write("review src/orders.py for bugs", "patch")
         self.assertIn("Reviews do not edit", blocked)
 
+    def test_a_named_file_review_is_told_to_report_not_patch(self) -> None:
+        from harness.locate import prelude
+
+        text, path = prelude(DEMO_PROJECT, "review src/orders.py for bugs")
+        self.assertEqual(path, "src/orders.py")
+        self.assertIn("must be done", text)
+        self.assertIn("Do not patch", text)
+        self.assertIn("subtotl", text)
+        self.assertNotIn("must be patch Path:", text)
+
+    def test_a_named_file_review_quotes_the_undefined_name(self) -> None:
+        from harness.locate import named_file_review_summary
+
+        summary = named_file_review_summary(
+            DEMO_PROJECT, "review src/orders.py for bugs"
+        )
+        self.assertIn("subtotl", summary)
+        self.assertIn("src/orders.py", summary)
+
+    def test_a_named_file_review_finishes_without_a_model(self) -> None:
+        from harness import Agent, AgentOptions
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = DEMO._fresh_copy(Path(tmp))
+            result = Agent(
+                AgentOptions(
+                    project=project,
+                    task="review src/orders.py for bugs",
+                    allow_writes=True,
+                )
+            ).run()
+        self.assertTrue(result.ok)
+        self.assertEqual(result.stopped, "done")
+        self.assertIn("subtotl", result.summary)
+        self.assertEqual(result.writes, ())
+
     def test_a_structure_review_may_still_write(self) -> None:
         from harness.locate import refuse_question_write
 
@@ -142,7 +180,106 @@ class TestsMayBeWrittenForANamedSourceFileTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             got = refuse_wrong_file(self.TASK, self._project(tmp), "patch", "src/util.py")
-        self.assertIn("src/orders.py", got)
+        # The wording is free to improve; what matters is that the write is
+        # refused and the file it would have touched is named.
+        self.assertTrue(got)
+        self.assertIn("src/util.py", got)
+
+
+class AddFeatureGoesInTheDomainFileTest(unittest.TestCase):
+    """Live 8B appended total_lines to the controller, then said done."""
+
+    TASK = "add a function total_lines(prices) that counts the prices, and a unit test"
+
+    def test_the_controller_is_not_an_allowed_destination(self) -> None:
+        from harness.agent.policy import refuse_wrong_file
+
+        blocked = refuse_wrong_file(
+            self.TASK, DEMO_PROJECT, "patch", "src/orders_controller.py"
+        )
+        self.assertIn("src/orders.py", blocked)
+        self.assertIn("orders_controller.py", blocked)
+
+    def test_done_is_refused_until_the_function_exists(self) -> None:
+        from harness.skillkit.style import refuse_done_oracle
+
+        blocked = refuse_done_oracle(self.TASK, DEMO_PROJECT, "src/orders_controller.py")
+        self.assertIn("total_lines", blocked)
+
+    def test_prelude_names_the_domain_file(self) -> None:
+        from harness.locate import prelude
+
+        text, _path = prelude(DEMO_PROJECT, self.TASK)
+        self.assertIn("Path: src/orders.py", text)
+        self.assertIn("def total_lines", text)
+        # This task spells out `total_lines(prices)`, so the neighbour
+        # hint would only repeat it. The hint is for the wording that
+        # leaves the argument open.
+        self.assertNotIn("Neighbor functions take", text)
+        loose, _ = prelude(DEMO_PROJECT, "add a function total_lines and a test")
+        self.assertIn("Neighbor functions take `prices`", loose)
+
+    def test_a_written_function_gets_a_cover_test(self) -> None:
+        from harness.agent.loop import _cover_after_add
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = DEMO._fresh_copy(Path(tmp))
+            dest = project / "src" / "orders.py"
+            dest.write_text(
+                dest.read_text(encoding="utf-8")
+                + "\n\ndef total_lines(prices: list[int]) -> int:\n"
+                "    return len(prices)\n",
+                encoding="utf-8",
+            )
+            note = _cover_after_add(project, self.TASK, "src/orders.py")
+            self.assertIn("total_lines", note)
+            self.assertIn("tests/test_orders.py", note)
+            body = (project / "tests" / "test_orders.py").read_text(encoding="utf-8")
+            self.assertIn("total_lines", body)
+
+
+class PublishedCommandTest(unittest.TestCase):
+    """Every command on the demo page must reproduce its own case.
+
+    The page prints a line to copy. Those lines were built from a fixed
+    list of case names, which drifted from the options the cases ran
+    with: the dry-run case printed a plain `run`, so copying it would
+    have let the agent write, under a caption saying writes were off.
+    """
+
+    def test_each_command_parses_back_to_the_options_it_ran_with(self) -> None:
+        import shlex
+
+        from harness.cli import build_parser, resolve_project_task
+
+        demo = _load_demo()
+        parser = build_parser()
+        for case in demo.CASES:
+            if not case.task:
+                continue
+            with self.subTest(case=case.key):
+                argv = shlex.split(demo.case_command(case))[1:]
+                args = parser.parse_args(argv)
+                project, task = resolve_project_task(args.first, args.second or None)
+                self.assertEqual(task, case.task)
+                self.assertEqual(project.name, "orders")
+                self.assertEqual(args.scope, case.options.get("scope", ""))
+                if args.command == "run":
+                    self.assertEqual(
+                        args.allow_writes, case.options.get("allow_writes", True)
+                    )
+
+    def test_a_read_only_case_never_prints_a_writing_command(self) -> None:
+        demo = _load_demo()
+        for case in demo.CASES:
+            if not case.task or not case.expect_no_writes:
+                continue
+            with self.subTest(case=case.key):
+                command = demo.case_command(case)
+                if case.options.get("allow_writes", True) is False:
+                    self.assertTrue(
+                        " ask " in command or "--dry-run" in command, command
+                    )
 
 
 if __name__ == "__main__":

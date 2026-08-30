@@ -52,37 +52,100 @@ def _modules(project: Path) -> list[Path]:
     ]
 
 
+def _module_name(path: Path, root: Path) -> str:
+    """Dotted name for a file, as an import inside this project spells it."""
+    rel = path.resolve().relative_to(root).with_suffix("")
+    parts = list(rel.parts)
+    if parts and parts[-1] == "__init__":
+        parts.pop()
+    return ".".join(parts)
+
+
 def _local_imports(path: Path, root: Path) -> set[str]:
-    """Imported module stems that are files in this project."""
+    """Dotted modules this file imports, relative imports resolved.
+
+    The first version kept only the last component of each import, and
+    the graph was keyed on the file name. Two things followed on a real
+    repository, where the same file name appears many times: distinct
+    modules merged into one node, and `rich.console` counted as an
+    import of a local `console.py`. Every cycle reported on a 4,580-file
+    project was one of those, four out of four.
+    """
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"))
     except (OSError, SyntaxError, ValueError):
         return set()
+    package = _module_name(path, root).rsplit(".", 1)
+    package = package[0] if len(package) == 2 else ""
     names: set[str] = set()
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module:
-            names.add(node.module.split(".")[-1])
+        if isinstance(node, ast.ImportFrom):
+            if node.level:
+                # `from . import x` and `from .mod import y` are relative
+                # to the package this file sits in.
+                base = package.split(".") if package else []
+                climb = node.level - 1
+                base = base[: len(base) - climb] if climb else base
+                stem = ".".join(part for part in (*base, node.module or "") if part)
+            else:
+                stem = node.module or ""
+            if not stem:
+                continue
+            names.add(stem)
+            for alias in node.names:
+                names.add(f"{stem}.{alias.name}")
         elif isinstance(node, ast.Import):
             for alias in node.names:
-                names.add(alias.name.split(".")[-1])
+                names.add(alias.name)
     return names
 
 
 def find_cycles(project: Path) -> list[tuple[str, str]]:
     root = project.resolve()
     modules = _modules(project)
-    by_stem = {path.stem: path for path in modules}
+    by_name = {_module_name(path, root): path for path in modules}
+
+    # A sub-project keeps its own root: demo/orders/src/report.py is
+    # imported as `src.report` from inside demo/orders. Accept a dotted
+    # path that is the tail of exactly one module, so that still counts,
+    # while an ambiguous tail counts for nothing.
+    tails: dict[str, list[str]] = {}
+    for name in by_name:
+        parts = name.split(".")
+        for start in range(1, len(parts)):
+            tails.setdefault(".".join(parts[start:]), []).append(name)
+
+    def resolve(imported: set[str], self_name: str) -> set[str]:
+        found = set()
+        for item in imported:
+            if item in by_name:
+                found.add(item)
+                continue
+            # Only a dotted path. A bare top-level name competes with
+            # every package on the machine: `import logging` beside a
+            # local `infrastructure/logging/` package resolved to it and
+            # invented two cycles on a real repository.
+            if "." not in item:
+                continue
+            unique = tails.get(item, ())
+            if len(unique) == 1:
+                found.add(unique[0])
+        return found - {self_name}
+
     graph = {
-        path.stem: _local_imports(path, root) & set(by_stem) - {path.stem}
-        for path in modules
+        name: resolve(_local_imports(path, root), name)
+        for name, path in by_name.items()
     }
     pairs = {
-        tuple(sorted((stem, other)))
-        for stem, deps in graph.items()
+        tuple(sorted((name, other)))
+        for name, deps in graph.items()
         for other in deps
-        if stem in graph.get(other, set())
+        if name in graph.get(other, set())
     }
-    return sorted(pairs)
+    return sorted(
+        (rel_posix(by_name[left], root), rel_posix(by_name[right], root))
+        for left, right in pairs
+    )
 
 
 def find_flat_packages(project: Path) -> list[tuple[str, int]]:
@@ -134,9 +197,9 @@ def review_layout(project: Path) -> list[Finding]:
         out.append(
             Finding(
                 "cycle",
-                f"{left}.py and {right}.py import each other",
+                f"{left} and {right} import each other",
                 f"Move what they share into a new module both import. "
-                f"Action: grep Query: def .*  Path: {left}.py",
+                f"Action: grep Query: def .*  Path: {left}",
             )
         )
     for name, count in find_flat_packages(project):

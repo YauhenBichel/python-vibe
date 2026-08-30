@@ -26,13 +26,13 @@ def _defs(source: str) -> list[str]:
 
 def render_design_review(project: Path, scope: str = "") -> str:
     root = project.resolve()
-    py = [
+    python_files = [
         path
         for path, _size in iter_text_files(project, scope)
         if path.suffix == ".py"
     ]
     findings: list[str] = []
-    rels = [path.relative_to(root).as_posix() for path in py]
+    rels = [path.relative_to(root).as_posix() for path in python_files]
     stems = {Path(rel).stem for rel in rels if "test" in rel}
     has_tests = any(rel.startswith("tests/") or "/tests/" in rel for rel in rels)
     has_lib = any(rel.startswith(("pkg/", "src/")) for rel in rels)
@@ -40,7 +40,7 @@ def render_design_review(project: Path, scope: str = "") -> str:
         findings.append("missing tests/ — add tests/test_<module>.py beside each concern")
     if not has_lib and any(rel.startswith("scripts/") for rel in rels):
         findings.append("no pkg/ or src/ — library code should not live only in scripts/")
-    for path, rel in zip(py, rels, strict=True):
+    for path, rel in zip(python_files, rels, strict=True):
         try:
             source = path.read_text(encoding="utf-8")
         except OSError:

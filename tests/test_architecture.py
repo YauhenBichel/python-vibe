@@ -9,15 +9,22 @@ import ast
 import unittest
 from pathlib import Path
 
-HARNESS = Path(__file__).resolve().parents[1] / "src" / "harness"
+ROOT = Path(__file__).resolve().parents[1]
+HARNESS = ROOT / "src" / "harness"
 
 # Lower number = deeper. A layer may only import strictly lower layers.
 DEPTH = {
     # `paths` and `task` are the bottom: they import nothing of their own.
     "paths": 0,
     "task": 0,
+    # What a run remembers. It imports nothing of its own, and the loop
+    # owns it: the model package is handed a memory, it does not make one.
+    "memory": 0,
+    "chat_backend": 0,
     "model": 1,
-    "ship": 1,
+    # `ship` sits above `scan` because reading a ticket means locating what
+    # it names in the project.
+    "ship": 3,
     "guard": 1,
     "scan": 2,
     "skillkit": 3,
@@ -25,6 +32,9 @@ DEPTH = {
     "locate": 5,
     "observe": 6,
     "agent": 7,
+    # The OpenAI wire format the server speaks. It imports nothing from
+    # this project, so it sits below the server that uses it.
+    "openai_api": 7,
     "server": 8,
     "mcp_stdio": 8,
     "editor_kit": 1,
@@ -119,10 +129,6 @@ class LayerRuleTest(unittest.TestCase):
         self.assertEqual(leaks, [])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TempDirectoryTest(unittest.TestCase):
     """A test must not create files inside the checkout.
 
@@ -146,3 +152,181 @@ class TempDirectoryTest(unittest.TestCase):
                 if "dir=" in stripped and "dir=tmp" not in stripped:
                     offenders.append(f"{path.name}:{number}: {stripped}")
         self.assertEqual(offenders, [], "use the system temp area")
+
+
+class SuiteRunsWholeFilesTest(unittest.TestCase):
+    """Every test in a file must run when that file is run on its own.
+
+    `unittest.main()` executes where it sits, so a class defined below
+    it is never collected. Ten files had it mid-file; test_autofix.py
+    ran 11 of its 36 tests that way. CI uses discovery, so all of them
+    were green while more than half of one file did nothing. Iterating
+    on a single file is the normal way to work, and it was the way that
+    lied.
+    """
+
+    def test_no_test_class_is_defined_after_unittest_main(self) -> None:
+        stragglers = []
+        for path in sorted((ROOT / "tests").glob("test_*.py")):
+            lines = path.read_text(encoding="utf-8").splitlines()
+            start = next(
+                (i for i, line in enumerate(lines)
+                 if line.startswith('if __name__ == "__main__"')),
+                None,
+            )
+            if start is None:
+                continue
+            after = [
+                line for line in lines[start + 1:]
+                if line.startswith("class ") or line.startswith("def test")
+            ]
+            if after:
+                stragglers.append(f"{path.name}: {after[0]}")
+        self.assertEqual(stragglers, [])
+
+    def test_running_a_file_directly_collects_what_discovery_does(self) -> None:
+        import unittest.loader
+
+        loader = unittest.defaultTestLoader
+        for path in sorted((ROOT / "tests").glob("test_*.py")):
+            with self.subTest(file=path.name):
+                found = loader.discover(str(ROOT / "tests"), pattern=path.name)
+                self.assertGreater(found.countTestCases(), 0, path.name)
+
+class FunctionsStaySmallTest(unittest.TestCase):
+    """A function long enough to need a map is a function to split.
+
+    `Agent.run` reached 242 lines and 33 branch points, holding the whole
+    decision about whether the model was needed at all in local
+    variables, so none of those decisions could be read or tested apart
+    from the others. `prelude` was 141 lines of task kinds, where the
+    shared tail read as if it belonged to whichever branch you had just
+    finished reading.
+
+    The six below are what is left. Each is listed with what it is, so
+    the number is a decision someone made rather than a line that
+    drifted. Nothing new joins the list without saying why.
+    """
+
+    LIMIT = 80
+    KNOWN_LONG = {
+        "make_handler": "one HTTP route table, closing over the server",
+        "_work_with_the_model": (
+            "the model turn loop; its branches end in continue or return, "
+            "so splitting them needs a protocol that reads worse than the loop"
+        ),
+        "handle_rpc": "one JSON-RPC method table",
+        "pick_skills": "one ordered list of skill rules",
+        "next_prompt": "one ordered list of nudges",
+        "build_parser": "argparse declarations, no branching",
+    }
+
+    def _long_functions(self) -> dict[str, int]:
+        found: dict[str, int] = {}
+        for path in sorted((ROOT / "src" / "harness").rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                length = (node.end_lineno or node.lineno) - node.lineno
+                if length > self.LIMIT:
+                    found[node.name] = length
+        return found
+
+    def test_no_new_long_function(self) -> None:
+        unexpected = {
+            name: length
+            for name, length in self._long_functions().items()
+            if name not in self.KNOWN_LONG
+        }
+        self.assertEqual(
+            unexpected,
+            {},
+            f"over {self.LIMIT} lines and not in KNOWN_LONG: {unexpected}. "
+            "Split it, or list it with the reason it stays whole.",
+        )
+
+    def test_the_list_has_no_stale_entries(self) -> None:
+        """A function that no longer needs the exception should lose it."""
+        stale = sorted(set(self.KNOWN_LONG) - set(self._long_functions()))
+        self.assertEqual(stale, [], f"no longer long, drop these: {stale}")
+
+    def test_every_exception_says_why(self) -> None:
+        for name, reason in self.KNOWN_LONG.items():
+            with self.subTest(function=name):
+                self.assertTrue(reason.strip(), name)
+
+
+class ThreeRingsTest(unittest.TestCase):
+    """An agent is a harness around a model, and the rings stay separate.
+
+    Outermost is what a person or an editor talks to: the command line,
+    the HTTP server, the MCP bridge, the editor files. In the middle is
+    the harness — the loop, the tools, the guards, the skills — which is
+    where nearly all of the behaviour lives. Innermost is the code that
+    talks to a model.
+
+    The rule that makes the picture real is that the outer ring does not
+    reach into the inner one. The command line and the server both did:
+    they imported `harness.model.*` directly, so the model package could
+    not change shape without changing them. `openai_api` used to live in
+    that package as well, though it only knows what a chat request looks
+    like and nothing about weights.
+    """
+
+    DELIVERY = {"cli", "server", "mcp_stdio", "editor_kit", "__main__", "openai_api"}
+    MODEL = "model"
+
+    def _imports(self, path: Path) -> list[tuple[str, int]]:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        found = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and (node.module or "").startswith(
+                "harness."
+            ):
+                found.append((node.module, node.lineno))
+        return found
+
+    def test_the_outer_ring_does_not_reach_into_the_model(self) -> None:
+        offenders = []
+        for path in sorted(HARNESS.rglob("*.py")):
+            rel = path.relative_to(HARNESS).as_posix()
+            name = rel.split("/")[0].removesuffix(".py")
+            if name not in self.DELIVERY:
+                continue
+            for module, line in self._imports(path):
+                if module.split(".")[1] == self.MODEL:
+                    offenders.append(f"{rel}:{line} imports {module}")
+        self.assertEqual(
+            offenders,
+            [],
+            "the command line and the server go through the harness, "
+            f"not into the model package: {offenders}",
+        )
+
+    def test_the_model_package_only_talks_to_a_model(self) -> None:
+        """Nothing in there should be about HTTP shapes or the CLI."""
+        for path in sorted((HARNESS / "model").glob("*.py")):
+            with self.subTest(module=path.name):
+                for module, _line in self._imports(path):
+                    second = module.split(".")[1]
+                    self.assertNotIn(
+                        second,
+                        self.DELIVERY,
+                        f"{path.name} imports the outer ring: {module}",
+                    )
+
+    def test_the_harness_is_what_drives_the_model(self) -> None:
+        """Exactly one place calls for a generator, and it is the loop."""
+        callers = [
+            path.relative_to(HARNESS).as_posix()
+            for path in sorted(HARNESS.rglob("*.py"))
+            if "make_generate" in path.read_text(encoding="utf-8")
+            and path.parent.name != "model"
+        ]
+        self.assertEqual(callers, ["agent/loop.py"], callers)
+
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -6,23 +6,13 @@
 [![Pages](https://github.com/YauhenBichel/python-vibe/actions/workflows/pages.yml/badge.svg)](https://yauhenbichel.github.io/python-vibe/)
 [![Contributors](https://img.shields.io/github/contributors/YauhenBichel/python-vibe)](https://github.com/YauhenBichel/python-vibe#contributors)
 
-Everyday Python vibe coding on a laptop. Small repos: explore, edit, run.
-Large repos: a scoped harness so the model never loads the whole tree.
-The public 0.5B LoRA is a **style prior**. Daily work uses an **8B** Ollama
-model plus the jail in `scripts/agent.py`.
+Four jobs on a laptop: **ask**, **write a test**, **fix a bug**, **add one
+small function**. Runs on your machine. Only touches the folder you point
+at. Site: [yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/).
 
-Site: [yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/)
-([llms.txt](https://yauhenbichel.github.io/python-vibe/llms.txt) for coding agents).
-Research: [local loop vs hosted agents](./docs/investigations/local-vs-cloud.md),
-[what to improve](./docs/investigations/what-to-improve.md).
-
-Weights (public tiny): [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b).
-
-| Track | What to run | Role |
-| --- | --- | --- |
-| Everyday (laptop) | `scripts/agent.py` (default `llama3.1:8b`) | Comfortable explore / edit / run; `--scope` on large trees |
-| Cursor / editor | `python-vibe editors cursor --allow-writes` | One command. Then reload and enable MCP. [docs/cursor.md](./docs/cursor.md) |
-| Tiny (Hub / smoke) | `scripts/vibe.py`, `serve.py`, `--tiny` | 0.5B drafts through `PythonVibeGuard` |
+Daily work is `python-vibe` plus Ollama `llama3.1:8b`. The public 0.5B LoRA
+is a style prior, not the everyday path.
+Weights: [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b).
 
 Join: [good first issue](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) ·
 [Discussions](https://github.com/YauhenBichel/python-vibe/discussions) ·
@@ -34,6 +24,19 @@ Vulnerabilities: open a **public** GitHub issue. Do not paste live keys.
 
 ## Use it
 
+From your project folder, after `pip install -e .` and `ollama pull llama3.1:8b`:
+
+```bash
+python-vibe brief
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "write tests for apply_discount"
+python-vibe run  "find the NameError and fix it"
+python-vibe run  "add a function total_lines and a test"
+```
+
+`python-vibe` with no arguments reprints that list. Point at another folder
+by putting it first: `python-vibe ask ~/app "what does add return?"`.
+
 ```python
 from harness import Agent, AgentOptions
 
@@ -41,45 +44,88 @@ result = Agent(AgentOptions(project=Path("~/app"))).run("fix the NameError")
 result.summary, result.writes
 ```
 
-```bash
-python -m harness brief  ~/app                    # no model
-python -m harness layout ~/app                    # no model
-python -m harness run    ~/app "add multiply(a, b) and a test"
-python -m harness serve    --project ~/app          # 127.0.0.1, read-only
-python -m harness editors  cursor --allow-writes    # Cursor MCP + tasks (this folder)
-```
+Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./docs/architecture.md).
+Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
+What those commands did on one laptop: [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
+Every measured run: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
 
-Full settings, read-only runs, and the HTTP routes: [docs/api.md](./docs/api.md).
-Layers and the rule that keeps them: [docs/architecture.md](./docs/architecture.md).
+## Experiments
+
+I tried a small open LLM for daily Python: ask, write a test, fix a bug,
+add one function. One laptop. 29–30 August 2026. **Not everyday-ready.**
+
+| Experiment | Example | Result |
+| --- | --- | --- |
+| 0.5B as daily work | weekday helper, count-md, `Action:` | **0 / 4** vibe, **0 / 2** parse |
+| Four Start commands | `demo/orders`, `subtotl` / `stauts` | **0 / 4**, then **4 / 4** after the harness |
+| Which open model | same bench, code must run | 8B **6–9 / 9** over six runs; 7B coder 7 / 9 once; 30B timeout |
+| Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
+| Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
+| Does a 14B fit? | 9 GB of weights, 18 GB machine | **No.** 12–13 GB of swap, no run finished |
+| On a real repository | 4,580 files, not `demo/orders` | reading works; writing **1 / 12** |
+
+The four commands as typed, first night vs after the harness:
+
+| I typed | First night | After the harness |
+| --- | --- | --- |
+| `ask "what does compute_total return?"` | `"int"` | Type plus what it computes |
+| `run "write tests for apply_discount"` | Dead test below `if __name__` | Already covered. Nothing written |
+| `run "find the NameError and fix it"` | Three files edited | `subtotl` → `subtotal`. No model |
+| `run "add a function total_lines and a test"` | Opened a file. Suite red | `total_lines(prices)` + test. No model |
+
+Live first-Action parse (`eval_everyday.py --live`, `llama3.1:8b`):
+**8 / 15**, one run. Everyday-ready still means beating an untuned 8B on
+parse **and** a real ≥1 KB fix.
+
+Reproduce any of it with `python scripts/bench.py --repeat 5`, which
+reports a pass rate per case instead of a single verdict.
+
+Read those as a rough size, not a rank. The nine-case group was run six
+times against unchanged code and gave 9, 6, 8, 7, 8, 7; over the full
+fifteen-case bench ten of fifteen changed verdict between identical
+runs. A gap smaller than about four cases is noise.
+
+Five cases pass every single time — `double`, `clamp`, `cover-discount`,
+`cover-shout`, `fix-nameerror` — and three of those five finish with **no
+model call at all**. That is why they hold still.
+
+### The machine
+
+Apple M3 Pro, 11 cores, **18 GB unified memory**, macOS 26.5.2, Ollama
+0.33.2. Unified memory means the model competes with everything else
+running, so the practical ceiling is about **11–12 GB of model**, not 18.
+
+| Model | On disk | Usable here |
+| --- | --- | --- |
+| `llama3.1:8b` | 4.9 GB | yes, the default |
+| `qwen2.5-coder:7b` | 4.7 GB | yes |
+| `qwen2.5-coder:14b` | 9.0 GB | no — pages to disk |
+| 30B-class MoE | 18.6 GB | no — times out |
+
+The 14B is the one worth knowing about: it clears 18 GB on paper and
+still does not run, because weights are only part of the budget. If you
+are choosing hardware for this, buy memory, and reckon on roughly double
+the model size you want to run.
+
+Tables with the planted example:
+[Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/)
+· [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
+The machine, what fits in it, and all six runs case by case:
+[Bench record](https://yauhenbichel.github.io/python-vibe/investigations/bench-record/).
+Thread: [discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
 
 ## Everyday agent
 
-`scripts/agent.py` defaults to `llama3.1:8b`. Pass `--tiny` only for smoke.
-
 **Small** (≤40 first-party text files, ≤200 KB): the agent gets a file list.
-The jail is Python plus a few config suffixes (`.toml`, `.yml`, `.json`);
-secret names are refused. Path helpers use `pathlib` on every OS.
-Questions → read → `Action: done`. Bugs → `Action: patch` → run.
+Writes are limited to Python plus a few config suffixes (`.toml`, `.yml`, `.json`);
+secret names are refused.
 
-**Large**: the agent gets top-level counts. Start with `Action: map`. Stay
-inside `--scope`. Grep truncates; do not ask it to read the whole repo.
+**Large**: stay in one folder.
 
 ```bash
-ollama pull llama3.1:8b
-cd python-vibe
-
-# see small vs large without calling a model
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app --brief
-
-# small repo — fix or ask
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  "find a real NameError and fix it"
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  "what does compute_total return?"
-
-# large repo — stay in one folder
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  --scope src "what does apply_source refuse?"
+python-vibe brief
+python-vibe ask --scope src "what does apply_source refuse?"
+python-vibe run --scope src "write tests for apply_discount"
 ```
 
 Writes stay under `--project` and go through `PythonVibeGuard` + `.bak`.
@@ -95,14 +141,12 @@ Why each of those: [harness-comparison](./docs/investigations/harness-comparison
 Best-practice skills live in `skills/`. The agent preloads them when the
 task says “add” / “test” / “path” / “venv” / “create a package” / “rename” / “issue” / “PR”,
 or you pass `--skill`. `Action: skill` + `Name:` loads one mid-loop. Ship
-actions (`issue`, `branch`, `commit`, `push`, `pr`, `merge`) are jailed:
+actions (`issue`, `branch`, `commit`, `push`, `pr`, `merge`) are limited:
 no force, not `main`/`master`, no secret filenames. Full catalog and when
 each one loads: [Skills](https://yauhenbichel.github.io/python-vibe/skills/).
 
 ```bash
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
-  --skill add-feature \
-  "add a function multiply(a, b) and a unit test"
+python-vibe run --skill add-feature "add a function multiply(a, b) and a unit test"
 ```
 
 Point an OpenAI-compatible editor at the same 8B: [docs/local-editor.md](./docs/local-editor.md).

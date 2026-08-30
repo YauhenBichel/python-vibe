@@ -111,5 +111,47 @@ class AgentParseTest(unittest.TestCase):
         self.assertIsNone(parse_turn("no issues"))
 
 
+class FieldNameAsActionTest(unittest.TestCase):
+    """A field name on the Action line means the action it belongs to.
+
+    Watched a run spend five of ten turns on this: `Action: patch` with no
+    body, then `Action: append` carrying the body, then the same again,
+    then `Action: find`. Each of the field-name turns was answered with
+    "unknown Action" and thrown away.
+    """
+
+    def test_append_carries_its_body_into_a_patch(self) -> None:
+        turn = parse_turn(
+            "Action: append\nPath: src/orders.py\n"
+            "def initials(name):\n    return name\n"
+        )
+        self.assertEqual(turn.action, "patch")
+        self.assertEqual(turn.path, "src/orders.py")
+        self.assertIn("def initials", turn.append)
+
+    def test_find_becomes_a_patch(self) -> None:
+        turn = parse_turn(
+            "Action: find\nPath: src/o.py\nFind: return sum(x)\nReplace: return 0\n"
+        )
+        self.assertEqual(turn.action, "patch")
+        self.assertEqual(turn.find, "return sum(x)")
+        self.assertEqual(turn.replace, "return 0")
+
+    def test_summary_becomes_done(self) -> None:
+        turn = parse_turn("Action: summary\nSummary: it returns int\n")
+        self.assertEqual(turn.action, "done")
+        self.assertEqual(turn.summary, "it returns int")
+
+    def test_a_real_patch_is_untouched(self) -> None:
+        turn = parse_turn("Action: patch\nPath: src/o.py\nAppend:\ndef f():\n    pass\n")
+        self.assertEqual(turn.action, "patch")
+        self.assertEqual(turn.append, "def f():\n    pass")
+
+    def test_a_known_action_is_never_remapped(self) -> None:
+        for verb in ("read", "grep", "run", "done", "edit"):
+            turn = parse_turn(f"Action: {verb}\nPath: src/o.py\n")
+            self.assertEqual(turn.action, verb)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,21 +1,33 @@
-"""Project tools for the agent loop. Jail + no shell."""
+"""Project tools for the agent loop. Write limit, and no shell."""
 
 from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import dataclass
 
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-from harness.act.autofix import apply_function_rename, apply_typo_fixes
+from harness.act.autofix import (
+    append_instead_of_replacing,
+    apply_function_rename,
+    apply_missing_imports,
+    apply_typo_fixes,
+)
 from harness.act.code import apply_source, read_project_file, resolve_project_file
 from harness.paths import is_secret_name, rel_posix, suffix_globs
 from harness.act.patch_fix import align_indent, find_match, miss_message
 from harness.skillkit.style import (
     refuse_layout,
+    refuse_stdlib_shadow,
+    refuse_add_opens_file,
+    refuse_ops_draft,
     refuse_platform_draft,
     refuse_rename_incomplete,
     refuse_shell_fetch,
+    refuse_stub_body,
     refuse_test_in_impl,
     refuse_undefined_draft,
     refuse_weak_test,
@@ -60,7 +72,7 @@ def grep_py(project: Path, query: str, scope: str = "") -> str:
     root = project.resolve()
     base = resolve_scope(project, scope) if scope else root
     try:
-        rx = re.compile(query)
+        wanted = re.compile(query)
     except re.error as exc:
         return f"bad regex: {exc}"
     lines: list[str] = []
@@ -75,7 +87,7 @@ def grep_py(project: Path, query: str, scope: str = "") -> str:
             except OSError:
                 continue
             for i, line in enumerate(text.splitlines(), 1):
-                if rx.search(line):
+                if wanted.search(line):
                     rel = rel_posix(path, root)
                     lines.append(f"{rel}:{i}:{line.strip()[:160]}")
                     if len(lines) >= MAX_HITS:
@@ -156,28 +168,132 @@ def repair_unittest_append(original: str, append: str) -> str | None:
     return text.rstrip() + "\n\n" + method + "\n"
 
 
+def refuse_duplicate_module(project: Path, rel: str, original: str) -> str:
+    """Refuse a new file that repeats a module this project already has.
+
+    Watched a run write the same function to `pkg/orders.py` and then
+    `src/orders.py`. Two modules with one name is worse than either: an
+    import finds whichever comes first on the path, and the other rots.
+    """
+    if original.strip():
+        return ""
+    from harness.paths import as_project_rel, rel_posix
+
+    wanted = Path(as_project_rel(rel))
+    if wanted.name.startswith("test_") or "tests" in wanted.parts:
+        return ""
+    root = Path(project).resolve()
+    for existing in sorted(root.rglob(f"{wanted.stem}.py")):
+        if any(part in {".git", ".venv", "__pycache__"} for part in existing.parts):
+            continue
+        found = rel_posix(existing, root)
+        if found != wanted.as_posix():
+            return (
+                f"{found} is already this project's {wanted.stem} module. "
+                f"Action: patch Path: {found} Append: the new function"
+            )
+    return ""
+
+
+def refuse_missing_import_target(project: Path, rel: str, draft: str) -> str:
+    """Refuse a file importing a name this project has not defined yet.
+
+    Asked to create a module and a test for it, the model wrote only the
+    test, importing a function nobody had written. That reads as valid
+    Python — the import binds the name — and fails when the suite runs. The
+    function has to exist first.
+    """
+    from harness.scan.names import missing_import_targets
+
+    missing = missing_import_targets(project, draft)
+    if not missing:
+        return ""
+    module, name = missing[0]
+    return (
+        f"{module} does not define {name} yet. Write the function first: "
+        f"Action: patch Path: {module.replace('.', '/')}.py Append: def {name}(...)"
+    )
+
+
+@dataclass(frozen=True)
+class ProposedChange:
+    """One change the model has proposed, and what it is judged on.
+
+    Fields:
+        task: what the user asked for, in their own words.
+        rel: the file the change targets, project-relative.
+        original: the file as it stands, or "" when it is new.
+        draft: the file as this change would leave it.
+        fragment: only the part being added, when the change appends.
+            Judging a whole file as one test turns a single inline
+            assertion anywhere into a refusal for everything in it.
+    """
+
+    task: str
+    rel: str
+    original: str
+    draft: str
+    fragment: str = ""
+
+
+# Every rule a proposed change is put through, in the order they run.
+# This was thirty lines of `blocked = rule(...); if blocked: return
+# blocked`, eleven times over, which hid both the order and the fact that
+# a new rule has to be added to it. A rule written and not listed here
+# does nothing, and a test below checks for exactly that.
+STYLE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
+    ("stdlib shadow", lambda c: refuse_stdlib_shadow(c.rel, c.original)),
+    ("layout", lambda c: refuse_layout(c.rel, c.original, c.draft)),
+    ("opens a file", lambda c: refuse_add_opens_file(c.task, c.rel, c.draft)),
+    ("shell fetch", lambda c: refuse_shell_fetch(c.rel, c.draft)),
+    ("platform draft", lambda c: refuse_platform_draft(c.rel, c.draft)),
+    ("operations draft", lambda c: refuse_ops_draft(c.rel, c.draft)),
+    ("test in implementation", lambda c: refuse_test_in_impl(c.rel, c.draft)),
+    ("stub body", lambda c: refuse_stub_body(c.task, c.rel, c.draft)),
+    (
+        "undefined name",
+        lambda c: refuse_undefined_draft(c.task, c.rel, c.original, c.draft),
+    ),
+    (
+        "half a rename",
+        lambda c: refuse_rename_incomplete(c.task, c.rel, c.draft),
+    ),
+    ("weak test", lambda c: refuse_weak_test(c.rel, c.fragment or c.draft)),
+)
+
+
 def _style_blocks(
     task: str, rel: str, original: str, draft: str, fragment: str = ""
 ) -> str:
-    blocked = refuse_layout(rel, original, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_shell_fetch(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_platform_draft(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_test_in_impl(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_undefined_draft(task, rel, original, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_rename_incomplete(task, rel, draft)
-    if blocked:
-        return blocked
-    return refuse_weak_test(rel, fragment or draft)
+    """The first refusal a proposed change earns, or "" if it earns none."""
+    change = ProposedChange(task, rel, original, draft, fragment)
+    for _name, rule in STYLE_RULES:
+        refusal = rule(change)
+        if refusal:
+            return refusal
+    return ""
+
+
+def _already_defined(original: str, append: str, rel: str) -> str:
+    """Refuse appending a definition the file already has, or "".
+
+    Only test methods were checked, so an ordinary function could be
+    added twice: a live run appended `def slugify` to the same file on
+    two separate turns and left both in place.
+    """
+    meth = _TEST_METH.search(append)
+    if meth and re.search(rf"def\s+{re.escape(meth.group(1))}\s*\(", original):
+        return (
+            f"{meth.group(1)} already exists. Action: done Summary: "
+            "that function is already covered."
+        )
+    for name in re.findall(r"(?m)^def\s+(\w+)\s*\(", append):
+        if re.search(rf"(?m)^def\s+{re.escape(name)}\s*\(", original):
+            return (
+                f"{name} is already defined in {rel}. Action: done "
+                "Summary: say what it does, or patch the existing one."
+            )
+    return ""
 
 
 def patch_py(
@@ -223,6 +339,9 @@ def patch_py(
     elif text == original and not append:
         return "patch needs Find: or Append:"
     if append:
+        already = _already_defined(original, append, rel)
+        if already:
+            return already
         repaired = repair_unittest_append(text, append)
         text = (
             repaired
@@ -234,7 +353,15 @@ def patch_py(
         if bound != text:
             text = bound
             note = (note + " (harness bound unique NameError typo)").strip()
-    blocked = _style_blocks(task, rel, original, text, fragment=append or replace)
+    repaired = apply_missing_imports(text)
+    if repaired != text:
+        text = repaired
+        note = (note + " (harness added the missing import)").strip()
+    blocked = refuse_duplicate_module(project, rel, original)
+    if not blocked:
+        blocked = refuse_missing_import_target(project, rel, text)
+    if not blocked:
+        blocked = _style_blocks(task, rel, original, text, fragment=append or replace)
     if blocked:
         return blocked
     apply_source(path, text, original=original)
@@ -247,9 +374,23 @@ def patch_py(
 def edit_py(project: Path, rel: str, source: str, task: str = "") -> str:
     path = resolve_project_file(project, rel)
     original = path.read_text(encoding="utf-8") if path.is_file() else ""
-    blocked = _style_blocks(task, rel, original, source)
+    source = apply_missing_imports(source)
+    blocked = refuse_duplicate_module(project, rel, original)
+    if not blocked:
+        blocked = refuse_missing_import_target(project, rel, source)
+    if not blocked:
+        blocked = _style_blocks(task, rel, original, source)
     if blocked:
         return blocked
+    # A short draft of only-new definitions is an addition, not a rewrite.
+    merged = append_instead_of_replacing(original, source)
+    if merged:
+        apply_source(path, merged, original=original)
+        return (
+            f"appended to {rel_posix(path, project.resolve())} "
+            f"(backup {path.name}.bak) — the draft added new definitions "
+            "rather than replacing the file"
+        )
     apply_source(path, source, original=original)
     return f"wrote {rel_posix(path, project.resolve())} (backup {path.name}.bak)"
 

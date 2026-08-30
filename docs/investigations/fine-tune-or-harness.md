@@ -96,7 +96,7 @@ harness}. File-navigation on held-out real repos. No paid API.
 Only the **pair** wins. The 1.5B fine-tune scored **1.0% in the generic
 harness and 93.5% in the co-designed one**. A custom harness around a
 model that cannot follow it, or a LoRA that speaks `Action:` with no
-jail, both lose. The 8B everyday brain is already capable enough that
+write limit, both lose. The 8B everyday brain is already capable enough that
 harness adaptation (oracles, pinned `Path:`) is the Better-Harnesses
 regime — not the 1.5B “C3 underperforms C2” regime.
 
@@ -119,9 +119,9 @@ None of those papers argue for another 0.5B QLoRA on 35 stdlib pairs.
 | Their cell | python-vibe today | What “win” looks like |
 | --- | --- | --- |
 | C1 large + generic | A hosted IDE agent | Out of scope. Different product |
-| C2 small + generic | 0.5B or 8B with no jail | Already measured: 0.5B 0/4 vibe; 8B says done with `subtotl` |
+| C2 small + generic | 0.5B or 8B with no write limit | Already measured: 0.5B 0/4 vibe; 8B says done with `subtotl` |
 | C3 small + custom harness | **Everyday path now.** 8B is capable enough; oracles close finish | Finish the known demo fails without a new weight |
-| C4 small fine-tuned + generic | `train.py --everyday` on 30 rows, then drop the jail | Do not do this |
+| C4 small fine-tuned + generic | `train.py --everyday` on 30 rows, then drop the write limit | Do not do this |
 | C5 small fine-tuned + custom | 7B/8B LoRA on ~2k **verifier-clean** `--record` turns | Later. Same Action schema the harness already parses |
 
 C3 is the work that moved this week: opening the right file before the
@@ -143,7 +143,7 @@ can be worse than the untuned 8B you already run.
 | More 0.5B train steps | No | Overfit after step 100. Held-out vibe 0/4 |
 | Train `python-vibe-8b` on the 30 seed rows | No | Memorizes the protocol line. Does not finish a change |
 | Raise `--steps` instead of oracles | No | Burns tokens. Live add-feature already hit the budget |
-| Add bash / browser as 8B tools | No | Jail is the product. Papers that use bash use a container and a frontier model |
+| Add bash / browser as 8B tools | No | The write limit is the product. Papers that use bash use a container and a frontier model |
 | Keep refusing `done` until the compiler is quiet | Yes | Matches C3. Matches the demo misses |
 | `--record` only turns the oracles already accept | Yes | Future C5 data. Gitignored `data/agent-loop/extra.jsonl` |
 | 7B-class LoRA after ~2k clean traces | Later | C5. Distill from a hosted agent **or** from a passing 8B loop in *this* schema |
@@ -164,7 +164,9 @@ this laptop is. The bottleneck is still **finish**.
    change, design scan clean when the task asked for structure.
 3. Redact hostnames and home paths. Do not commit `extra.jsonl`.
 4. Distill from a larger model **in this harness** (same opening step, same
-   refuses), not from a generic chat transcript.
+   refuses), not from a generic chat transcript. A 14B–70B that timed out
+   on the laptop is reached with `--engine openai` or `OLLAMA_HOST`; the
+   write limit does not move. See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
 5. Evaluate with `scripts/eval_everyday.py --live` and
    `scripts/demo.py`. Everyday-ready still means: beat the untuned 8B
    on parse **and** pass the independent file checks, including the
@@ -178,7 +180,7 @@ shortcut around classic development.
 
 ## Save money: next steps
 
-The cheap path is local 8B + this jail. A hosted IDE agent costs a usage
+The cheap path is local 8B and this write limit. A hosted IDE agent costs a usage
 pool. You only save that money when python-vibe **finishes** the job so
 you do not reopen the paid tool to clean up.
 
@@ -207,4 +209,4 @@ Order of work, cheapest first:
 4. **Later.** If the first Action is still wrong after the oracles are
    quiet, then a 7B LoRA on ~2k clean traces (C5). That is how the papers
    got 72B-class success at a fraction of the cost — not by skipping the
-   jail.
+   write limit.

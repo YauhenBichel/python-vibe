@@ -1,4 +1,4 @@
-"""Jailed git and gh. Deterministic. No model. No force. No main."""
+"""Limited git and gh. Deterministic. No model. No force. No main."""
 
 from __future__ import annotations
 
@@ -8,9 +8,18 @@ import subprocess
 from pathlib import Path
 
 from harness.paths import SECRET_NAMES
+from harness.ship.identity import co_author_line, with_co_author
+from harness.ship.ticket import identity_from_user_json, parse_ticket, render_ticket
 
 PROTECTED = frozenset({"main", "master"})
 _BRANCH = re.compile(r"^[A-Za-z0-9._][A-Za-z0-9._/-]{0,79}$")
+CO_AUTHOR = co_author_line()
+# Says on the pull request itself which tool did the work, the way a
+# commit trailer does for a commit.
+PR_FOOTER = (
+    "\n\n---\nOpened with [python-vibe](https://github.com/YauhenBichel/python-vibe).\n"
+    f"{CO_AUTHOR}\n"
+)
 _TIMEOUT = 45
 
 
@@ -19,14 +28,14 @@ def _run(
     argv: list[str],
     *,
     env: dict[str, str] | None = None,
+    keep_all: bool = False,
 ) -> tuple[int, str]:
     merged = os.environ.copy()
     if env:
         merged.update(env)
-    merged.setdefault("GIT_AUTHOR_NAME", "python-vibe")
-    merged.setdefault("GIT_AUTHOR_EMAIL", "python-vibe@localhost")
-    merged.setdefault("GIT_COMMITTER_NAME", merged["GIT_AUTHOR_NAME"])
-    merged.setdefault("GIT_COMMITTER_EMAIL", merged["GIT_AUTHOR_EMAIL"])
+    # The person stays the author, so the commit is theirs and appears in
+    # their history. python-vibe is recorded as a co-author instead, which
+    # GitHub renders on the commit, so it is visible where it was used.
     try:
         proc = subprocess.run(
             argv,
@@ -42,6 +51,11 @@ def _run(
     except subprocess.TimeoutExpired:
         return 124, "timed out"
     out = ((proc.stdout or "") + (proc.stderr or "")).strip()
+    if keep_all:
+        return proc.returncode, out
+    # Command output is cut from the front, because the end of a git or gh
+    # message is the part that says what happened. JSON has to be kept
+    # whole or it will not parse, which is what `keep_all` is for.
     return proc.returncode, out[-4000:]
 
 
@@ -69,16 +83,61 @@ def current_branch(project: Path) -> str:
     return out.splitlines()[0] if code == 0 and out else ""
 
 
-def read_issue(project: Path, number: str) -> str:
+def github_viewer(project: Path) -> str:
+    """The signed-in `gh` login, or empty when gh is missing or logged out."""
+    code, out = _run(project, ["gh", "api", "user"], keep_all=True)
+    if code != 0:
+        return ""
+    login, _name, _email = identity_from_user_json(out)
+    return login
+
+
+def _view(project: Path, kind: str, number: str) -> str:
+    """Read one issue or pull request, and say where it points in this project.
+
+    Uses the signed-in gh user so comments from other users on the same
+    ticket are visible — the same account that can see them in the browser.
+    """
     if not number.isdigit():
-        return "issue needs Number: (digits)"
+        return f"{kind} needs Number: (digits)"
+    fields = "number,title,body,state,comments"
+    if kind == "pr":
+        fields += ",files,reviews"
     code, out = _run(
-        project,
-        ["gh", "issue", "view", number, "--json", "number,title,body,state,labels"],
+        project, ["gh", kind, "view", number, "--json", fields], keep_all=True
     )
     if code != 0:
-        return out or f"gh issue view {number} failed"
-    return out[:3500]
+        return out or f"gh {kind} view {number} failed"
+    ticket = parse_ticket(
+        out,
+        project,
+        kind="pull request" if kind == "pr" else "issue",
+        viewer=github_viewer(project),
+    )
+    if ticket is None:
+        return out[:3500]
+    return render_ticket(ticket)[:3500]
+
+
+def read_issue(project: Path, number: str) -> str:
+    return _view(project, "issue", number)
+
+
+def read_pr(project: Path, number: str) -> str:
+    return _view(project, "pr", number)
+
+
+def read_ticket(project: Path, number: str, *, prefer: str = "issue") -> str:
+    """Read an issue, or a pull request when the task named a PR."""
+    first = read_pr if prefer == "pr" else read_issue
+    second = read_issue if prefer == "pr" else read_pr
+    out = first(project, number)
+    failed = "failed" in out.lower() or "could not" in out.lower() or "needs Number" in out
+    if failed:
+        other = second(project, number)
+        if "failed" not in other.lower() and "could not" not in other.lower():
+            return other
+    return out
 
 
 def make_branch(project: Path, name: str) -> str:
@@ -113,7 +172,7 @@ def commit_changes(project: Path, summary: str) -> str:
         return "refusing to commit secret filenames"
     if not names:
         return "nothing to commit"
-    code, out = _run(project, ["git", "commit", "-m", message])
+    code, out = _run(project, ["git", "commit", "-m", with_co_author(message)])
     return out or "committed" if code == 0 else out
 
 
@@ -141,7 +200,7 @@ def create_pr(project: Path, title: str, body: str) -> str:
     title = " ".join(title.strip().split())
     if len(title) < 8:
         return "pr needs Title: of at least 8 characters"
-    text = body.strip() or title
+    text = (body.strip() or title) + PR_FOOTER
     code, out = _run(
         project,
         ["gh", "pr", "create", "--title", title, "--body", text],
@@ -157,5 +216,18 @@ def merge_pr(project: Path, number: str, *, allowed: bool) -> str:
     blocked = _in_project(project)
     if blocked:
         return blocked
-    code, out = _run(project, ["gh", "pr", "merge", number, "--merge"])
+    code, out = _run(
+        project,
+        [
+            "gh",
+            "pr",
+            "merge",
+            number,
+            "--merge",
+            "--subject",
+            f"Merge pull request #{number}",
+            "--body",
+            with_co_author(f"Merged #{number}."),
+        ],
+    )
     return out or f"merged #{number}" if code == 0 else out

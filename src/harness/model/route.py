@@ -66,7 +66,7 @@ def route_advice(task: str) -> str:
     model = suggest_ollama(task)
     if lane == "none":
         return (
-            "Lane: none. No model. Ship actions are jailed git/gh. "
+            "Lane: none. No model. Ship actions are limited git/gh. "
             "Do not pull a larger weight for this."
         )
     extra = {

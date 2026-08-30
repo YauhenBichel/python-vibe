@@ -69,16 +69,30 @@ def make_generate(
     *,
     model: str | None = None,
     system: str | None = None,
+    memory=None,
 ) -> tuple[str, Callable[[str], str]]:
+    """A label and a function that answers one prompt.
+
+    `memory` is whatever the harness is using to remember the run. It
+    only has to answer `messages(prompt)`. Nothing here decides what is
+    remembered or forgotten: that belongs to the harness, and this
+    package does not import it.
+    """
     if engine == "auto":
         engine = "mlx" if any(has_mlx(p) for p in mlx_pythons()) else "ollama"
     if engine == "mlx":
-        return _mlx_generate(max_tokens, system=system)
-    return _ollama_generate(model=model, system=system)
+        return _mlx_generate(max_tokens, system=system, memory=memory)
+    if engine == "openai":
+        return _openai_generate(
+            max_tokens, model=model, system=system, memory=memory
+        )
+    if engine != "ollama":
+        sys.exit(f"unknown engine {engine!r}: use ollama, mlx, or openai")
+    return _ollama_generate(model=model, system=system, memory=memory)
 
 
 def _mlx_generate(
-    max_tokens: int, *, system: str | None = None
+    max_tokens: int, *, system: str | None = None, memory=None
 ) -> tuple[str, Callable[[str], str]]:
     reexec_for_mlx()
     from mlx_lm import generate, load
@@ -87,26 +101,42 @@ def _mlx_generate(
     local = ensure_adapters(spec)
     adapter = _stage_best(local) if (local / BEST_ADAPTER).is_file() else local
     model, tokenizer = load(spec.mlx_base, adapter_path=str(adapter))
-    history: list[dict[str, str]] = []
-    sys_prompt = system or spec.system
-
     def generate_once(prompt: str) -> str:
-        messages = (
-            [{"role": "system", "content": sys_prompt}]
-            + history
-            + [{"role": "user", "content": prompt}]
-        )
         text = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
+            memory.messages(prompt), tokenize=False, add_generation_prompt=True
         )
         return generate(model, tokenizer, prompt=text, max_tokens=max_tokens)
 
-    generate_once.history = history  # type: ignore[attr-defined]
+    generate_once.memory = memory  # type: ignore[attr-defined]
     return f"mlx-lora:{adapter.name}", generate_once
 
 
+def _openai_generate(
+    max_tokens: int,
+    *,
+    model: str | None = None,
+    system: str | None = None,
+    memory=None,
+) -> tuple[str, Callable[[str], str]]:
+    from harness.model.openai_generate import OpenAIGenerate
+
+    spec = SPECS["python-vibe"]
+    name = model or spec.ollama_base
+    try:
+        backend = OpenAIGenerate(
+            name, system or spec.system, max_tokens=max_tokens
+        )
+    except ValueError as exc:
+        sys.exit(str(exc))
+    def generate_once(prompt: str) -> str:
+        return backend.send(memory.messages(prompt))
+
+    generate_once.memory = memory  # type: ignore[attr-defined]
+    return f"openai:{name}", generate_once
+
+
 def _ollama_generate(
-    *, model: str | None = None, system: str | None = None
+    *, model: str | None = None, system: str | None = None, memory=None
 ) -> tuple[str, Callable[[str], str]]:
     from harness.model.ollama_generate import OllamaGenerate
 
@@ -115,10 +145,8 @@ def _ollama_generate(
     backend = OllamaGenerate(name, system or spec.system)
     if not backend.healthy():
         sys.exit(f"ollama {backend.host} is down")
-    history: list[dict[str, str]] = []
-
     def generate_once(prompt: str) -> str:
-        return backend(prompt, history)
+        return backend.send(memory.messages(prompt))
 
-    generate_once.history = history  # type: ignore[attr-defined]
+    generate_once.memory = memory  # type: ignore[attr-defined]
     return f"ollama:{name}", generate_once

@@ -1,3 +1,7 @@
+"""Writing one test for a function, and choosing what to call it with."""
+
+from __future__ import annotations
+
 """Mechanical fixes the 8B fails to express. Deterministic. No model.
 
 Live 8B (29 Aug 2026): left `subtotal` unbound after a NameError task, and
@@ -5,209 +9,101 @@ spent twelve `Find:` turns that never matched `def calc(x: int, ...)`.
 Those are compiler jobs. The harness does them, then runs the suite,
 before the first generate. A green suite ends the run without a model.
 """
-
-from __future__ import annotations
-
 import ast
 import importlib.util
-import io
+import os
 import re
 import sys
-import tokenize
 from pathlib import Path
-
 from harness.act.code import apply_source
-from harness.scan.names import undefined_names
 from harness.task import (
     covered_symbol,
-    looks_like_bugfix,
-    looks_like_fix_smell,
-    looks_like_write_tests,
+    looks_like_add_feature,
     named_project_file,
-    rename_pair,
+    question_symbol,
 )
 
 
-def levenshtein(left: str, right: str) -> int:
-    if left == right:
-        return 0
-    if not left:
-        return len(right)
-    if not right:
-        return len(left)
-    prev = list(range(len(right) + 1))
-    for i, char in enumerate(left, 1):
-        cur = [i]
-        for j, other in enumerate(right, 1):
-            cur.append(
-                min(prev[j] + 1, cur[-1] + 1, prev[j - 1] + (char != other))
-            )
-        prev = cur
-    return prev[-1]
 
-
-def _is_typo(bad: str, good: str) -> bool:
-    if bad == good or good.startswith("__"):
-        return False
-    gap = abs(len(bad) - len(good))
-    if gap > 2:
-        return False
-    distance = levenshtein(bad, good)
-    if distance == 1:
-        return True
-    return distance == 2 and min(len(bad), len(good)) >= 6
-
-
-def typo_pairs(source: str) -> list[tuple[str, str]]:
-    """Unique undefined-name → nearby bound-name pairs."""
-    leftover = undefined_names(source)
-    if not leftover:
-        return []
+def _imports(source: str, name: str) -> bool:
+    """Whether `source` brings `name` in by an import."""
     try:
-        import ast
-
         tree = ast.parse(source)
     except (SyntaxError, ValueError):
-        return []
-    bound: set[str] = set()
+        return False
     for node in ast.walk(tree):
-        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-            bound.add(node.id)
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            bound.add(node.name)
-            for arg in (*node.args.args, *node.args.posonlyargs, *node.args.kwonlyargs):
-                bound.add(arg.arg)
-    pairs: list[tuple[str, str]] = []
-    for bad in leftover:
-        hits = [good for good in bound if _is_typo(bad, good)]
-        if len(hits) == 1:
-            pairs.append((bad, hits[0]))
-    return pairs
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                if (alias.asname or alias.name.split(".")[-1]) == name:
+                    return True
+    return False
 
 
-def _rename_name_tokens(source: str, bad: str, good: str) -> str:
-    """Replace `bad` where Python reads it as a name, and nowhere else.
+def _test_file_for(
+    task: str, project: Path, name: str, dests: list[Path]
+) -> Path:
+    """Which test file a new test for `name` belongs in.
 
-    A plain search also rewrites the word inside strings and comments. An
-    error message that mentions the misspelling is text the person wrote,
-    and the harness has no business changing it.
+    This used to be whichever file sorted first, so covering
+    `ticket_job` from `ship/ticket.py` appended the test to
+    `tests/test_agent_api.py`. It ran, it passed, and it was filed under
+    something it has nothing to do with.
+
+    In order: the file that already tests this symbol, the one named
+    after the module the task points at, and only then the first.
     """
-    try:
-        tokens = list(tokenize.generate_tokens(io.StringIO(source).readline))
-    except (tokenize.TokenError, IndentationError, SyntaxError):
-        return source
-    lines = source.splitlines(keepends=True)
-    spots = [
-        token
-        for token in tokens
-        if token.type == tokenize.NAME and token.string == bad
-    ]
-    for token in reversed(spots):
-        row = token.start[0] - 1
-        line = lines[row]
-        lines[row] = line[: token.start[1]] + good + line[token.end[1] :]
-    return "".join(lines)
-
-
-def apply_typo_fixes(source: str) -> str:
-    text = source
-    for bad, good in typo_pairs(source):
-        text = _rename_name_tokens(text, bad, good)
-    return text
-
-
-def apply_function_rename(source: str, old: str, new: str) -> str:
-    """Rename one `def old` and `old(` calls. Keep the rest of the signature.
-
-    Matching requires a call shape, so prose that merely mentions the name
-    is left alone. Text inside a string that looks like a call is rewritten
-    too; for a message naming the function that is usually wanted, and it
-    is the same on every supported Python version, which a token-based
-    rename would not be.
-    """
-    if not old or not new or old == new:
-        return source
-    if not re.search(rf"^def {re.escape(old)}\b", source, re.MULTILINE):
-        return source
-    if re.search(rf"^def {re.escape(new)}\b", source, re.MULTILINE):
-        return source
-    text = re.sub(
-        rf"^def {re.escape(old)}\b",
-        f"def {new}",
-        source,
-        count=1,
-        flags=re.MULTILINE,
-    )
-    return re.sub(rf"\b{re.escape(old)}\s*\(", f"{new}(", text)
-
-
-def apply_mechanical(
-    project: Path, task: str, rel: str, *, write: bool = True
-) -> str:
-    """Write a rename, unique typo, or missing AAA test. Return a note, or empty."""
-    if not rel:
-        rel = named_project_file(task, project)
-    notes: list[str] = []
-    path = Path(project) / rel if rel else None
-    text = original = ""
-    if path is not None and path.is_file():
+    for path in dests:
         try:
-            original = path.read_text(encoding="utf-8")
+            body = path.read_text(encoding="utf-8")
         except OSError:
-            original = ""
-        text = original
-        if looks_like_fix_smell(task):
-            old, new = rename_pair(task)
-            if old and new:
-                renamed = apply_function_rename(text, old, new)
-                if renamed != text:
-                    text = renamed
-                    notes.append(f"renamed def {old} → def {new} in {rel}")
-        if looks_like_bugfix(task):
-            fixed = apply_typo_fixes(text)
-            if fixed != text:
-                pairs = typo_pairs(original)
-                text = fixed
-                shown = ", ".join(f"{bad} → {good}" for bad, good in pairs)
-                notes.append(f"bound unique NameError typo ({shown}) in {rel}")
-        if text != original and notes and write:
-            apply_source(path, text, original=original)
-    if looks_like_write_tests(task):
-        cover = apply_cover_test(project, task, write=write)
-        if cover:
-            notes.append(cover)
-    if not notes:
-        return ""
-    verb = "applied" if write else "would apply (read-only)"
-    return (
-        f"Harness {verb} a mechanical fix (no model):\n"
-        + "\n".join(f"- {item}" for item in notes)
-        + (
-            "\nNext Action must be run Argv: -m unittest discover -s tests -q. "
-            "Do not patch this file again."
-            if write
-            else "\nAction: done Summary: say what you would change and why."
-        )
-    )
+            continue
+        # A test named after it, or a file that imports it. Merely
+        # mentioning the name is not enough — a docstring in an unrelated
+        # test file matched and sent the new test there — and a regex is
+        # not enough either, because most of these imports are written
+        # across several lines inside brackets.
+        if re.search(rf"\bdef test_\w*{re.escape(name)}", body) or _imports(
+            body, name
+        ):
+            return path
+    named = named_project_file(task, project)
+    if named:
+        stem = Path(named).stem
+        for path in dests:
+            if path.stem in (f"test_{stem}", stem):
+                return path
+    return dests[0]
 
 
 def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
-    """Add one AAA test for the named function. Empty if one already exists."""
-    name = covered_symbol(task)
+    """Add one AAA test for the named function.
+
+    Returns a note when a test already names the function, so the run can
+    finish without the model appending a dead copy after `if __name__`.
+    """
+    name = covered_symbol(task) or (
+        question_symbol(task) if looks_like_add_feature(task) else ""
+    )
     if not name:
         return ""
     tests = Path(project) / "tests"
     dests = sorted(tests.glob("test_*.py")) if tests.is_dir() else []
     if not dests:
         return ""
-    dest = dests[0]
+    dest = _test_file_for(task, project, name, dests)
     body = dest.read_text(encoding="utf-8")
     safe = name.replace(".", "_")
     if name in body or f"def test_{safe}_" in body:
-        return ""
+        return f"already has a test for {name}"
     impl = named_project_file(task, project)
+    if not impl:
+        from harness.skillkit.target import pick_module
+
+        impl = pick_module(project, "", task)
     impl_path = Path(project) / impl if impl else None
     if impl_path is None or not impl_path.is_file():
+        return ""
+    if f"def {name}" not in impl_path.read_text(encoding="utf-8"):
         return ""
     sample = _sample_values(impl_path, name, project=Path(project))
     if sample is None:
@@ -286,6 +182,93 @@ def _find_callable(
     return None
 
 
+MIN_SHARE_REACHED = 0.5
+
+
+def _lines_reached(call, path: Path, first: int, last: int) -> int:
+    """How many lines between `first` and `last` the call actually runs.
+
+    A test built from an argument that returns on the first guard is a
+    test of the guard. Counting what ran is the only way to tell that
+    apart from a test that exercised the function.
+    """
+    seen: set[int] = set()
+    # Compare real paths: a module loaded from /tmp reports /private/tmp
+    # on macOS, and the tracer then matched nothing at all.
+    target = os.path.realpath(path)
+
+    def trace(frame, event, _arg):
+        if os.path.realpath(frame.f_code.co_filename) != target:
+            return None
+        if event == "line" and first <= frame.f_lineno <= last:
+            seen.add(frame.f_lineno)
+        return trace
+
+    previous = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        call()
+    finally:
+        sys.settrace(previous)
+    return len(seen)
+
+
+def _body_lines(func) -> int:
+    """Executable lines in a function, not counting its docstring."""
+    body = list(func.body)
+    if (
+        body
+        and isinstance(body[0], ast.Expr)
+        and isinstance(body[0].value, ast.Constant)
+        and isinstance(body[0].value.value, str)
+    ):
+        body = body[1:]
+    lines = set()
+    for statement in body:
+        for node in ast.walk(statement):
+            if hasattr(node, "lineno"):
+                lines.add(node.lineno)
+    return len(lines) or 1
+
+
+def _candidates(hint: str, arg_name: str, source: str) -> list[object]:
+    """Values worth trying for one argument, best guess first.
+
+    The string literals the module compares against are the ones that
+    reach a branch: a function that checks `text == "yes"` is only
+    exercised by "yes". A placeholder reaches the first return.
+    """
+    if "list" in hint:
+        return [[10, 20], [], [1]]
+    if "dict" in hint:
+        return [{"prices": [10, 20], "percent": 10}, {}]
+    if "float" in hint:
+        return [1.5, 0.0]
+    if "bool" in hint:
+        return [True, False]
+    if "int" in hint:
+        return [2, 0, 100]
+    if "str" in hint or not hint:
+        literals = [
+            node.value
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and 0 < len(node.value) <= 40
+            and "\n" not in node.value
+        ]
+        seen, ordered = set(), []
+        for value in literals:
+            if value not in seen:
+                seen.add(value)
+                ordered.append(value)
+        # Plain values first, so a literal only wins when it genuinely
+        # reaches further into the function. A test reading `shout("x")`
+        # is easier to follow than one reading `shout("!")`.
+        return ["x", "", *ordered[:12]]
+    return [2, 0]
+
+
 def _sample_values(
     path: Path, name: str, *, project: Path | None = None
 ) -> tuple[list[tuple[str, object]], object, str, str] | None:
@@ -300,24 +283,16 @@ def _sample_values(
     class_name, func = found
     if func.args.kwonlyargs or func.args.vararg or func.args.kwarg:
         return None
-    ints = (100, 10, 2, 0)
-    used_ints = 0
-    args: list[tuple[str, object]] = []
+    source = path.read_text(encoding="utf-8")
+    choices: list[tuple[str, list[object]]] = []
     for arg in func.args.args:
         if arg.arg in {"self", "cls"}:
             continue
         hint = ast.unparse(arg.annotation) if arg.annotation else ""
-        if "list" in hint:
-            args.append((arg.arg, [10, 20]))
-        elif "dict" in hint:
-            args.append((arg.arg, {"prices": [10, 20], "percent": 10}))
-        elif "str" in hint:
-            args.append((arg.arg, "x"))
-        elif "float" in hint:
-            args.append((arg.arg, 1.5))
-        else:
-            args.append((arg.arg, ints[used_ints % len(ints)]))
-            used_ints += 1
+        choices.append((arg.arg, _candidates(hint, arg.arg, source)))
+    args: list[tuple[str, object]] = [
+        (name, values[0]) for name, values in choices
+    ]
     token = name.replace(".", "_")
     module_name = f"_vibe_cover_{token}"
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -331,24 +306,48 @@ def _sample_values(
         sys.path.insert(0, inserted)
     try:
         spec.loader.exec_module(module)
-        values = tuple(value for _key, value in args)
         if class_name:
             cls = getattr(module, class_name, None)
             if cls is None:
                 return None
-            expected = getattr(cls(), func.name)(*values)
+            target = getattr(cls(), func.name)
         else:
-            fn = getattr(module, func.name, None)
-            if fn is None:
+            target = getattr(module, func.name, None)
+            if target is None:
                 return None
-            expected = fn(*values)
+        first = func.lineno
+        last = func.end_lineno or func.lineno
+        best_reach, best_args, expected = -1, args, None
+        # Try one argument at a time against the first working set, and
+        # keep whichever call runs the most of the function.
+        for index, (arg_name, values) in enumerate(choices):
+            for value in values[:8]:
+                trial = list(args)
+                trial[index] = (arg_name, value)
+                shot = tuple(v for _k, v in trial)
+                try:
+                    reach = _lines_reached(
+                        lambda: target(*shot), path, first, last
+                    )
+                    outcome = target(*shot)
+                except Exception:
+                    continue
+                if reach > best_reach:
+                    best_reach, best_args, expected = reach, trial, outcome
+            if best_reach > 0:
+                args = list(best_args)
+        if best_reach < max(1, int(_body_lines(func) * MIN_SHARE_REACHED)):
+            # Every value tried returned on a guard, so a test built from
+            # this would asserts the guard rather than the function. Say
+            # nothing rather than write a test that proves nothing.
+            return None
     except Exception:
         return None
     finally:
         sys.modules.pop(module_name, None)
         if inserted and sys.path and sys.path[0] == inserted:
             sys.path.pop(0)
-    return args, expected, class_name, func.name
+    return list(best_args), expected, class_name, func.name
 
 
 def _add_import_symbol(text: str, module: str, name: str) -> str:

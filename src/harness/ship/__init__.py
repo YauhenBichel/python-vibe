@@ -1,1 +1,1 @@
-"""Layer: jailed git / gh. Deterministic. No model."""
+"""Layer: limited git / gh. Deterministic. No model."""

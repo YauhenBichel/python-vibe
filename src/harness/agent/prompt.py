@@ -25,7 +25,7 @@ from harness.scan.project_brief import (
     start_hint,
 )
 from harness.scan.project_docs import render_house_rules
-from harness.ship.git_ship import read_issue
+from harness.ship.git_ship import read_ticket
 from harness.skillkit.catalog import (
     Skill,
     get_skill,
@@ -35,7 +35,7 @@ from harness.skillkit.catalog import (
     render_skill,
 )
 from harness.skillkit.target import Target, pick_target, retarget
-from harness.task import issue_number, question_symbol
+from harness.task import issue_number, looks_like_pr_ref, question_symbol
 
 
 @dataclass(frozen=True)
@@ -100,7 +100,11 @@ def build_preamble(options: AgentOptions) -> Preamble:
 
     ticket = issue_number(task)
     if ticket:
-        block = f"Harness issue #{ticket}\n{read_issue(project, ticket)}"
+        prefer = "pr" if looks_like_pr_ref(task) else "issue"
+        block = (
+            f"Harness ticket #{ticket}\n"
+            f"{read_ticket(project, ticket, prefer=prefer)}"
+        )
         notes.append(block)
         pre_text = f"{pre_text}\n\n{block}" if pre_text else block
 
