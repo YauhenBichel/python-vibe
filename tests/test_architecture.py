@@ -327,6 +327,66 @@ class ThreeRingsTest(unittest.TestCase):
         self.assertEqual(callers, ["agent/loop.py"], callers)
 
 
+class NothingIsWrittenAndForgottenTest(unittest.TestCase):
+    """A function nobody calls is a claim nobody checks.
+
+    `skill_example_path` was written to stop a placeholder path reaching
+    the model, and returned `pkg/<noun>.py` when it could not find one —
+    a placeholder path. It was never called from anywhere, and the job
+    it was for is done by `everyday_example_path`, which is called from
+    four places. Nothing failed when it was deleted.
+    """
+
+    # Called by http.server itself, by name, not from this project.
+    CALLED_BY_A_FRAMEWORK = {"do_GET", "do_POST", "log_message"}
+
+    def test_every_function_is_reachable(self) -> None:
+        import collections
+
+        defined: dict[str, str] = {}
+        used: collections.Counter = collections.Counter()
+        roots = [ROOT / "src" / "harness", ROOT / "tests", ROOT / "scripts"]
+        for root in roots:
+            for path in root.rglob("*.py"):
+                if "__pycache__" in path.parts:
+                    continue
+                try:
+                    tree = ast.parse(path.read_text(encoding="utf-8"))
+                except SyntaxError:
+                    continue
+                inside = path.is_relative_to(ROOT / "src" / "harness")
+                for node in ast.walk(tree):
+                    if inside and isinstance(
+                        node, (ast.FunctionDef, ast.AsyncFunctionDef)
+                    ):
+                        defined.setdefault(
+                            node.name, path.relative_to(ROOT).as_posix()
+                        )
+                    if isinstance(node, ast.Name):
+                        used[node.id] += 1
+                    elif isinstance(node, ast.Attribute):
+                        used[node.attr] += 1
+                    elif isinstance(node, ast.ImportFrom):
+                        for alias in node.names:
+                            used[alias.asname or alias.name] += 1
+                    elif isinstance(node, ast.Constant) and isinstance(
+                        node.value, str
+                    ):
+                        for word in (
+                            node.value.replace("(", " ").replace(".", " ").split()
+                        ):
+                            if word.isidentifier():
+                                used[word] += 1
+        orphans = sorted(
+            f"{name} in {where}"
+            for name, where in defined.items()
+            if used[name] == 0
+            and not name.startswith("__")
+            and name not in self.CALLED_BY_A_FRAMEWORK
+        )
+        self.assertEqual(orphans, [], f"written and never called: {orphans}")
+
+
 
 if __name__ == "__main__":
     unittest.main()
