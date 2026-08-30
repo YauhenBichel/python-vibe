@@ -381,6 +381,60 @@ class EditRepairsGoThroughTheToolTest(unittest.TestCase):
         self.assertNotIn("def slugify", body)
 
 
+class ActionTableTest(unittest.TestCase):
+    """Every action the model may take has somewhere to go.
+
+    This was nineteen `if turn.action == ...` tests in a row, which hid
+    both the list and the fact that a new action has to be added to it.
+    Forgetting produced a silent "unknown Action" rather than an error
+    anybody would notice.
+    """
+
+    HANDLED_BY_THE_LOOP = {"ask", "done"}
+
+    def test_the_table_and_the_advertised_list_agree(self) -> None:
+        from harness.agent.dispatch import ACTIONS, HANDLERS
+
+        advertised = set(ACTIONS.replace("|", " ").split())
+        self.assertEqual(
+            advertised - set(HANDLERS) - self.HANDLED_BY_THE_LOOP,
+            set(),
+            "advertised to the model with nothing to carry it out",
+        )
+        self.assertEqual(
+            set(HANDLERS) - advertised,
+            set(),
+            "carried out but never offered to the model",
+        )
+
+    def test_every_entry_is_callable(self) -> None:
+        from harness.agent.dispatch import HANDLERS
+
+        for name, handler in HANDLERS.items():
+            with self.subTest(action=name):
+                self.assertTrue(callable(handler))
+
+    def test_an_action_nobody_wrote_says_so(self) -> None:
+        from harness.act.parse import parse_turn
+        from harness.agent.dispatch import run_action
+
+        turn = parse_turn("Action: teleport\nPath: x.py")
+        with tempfile.TemporaryDirectory() as tmp:
+            out, path = run_action(Path(tmp), turn, "kept.py", "")
+        self.assertIn("unknown Action", out)
+        self.assertEqual(path, "kept.py", "an unknown action moves nothing")
+
+    def test_a_read_without_a_path_keeps_the_last_one(self) -> None:
+        from harness.act.parse import parse_turn
+        from harness.agent.dispatch import run_action
+
+        turn = parse_turn("Action: read")
+        with tempfile.TemporaryDirectory() as tmp:
+            out, path = run_action(Path(tmp), turn, "", "")
+        self.assertIn("needs Path", out)
+        self.assertEqual(path, "")
+
+
 
 if __name__ == "__main__":
     unittest.main()

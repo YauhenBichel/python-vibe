@@ -10,6 +10,9 @@ decisions are in `harness.agent.policy`.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass
+
 from pathlib import Path
 
 from harness.act.tools import (
@@ -49,78 +52,184 @@ WRITE_ACTIONS = frozenset({"edit", "patch", "run"})
 SHIP_ACTIONS = frozenset({"issue", "branch", "commit", "push", "pr", "merge"})
 
 
+@dataclass(frozen=True)
+class Ask:
+    """One action the model asked for, and everything it may act on.
+
+    Fields:
+        project: the folder the run may read and write inside.
+        turn: the parsed action, with whichever fields it carried.
+        path: the file this action lands on — the one it named, or the
+            last one touched.
+        last_path: what to report when the action changes no file.
+        scope: the folder to stay inside, if the run was given one.
+        target: the skill target, when a skill is being rendered.
+        task: what the user asked for, in their own words.
+    """
+
+    project: Path
+    turn: object
+    path: str
+    last_path: str
+    scope: str
+    target: object
+    task: str
+
+
+def _locate(ask: Ask) -> tuple[str, str]:
+    return locate_py(ask.project, ask.turn.query or ask.turn.name, ask.scope)
+
+
+def _map(ask: Ask) -> tuple[str, str]:
+    return map_py(ask.project, ask.scope), ask.last_path
+
+
+def _layout(ask: Ask) -> tuple[str, str]:
+    base = resolve_scope(ask.project, ask.scope) if ask.scope else ask.project
+    return render_layout(base), ask.last_path
+
+
+def _plan(ask: Ask) -> tuple[str, str]:
+    return (
+        f"plan noted:\n{ask.turn.summary or '(empty plan)'}\n"
+        "Take the first explore action now."
+    ), ask.last_path
+
+
+def _glob(ask: Ask) -> tuple[str, str]:
+    pattern = ask.turn.pattern or "**/*.py"
+    return glob_py(ask.project, pattern, scope=ask.scope), ask.last_path
+
+
+def _grep(ask: Ask) -> tuple[str, str]:
+    return grep_py(ask.project, ask.turn.query, scope=ask.scope), ask.last_path
+
+
+def _read(ask: Ask) -> tuple[str, str]:
+    if not ask.path:
+        return "read needs Path:", ask.last_path
+    return read_py(ask.project, ask.path), ask.path
+
+
+def _edit(ask: Ask) -> tuple[str, str]:
+    if not ask.path:
+        return "edit needs Path:", ask.last_path
+    if not ask.turn.source:
+        return "edit needs a ```python block", ask.path
+    blocked = PythonVibeGuard().check(ask.turn.source)
+    if blocked.verdict != "pass":
+        return (
+            f"harness blocked: {[f.rule_id for f in blocked.findings]}",
+            ask.path,
+        )
+    return edit_py(ask.project, ask.path, ask.turn.source, task=ask.task), ask.path
+
+
+def _patch(ask: Ask) -> tuple[str, str]:
+    if not ask.path:
+        return "patch needs Path: (or read that file first)", ask.last_path
+    return patch_py(
+        ask.project,
+        ask.path,
+        ask.turn.find,
+        ask.turn.replace,
+        ask.turn.append,
+        task=ask.task,
+    ), ask.path
+
+
+def _run(ask: Ask) -> tuple[str, str]:
+    return run_python(ask.project, ask.turn.argv), ask.last_path
+
+
+def _skill(ask: Ask) -> tuple[str, str]:
+    return (
+        f"skill needs Name:. {render_catalog(list_skills(ask.project))}",
+        ask.last_path,
+    )
+
+
+def _named(ask: Ask) -> str:
+    """The issue or pull request number an action carried."""
+    return (ask.turn.number or ask.turn.name or ask.turn.query or "").strip()
+
+
+def _issue(ask: Ask) -> tuple[str, str]:
+    return read_issue(ask.project, _named(ask)), ask.last_path
+
+
+def _branch(ask: Ask) -> tuple[str, str]:
+    return make_branch(ask.project, ask.turn.name or ask.turn.summary), ask.last_path
+
+
+def _commit(ask: Ask) -> tuple[str, str]:
+    return commit_changes(ask.project, ask.turn.summary), ask.last_path
+
+
+def _push(ask: Ask) -> tuple[str, str]:
+    return push_branch(ask.project), ask.last_path
+
+
+def _pr(ask: Ask) -> tuple[str, str]:
+    """A number reads that pull request; anything else opens one."""
+    number = _named(ask)
+    if number.isdigit():
+        return read_pr(ask.project, number), ask.last_path
+    return create_pr(
+        ask.project,
+        ask.turn.title or ask.turn.summary,
+        ask.turn.body or ask.turn.append,
+    ), ask.last_path
+
+
+def _merge(ask: Ask) -> tuple[str, str]:
+    return merge_pr(ask.project, _named(ask), allowed=True), ask.last_path
+
+
+# One entry per action the model may take. This was nineteen
+# `if turn.action == ...` tests in a row, which hid both the list and
+# the fact that a new action has to be added to it: forgetting meant a
+# silent "unknown Action" rather than an error anyone would notice.
+# `ask` and `done` are answered by the loop before it gets here.
+HANDLERS: dict[str, Callable[[Ask], tuple[str, str]]] = {
+    "locate": _locate,
+    "map": _map,
+    "layout": _layout,
+    "plan": _plan,
+    "glob": _glob,
+    "grep": _grep,
+    "read": _read,
+    "edit": _edit,
+    "patch": _patch,
+    "run": _run,
+    "skill": _skill,
+    "issue": _issue,
+    "branch": _branch,
+    "commit": _commit,
+    "push": _push,
+    "pr": _pr,
+    "merge": _merge,
+}
+
+
 def run_action(
     project: Path, turn, last_path: str, scope: str, target=None, task: str = ""
 ) -> tuple[str, str]:
-    path = turn.path or last_path
-    used_scope = turn.scope or scope
+    """Carry out one action, and say which file it left the run on."""
     loaded = skill_from_action(turn.action, turn.name, turn.path, project)
     if loaded is not None:
         return render_skill(loaded, target, project), last_path
-    if turn.action == "skill":
-        return (
-            "skill needs Name:. "
-            f"{render_catalog(list_skills(project))}",
-            last_path,
+    handler = HANDLERS.get(turn.action)
+    if handler is None:
+        return f"unknown Action {turn.action}. Use {ACTIONS}.", last_path
+    return handler(
+        Ask(
+            project=project,
+            turn=turn,
+            path=turn.path or last_path,
+            last_path=last_path,
+            scope=turn.scope or scope,
+            target=target,
+            task=task,
         )
-    if turn.action == "locate":
-        return locate_py(project, turn.query or turn.name, used_scope)
-    if turn.action == "map":
-        return map_py(project, used_scope), last_path
-    if turn.action == "layout":
-        base = resolve_scope(project, used_scope) if used_scope else project
-        return render_layout(base), last_path
-    if turn.action == "plan":
-        return (
-            f"plan noted:\n{turn.summary or '(empty plan)'}\n"
-            "Take the first explore action now.",
-            last_path,
-        )
-    if turn.action == "glob":
-        return glob_py(project, turn.pattern or "**/*.py", scope=used_scope), last_path
-    if turn.action == "grep":
-        return grep_py(project, turn.query, scope=used_scope), last_path
-    if turn.action == "read":
-        if not path:
-            return "read needs Path:", last_path
-        return read_py(project, path), path
-    if turn.action == "edit":
-        if not path:
-            return "edit needs Path:", last_path
-        if not turn.source:
-            return "edit needs a ```python block", path
-        blocked = PythonVibeGuard().check(turn.source)
-        if blocked.verdict != "pass":
-            return f"harness blocked: {[f.rule_id for f in blocked.findings]}", path
-        return edit_py(project, path, turn.source, task=task), path
-    if turn.action == "patch":
-        if not path:
-            return "patch needs Path: (or read that file first)", last_path
-        return patch_py(
-            project, path, turn.find, turn.replace, turn.append, task=task
-        ), path
-    if turn.action == "run":
-        return run_python(project, turn.argv), last_path
-    if turn.action == "issue":
-        return read_issue(
-            project, turn.number or turn.name or turn.query
-        ), last_path
-    if turn.action == "branch":
-        return make_branch(project, turn.name or turn.summary), last_path
-    if turn.action == "commit":
-        return commit_changes(project, turn.summary), last_path
-    if turn.action == "push":
-        return push_branch(project), last_path
-    if turn.action == "pr" and (turn.number or turn.name or turn.query).strip().isdigit():
-        return read_pr(
-            project, (turn.number or turn.name or turn.query).strip()
-        ), last_path
-    if turn.action == "pr":
-        return create_pr(
-            project, turn.title or turn.summary, turn.body or turn.append
-        ), last_path
-    if turn.action == "merge":
-        return merge_pr(
-            project, turn.number or turn.name or turn.query, allowed=True
-        ), last_path
-    return f"unknown Action {turn.action}. Use {ACTIONS}.", last_path
+    )
