@@ -169,6 +169,29 @@ is a harness job. That is what moved the four Start commands from
 
 Write-up: [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
 
+
+## On a real repository
+
+**Example.** Everything above uses `demo/orders`, a fixture with two
+planted bugs. This is the same tool pointed at a working repository of
+4,580 first-party files that nobody wrote for this benchmark. Nothing
+was written inside it: reads ran against it directly, writes against a
+fresh copy of one module.
+
+**Result**
+
+| Job | Score |
+| --- | --- |
+| `brief`, `layout`, `ask --scope` | Correct. 6–7 s each |
+| Import cycles reported by `layout` | 4 reported, **0 real** — then 4 reported, 4 real after the fix |
+| Write a test, add a function | **1 / 12** verified, four tasks, three runs each |
+| Undefined-name guard across 3,658 files | 3% flagged, **every one correct code** — now 0 |
+
+Reading a real repository works. Writing to one does not, and the same
+tasks pass on the fixture, which is worth knowing about the fixture.
+
+Detail: [Bench record]({{ '/investigations/bench-record/' | relative_url }}).
+
 ## A larger open model
 
 **Example.** The 30B already timed out on this laptop. `--engine openai`
@@ -179,6 +202,14 @@ sends only the generate call to a GPU. The write limit stays here.
 | Run | Score |
 | --- | --- |
 | 30B on this laptop | Timeout. 0 / 4 platform cases |
+| **14B on this laptop** | **Could not be measured.** 9 GB of weights on 18 GB put the machine into 12–13 GB of swap; no run finished |
 | 14B / 32B on a GPU | **No live number yet.** Must beat the laptop 8B on the same four jobs |
 
-Write-up: [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
+The 14B result is about the machine, not the model. Weights are only
+part of the budget: the key-value cache grows with context and the
+operating system wants its share, so the practical ceiling here is about
+11–12 GB, not 18. If you are choosing hardware, reckon on roughly twice
+the size of the model you mean to run.
+
+Write-up: [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }})
+· [Bench record]({{ '/investigations/bench-record/' | relative_url }}).

@@ -25,6 +25,7 @@ editors or chat products.
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
 | Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
+| A real repository | 4,580 files, not a fixture | reading works; writing 1 / 12 |
 
 What you type:
 [Scenarios]({{ '/scenarios/' | relative_url }}).

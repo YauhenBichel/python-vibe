@@ -113,6 +113,86 @@ never finished; not enough to separate two that did.
 | 30B-class MoE | 0 / 4 | 0 / 4 | timed out, four of four |
 | 1B and 1.5B | — | — | never emitted `Action:` |
 
+## On a real repository
+
+`demo/orders` is a fixture with two planted bugs. Everything above uses
+it. This section is the same tool pointed at a working repository of
+**4,580 first-party Python and Markdown files, 25 MB of source, 2.2 GB
+on disk** — one nobody wrote for this benchmark.
+
+Nothing was written inside that repository. Read-only commands ran
+against it directly; every write task ran against a fresh copy of one
+module in a temporary directory. Its HEAD, its dirty-file count and its
+`.bak` count were identical before and after.
+
+### Reading it
+
+| Command | Time | Result |
+| --- | --- | --- |
+| `brief` | 6.4 s | Correct file counts and top-level breakdown |
+| `layout` | 7.1 s | Four import cycles reported |
+| `ask --scope` | 2 questions | Both answers correct against the source |
+
+`ask` is worth quoting, because on the fixture it had been answering
+with a bare type:
+
+> `semver_to_tuple` … computes a tuple of three integers representing
+> the major, minor and patch versions
+
+### The cycles were all wrong, then all right
+
+The four cycles `layout` first reported were **none of them real**. It
+matched modules on file name, so three different `connection.py` files
+collapsed into one node, and `rich.console` — a third-party package —
+counted as an import of a local `console.py`.
+
+| | Reported | Real |
+| --- | --- | --- |
+| Matching on file name | 4 | **0** |
+| Matching on module path | 4 | **4** |
+
+The two in first-party code are genuine mutual imports, each broken by
+moving an import inside a function, and one carries a `# noqa: E402`
+where somebody had already worked around it.
+
+### Writing to it went badly
+
+Four tasks against real modules, three runs each, every result checked
+by running the code:
+
+| Task | Verified | Summary matched reality |
+| --- | --- | --- |
+| `write tests for semver_to_tuple` | 0 / 3 | 2 / 3 |
+| `write tests for redact_slack_token` | 0 / 3 | 3 / 3 |
+| `write tests for looks_like_cancel_request` | 0 / 3 | 1 / 3 |
+| `add is_newer(left, right) + a test` | 1 / 3 | 2 / 3 |
+
+**One of twelve.** The same tasks pass on `demo/orders`, which is worth
+knowing about `demo/orders`.
+
+One run wrote a test file containing a single import line and reported
+`done`. The completion check asked only whether the symbol appeared
+anywhere under `tests/`, and it did — in that import. `unittest` found
+no tests in the file at all.
+
+### A guard that flagged correct code
+
+The undefined-name check, used to decide whether a file still has an
+unbound name, was run across every first-party file in that repository.
+
+| | Files reporting an undefined name |
+| --- | --- |
+| Before | **3%** — every one of them correct code |
+| After | **0 of 3,658** |
+
+All of them were ordinary modern Python: names bound under
+`if TYPE_CHECKING:`, imports guarded by `try/except ImportError`, PEP 695
+type parameters and `type` aliases, and `match`/`case` captures.
+
+The lesson is the one the benchmark keeps giving: a rule written from
+one observed failure, applied to every file, finds things that are not
+there.
+
 ## Reproducing this
 
 ```bash
