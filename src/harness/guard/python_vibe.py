@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 
 from harness.guard.types import Finding, Outcome
+from harness.secrets import SECRET_SHAPES
 
 RULESET_VERSION = "python-vibe-harness@0.1.0"
 MAX_CHARS = 8000
@@ -26,10 +27,7 @@ _RULES: tuple[tuple[str, str, re.Pattern[str]], ...] = (
         "PV002",
         "block",
         re.compile(
-            r"(AKIA[0-9A-Z]{16}"
-            r"|sk-ant-[A-Za-z0-9_\-]{20,}"
-            r"|ghp_[A-Za-z0-9]{20,}"
-            r"|-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----)"
+            "|".join(f"(?:{p.pattern})" for _name, p in SECRET_SHAPES)
         ),
     ),
     (

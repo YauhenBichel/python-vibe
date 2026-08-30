@@ -54,6 +54,13 @@ class ChatBackend:
     def refused(self, code: int) -> str:
         return f"remote model HTTP {code}"
 
+    def before_send(self, messages: list[dict[str, str]]) -> None:
+        """Last look at what is about to leave. Raise to stop it.
+
+        Local hosts have nothing to check, so this does nothing by
+        default. A backend that posts somewhere else overrides it.
+        """
+
     # -- what they all do the same way ---------------------------------
 
     def __call__(
@@ -74,6 +81,7 @@ class ChatBackend:
         The conversation is assembled by `harness.memory`, which knows
         what to keep and what to let go. This only sends it.
         """
+        self.before_send(messages)
         request = urllib.request.Request(
             self.url(),
             data=json.dumps(self.body(messages)).encode("utf-8"),

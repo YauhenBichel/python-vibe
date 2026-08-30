@@ -9,9 +9,11 @@ They are never written into a trace, a test, or an error string.
 from __future__ import annotations
 
 from harness.model.chat_backend import ChatBackend
+from harness.model.outbound import refuse_to_send, what_was_sent
 
 import json
 import os
+import sys
 import urllib.error
 import urllib.request
 from collections.abc import Sequence
@@ -88,6 +90,8 @@ class OpenAIGenerate(ChatBackend):
                 timeout = float(raw)
             except ValueError:
                 timeout = 180.0
+        self.last_sent = ""
+        self._said = False
         super().__init__(model, system, timeout=timeout)
 
     def _hint(self, code: int) -> str:
@@ -121,6 +125,22 @@ class OpenAIGenerate(ChatBackend):
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
+
+    def before_send(self, messages: list[dict[str, str]]) -> None:
+        """Nothing goes to somebody else's host unread.
+
+        The summary is said once, on the first send. A run takes up to
+        twenty turns and a line per turn would be noise, but a person
+        who wants to know whether their file left the laptop should not
+        have to go looking.
+        """
+        blocked = refuse_to_send(messages, self.base_url)
+        if blocked:
+            raise RuntimeError(blocked)
+        self.last_sent = what_was_sent(messages, self.base_url)
+        if self.last_sent and not self._said:
+            self._said = True
+            print(self.last_sent, file=sys.stderr)
 
     def reply_from(self, payload: dict[str, object]) -> str:
         choices = payload.get("choices") or []

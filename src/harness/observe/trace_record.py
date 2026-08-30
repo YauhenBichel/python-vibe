@@ -6,15 +6,18 @@ import json
 import re
 from pathlib import Path
 
-_SECRET = re.compile(
-    r"(AKIA[0-9A-Z]{16}|sk-ant-[A-Za-z0-9_\-]{20,}|ghp_[A-Za-z0-9]{20,}"
-    r"|HF_TOKEN=|-----BEGIN )"
-)
+from harness.secrets import secret_in
+
+# The four shapes are shared with the guard and the outbound check, so
+# a shape learned once is known everywhere. These two are extra to this
+# file: a trace is written to disk and kept, so it redacts wider than a
+# refusal needs to.
+_ALSO_REDACT = re.compile(r"(HF_TOKEN=|-----BEGIN )")
 _HOME = re.compile(r"/Users/[^/\s]+")
 
 
 def redact(text: str) -> str:
-    if _SECRET.search(text):
+    if secret_in(text) or _ALSO_REDACT.search(text):
         return "[redacted]"
     return _HOME.sub("/Users/you", text)
 

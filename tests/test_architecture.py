@@ -17,6 +17,10 @@ DEPTH = {
     # `paths` and `task` are the bottom: they import nothing of their own.
     "paths": 0,
     "task": 0,
+    # The shapes that are a secret whoever is looking. Both the guard
+    # that reads what arrives and the check on what leaves need them,
+    # and neither may import the other, so they sit under both.
+    "secrets": 0,
     # What a run remembers. It imports nothing of its own, and the loop
     # owns it: the model package is handed a memory, it does not make one.
     "memory": 0,

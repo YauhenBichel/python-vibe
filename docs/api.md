@@ -101,6 +101,17 @@ this machine. Set `PYTHON_VIBE_BASE_URL` and a token
 (`HF_TOKEN` or `PYTHON_VIBE_API_KEY`). A remote Ollama is the same
 `--engine ollama` with `OLLAMA_HOST` pointed at that box.
 
+What goes to that host is read before it leaves. A prompt carrying an
+AWS access key, an Anthropic key, a GitHub token or a private key is
+refused rather than sent, and the refusal names the kind without
+repeating the value. A prompt over 200,000 characters is refused as
+well, on the grounds that a whole tree is a mistake rather than a task;
+raise `PYTHON_VIBE_MAX_SEND` if it was the intent. The first send of a
+run prints how many characters went where, so nobody has to guess.
+
+None of this runs for a local host. Sending to `127.0.0.1` is not
+sending.
+
 See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
 
 Paths are always written with forward slashes, on every platform, because
