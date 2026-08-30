@@ -268,5 +268,34 @@ class NothingLeavesUnreadTest(unittest.TestCase):
         self.assertIn("example.test", said.getvalue())
 
 
+
+class OneHomeForTheShapesTest(unittest.TestCase):
+    """A shape learned once should be known everywhere.
+
+    The same four patterns were written out in the guard and again in
+    the trace redactor. Adding a third copy for the outbound check would
+    have made a shape learned in one place unknown in two others.
+    """
+
+    def test_no_module_writes_the_shapes_out_again(self) -> None:
+        import pathlib
+
+        root = pathlib.Path(__file__).resolve().parents[1] / "src" / "harness"
+        copies = sorted(
+            str(p.relative_to(root))
+            for p in root.rglob("*.py")
+            if "ghp_" in p.read_text(encoding="utf-8")
+        )
+        self.assertEqual(copies, ["secrets.py"], f"a second copy in {copies}")
+
+    def test_the_trace_still_redacts_what_it_used_to(self) -> None:
+        """Consolidating must not narrow what a written-down trace hides."""
+        from harness.observe.trace_record import redact
+
+        for leak in ("ghp_" + "z" * 24, "AKIA" + "Y" * 16, "HF_TOKEN=abc",
+                     "-----BEGIN RSA PRIVATE KEY-----"):
+            self.assertEqual(redact(leak), "[redacted]", leak[:12])
+
+
 if __name__ == "__main__":
     unittest.main()
