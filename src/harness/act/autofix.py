@@ -517,6 +517,37 @@ def apply_add_function(project: Path, task: str, *, write: bool = True) -> str:
     return f"added def {symbol}({name}) in {dest}"
 
 
+def _test_file_for(
+    task: str, project: Path, name: str, dests: list[Path]
+) -> Path:
+    """Which test file a new test for `name` belongs in.
+
+    This used to be whichever file sorted first, so covering
+    `ticket_job` from `ship/ticket.py` appended the test to
+    `tests/test_agent_api.py`. It ran, it passed, and it was filed under
+    something it has nothing to do with.
+
+    In order: the file that already tests this symbol, the one named
+    after the module the task points at, and only then the first.
+    """
+    for path in dests:
+        try:
+            body = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if re.search(rf"\bdef test_\w*{re.escape(name)}", body) or (
+            re.search(rf"\b{re.escape(name)}\b", body) and "import" in body
+        ):
+            return path
+    named = named_project_file(task, project)
+    if named:
+        stem = Path(named).stem
+        for path in dests:
+            if path.stem in (f"test_{stem}", stem):
+                return path
+    return dests[0]
+
+
 def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     """Add one AAA test for the named function.
 
@@ -532,7 +563,7 @@ def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     dests = sorted(tests.glob("test_*.py")) if tests.is_dir() else []
     if not dests:
         return ""
-    dest = dests[0]
+    dest = _test_file_for(task, project, name, dests)
     body = dest.read_text(encoding="utf-8")
     safe = name.replace(".", "_")
     if name in body or f"def test_{safe}_" in body:
