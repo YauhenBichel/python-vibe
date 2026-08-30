@@ -26,7 +26,7 @@ not a second LLM on the serve path.
 
 ## Held-out laptop vibe coding
 
-`scripts/vibe.py` generates through the guard, writes `scratch/last.py`, `/run`
+`scripts/run/vibe.py` generates through the guard, writes `scratch/last.py`, `/run`
 executes it, `--then` sends the traceback back once.
 
 | Task | Result |
@@ -44,8 +44,8 @@ is a thin style prior, not a pair that finishes a new script in one shot.
 A large first-party Python repo (thousands of files) does not fit. The 0.5B
 window holds **one small `.py` file** (~200–2500 bytes).
 
-- `scripts/review.py` — one file, review-only by default; `--fix` writes a `.bak`.
-- `scripts/vibe.py --project DIR --file path.py --review` — same, interactive `/apply`.
+- `scripts/measure/review.py` — one file, review-only by default; `--fix` writes a `.bak`.
+- `scripts/run/vibe.py --project DIR --file path.py --review` — same, interactive `/apply`.
 - Safety: writes stay under `--project`; skip `.git` / `.venv`; refuse a rewrite
   shorter than ~20% of the original.
 
@@ -58,7 +58,7 @@ under 200 bytes. That yields **100 first-party files** in the 200–2500 byte ba
 
 ## Batch: 100 files without reloading MLX
 
-`scripts/batch_review.py` loads the LoRA **once**, then walks `--limit` files
+`scripts/measure/batch_review.py` loads the LoRA **once**, then walks `--limit` files
 (default 100):
 
 1. Review each file (no rewrite).
@@ -70,7 +70,7 @@ This is a loop, not a repo agent. A 100-file `--fix` on OpenSRE **will invent
 edits**. Run review first; read the report; then `--fix` only if you accept that.
 
 ```bash
-PYTHONPATH=src python scripts/batch_review.py \
+PYTHONPATH=src python scripts/measure/batch_review.py \
   --project /path/to/your/app \
   --limit 100
 ```
@@ -78,9 +78,9 @@ PYTHONPATH=src python scripts/batch_review.py \
 ## What we shipped in code (this change set)
 
 - Public Hub adapters + `hf download` / `ensure_adapters` (no login to pull).
-- `scripts/vibe.py` — REPL, `/run`, `--then`, `--project` / `--file` / `--apply` / `--review`.
-- `scripts/review.py` — one-file OpenSRE-oriented entry.
-- `scripts/batch_review.py` + `harness/project_scan.py` + `harness/engine.py`
+- `scripts/run/vibe.py` — REPL, `/run`, `--then`, `--project` / `--file` / `--apply` / `--review`.
+- `scripts/measure/review.py` — one-file OpenSRE-oriented entry.
+- `scripts/measure/batch_review.py` + `harness/project_scan.py` + `harness/engine.py`
   (one load, many files).
 - `harness/code.py` — extract fence, run, path check, `.bak`, tiny-overwrite guard.
 - Contributor kit (templates, SECURITY, CoC) and tests for extract / scan / Hub card.

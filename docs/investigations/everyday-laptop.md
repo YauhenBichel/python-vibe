@@ -52,15 +52,15 @@ issues”**, 0 applied. That is not a review.
 
 ## What to do
 
-1. **This week.** `scripts/agent.py` defaults to `llama3.1:8b`. Local editor:
-   [local-editor.md](../local-editor.md). `scripts/openai_compat.py` proxies
-   `/v1/chat/completions`. `scripts/export_ollama.py --create` names
+1. **This week.** `scripts/run/agent.py` defaults to `llama3.1:8b`. Local editor:
+   [local-editor.md](../local-editor.md). `scripts/run/openai_compat.py` proxies
+   `/v1/chat/completions`. `scripts/weights/export_ollama.py --create` names
    `python-vibe-everyday`.
-2. **Your model.** `scripts/build_agent_data.py` writes seed tool traces
-   (`data/agent-loop`). `scripts/train.py --everyday` is the 7B-class LoRA.
+2. **Your model.** `scripts/weights/build_agent_data.py` writes seed tool traces
+   (`data/agent-loop`). `scripts/weights/train.py --everyday` is the 7B-class LoRA.
    Append redacted explore / edit / run sessions before claiming 2k traces.
    Fuse/GGUF: `export_ollama.py --from-gguf`.
-3. **Eval.** `scripts/eval_everyday.py` (offline in CI). `--live` must beat
+3. **Eval.** `scripts/measure/eval_everyday.py` (offline in CI). `--live` must beat
    untuned 8B on parse rate before anyone says everyday-ready.
 
 0.5B stays public for download, CI, and the harness demo. It is not the
@@ -68,13 +68,13 @@ everyday brain.
 
 ## Shipped in this repo (laptop path)
 
-- `scripts/agent.py` defaults to `llama3.1:8b`. `--tiny` is the sidecar.
-- `scripts/openai_compat.py` + [local-editor.md](../local-editor.md) for a
+- `scripts/run/agent.py` defaults to `llama3.1:8b`. `--tiny` is the sidecar.
+- `scripts/run/openai_compat.py` + [local-editor.md](../local-editor.md) for a
   local OpenAI-compatible editor.
 - Seed tool traces + `--record` → `data/agent-loop/extra.jsonl` (gitignored).
-- `scripts/train.py --everyday` (7B-class MLX). `export_ollama.py --create`
+- `scripts/weights/train.py --everyday` (7B-class MLX). `export_ollama.py --create`
   names the stand-in; GGUF of *your* LoRA is `--from-gguf`.
-- `scripts/eval_everyday.py`: gold weekday + count-md `/run`, ≥1 KB NameError
+- `scripts/measure/eval_everyday.py`: gold weekday + count-md `/run`, ≥1 KB NameError
   fixture, Action: parse fixtures. `--live` on this machine (29 Aug 2026):
   `llama3.1:8b` parsed **2 / 3** prompts (above the 50% floor). That is not
   everyday-ready. Do not ship that claim until live beats a clean 8B baseline
@@ -83,7 +83,7 @@ everyday brain.
 Live `agent.py` + `llama3.1:8b` loops on this machine (29 Aug 2026):
 
 1. NameError fixture copy: read → `Find: return tota` → tests OK → done (4 steps).
-2. This repo: patched `scripts/agent.py` docstring to `python3.13`.
+2. This repo: patched `scripts/run/agent.py` docstring to `python3.13`.
 3. Failed: full-file `edit` wiped `tests/test_agent_tools.py` (20% length
    guard was too weak). Guard is now 2/3 of original; file restored by hand.
 4. This repo: patched `resolve_project_file` to allow `.md`.
@@ -102,5 +102,5 @@ Same CLI, two briefs (no extra model):
 - **Large**: inject top-level counts, require `Action: map`, `--scope`,
   and truncated grep. Do not ask the 8B to read the whole tree.
 
-`PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/app --brief`
+`PYTHONPATH=src python3.13 scripts/run/agent.py --project /path/to/app --brief`
 prints the mode without calling Ollama.

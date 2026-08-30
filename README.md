@@ -77,7 +77,7 @@ Live first-Action parse (`eval_everyday.py --live`, `llama3.1:8b`):
 **8 / 15**, one run. Everyday-ready still means beating an untuned 8B on
 parse **and** a real ≥1 KB fix.
 
-Reproduce any of it with `python scripts/bench.py --repeat 5`, which
+Reproduce any of it with `python scripts/measure/bench.py --repeat 5`, which
 reports a pass rate per case instead of a single verdict.
 
 Read those as a rough size, not a rank. The nine-case group was run six
@@ -152,8 +152,8 @@ python-vibe run --skill add-feature "add a function multiply(a, b) and a unit te
 Point an OpenAI-compatible editor at the same 8B: [docs/local-editor.md](./docs/local-editor.md).
 
 ```bash
-PYTHONPATH=src python3.13 scripts/eval_everyday.py
-PYTHONPATH=src python3.13 scripts/eval_everyday.py --live
+PYTHONPATH=src python3.13 scripts/measure/eval_everyday.py
+PYTHONPATH=src python3.13 scripts/measure/eval_everyday.py --live
 ```
 
 Do not call this everyday-ready until `--live` beats an untuned 8B on parse
@@ -175,12 +175,12 @@ python3.13 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 hf download YauhenBichel/python-vibe-0.5b --local-dir adapters/python-vibe
-PYTHONPATH=src python3.13 scripts/vibe.py
+PYTHONPATH=src python3.13 scripts/run/vibe.py
 ```
 
 `vibe.py` also downloads that Hub repo itself if `adapters/python-vibe` is empty.
 Linux / Windows without MLX: `ollama pull qwen2.5-coder:0.5b` then
-`PYTHONPATH=src python3.13 scripts/serve.py` (base coder + harness, not the LoRA).
+`PYTHONPATH=src python3.13 scripts/run/serve.py` (base coder + harness, not the LoRA).
 
 ```
 client → harness :8080 → ollama qwen2.5-coder:0.5b
@@ -205,7 +205,7 @@ vibe> /run 2026-08-29 --short
 ```
 
 ```bash
-PYTHONPATH=src python3.13 scripts/vibe.py --run --then \
+PYTHONPATH=src python3.13 scripts/run/vibe.py --run --then \
   "print the weekday for argv YYYY-MM-DD" -- 2026-08-29
 ```
 
@@ -215,7 +215,7 @@ uses the pulled `qwen2.5-coder:0.5b` base instead of the LoRA.
 ### One file in your project
 
 ```bash
-PYTHONPATH=src python3.13 scripts/vibe.py --project /path/to/your/app
+PYTHONPATH=src python3.13 scripts/run/vibe.py --project /path/to/your/app
 ```
 
 ```
@@ -225,7 +225,7 @@ vibe> /apply
 ```
 
 ```bash
-PYTHONPATH=src python3.13 scripts/vibe.py \
+PYTHONPATH=src python3.13 scripts/run/vibe.py \
   --project /path/to/your/app \
   --file src/app.py \
   --apply \
@@ -239,7 +239,7 @@ files (skips `.venv`). Review first. `--fix` rewrites only when the review is
 not `no issues`, keeps a `.bak`, and refuses a tiny overwrite.
 
 ```bash
-PYTHONPATH=src python3.13 scripts/batch_review.py \
+PYTHONPATH=src python3.13 scripts/measure/batch_review.py \
   --project /path/to/your/app \
   --limit 100
 ```
@@ -251,18 +251,18 @@ Report: `scratch/batch-review.jsonl`. Read it before you keep any `--fix` write.
 Tiny style prior:
 
 ```bash
-PYTHONPATH=src python3.13 scripts/build_data.py
-PYTHONPATH=src python3.13 scripts/train.py
+PYTHONPATH=src python3.13 scripts/weights/build_data.py
+PYTHONPATH=src python3.13 scripts/weights/train.py
 ```
 
 Everyday tool loop (7B-class, after you record traces):
 
 ```bash
-PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/your/app \
+PYTHONPATH=src python3.13 scripts/run/agent.py --project /path/to/your/app \
   --record data/agent-loop/extra.jsonl \
   "find a real NameError and fix it"
-PYTHONPATH=src python3.13 scripts/build_agent_data.py
-PYTHONPATH=src python3.13 scripts/train.py --everyday
+PYTHONPATH=src python3.13 scripts/weights/build_agent_data.py
+PYTHONPATH=src python3.13 scripts/weights/train.py --everyday
 ```
 
 `extra.jsonl` is gitignored. Do not commit live paths or keys.
@@ -274,7 +274,7 @@ and Linux:
 
 ```bash
 PYTHONPATH=src python -m unittest discover -s tests -q
-PYTHONPATH=src python scripts/validate.py
+PYTHONPATH=src python scripts/measure/validate.py
 ```
 
 On Windows PowerShell:
@@ -282,7 +282,7 @@ On Windows PowerShell:
 ```powershell
 $env:PYTHONPATH="src"
 python -m unittest discover -s tests -q
-python scripts/validate.py
+python scripts/measure/validate.py
 ```
 
 On Windows Command Prompt:
@@ -290,21 +290,21 @@ On Windows Command Prompt:
 ```batch
 set PYTHONPATH=src
 python -m unittest discover -s tests -q
-python scripts/validate.py
+python scripts/measure/validate.py
 ```
 
 On Linux, everyday agent use runs through Ollama rather than MLX:
 
 ```bash
 ollama pull llama3.1:8b
-PYTHONPATH=src python scripts/agent.py --project /path/to/your/app --brief
+PYTHONPATH=src python scripts/run/agent.py --project /path/to/your/app --brief
 ```
 
 For the tiny sidecar on those platforms, use the base coder model:
 
 ```bash
 ollama pull qwen2.5-coder:0.5b
-PYTHONPATH=src python scripts/serve.py
+PYTHONPATH=src python scripts/run/serve.py
 ```
 
 Training the LoRA itself requires Apple Silicon, MLX, and Python 3.13. See
@@ -315,7 +315,7 @@ Live Ollama (base 0.5B through `PythonVibeGuard`):
 
 ```bash
 ollama pull qwen2.5-coder:0.5b
-PYTHONPATH=src python3.13 scripts/smoke.py --live
+PYTHONPATH=src python3.13 scripts/measure/smoke.py --live
 ```
 
 LoRA on Mac (MLX, Python 3.13). `--best` uses
@@ -323,14 +323,14 @@ LoRA on Mac (MLX, Python 3.13). `--best` uses
 present.
 
 ```bash
-PYTHONPATH=src python3.13 scripts/smoke.py --mlx
+PYTHONPATH=src python3.13 scripts/measure/smoke.py --mlx
 ```
 
 ## Serve (tiny sidecar)
 
 ```bash
 ollama pull qwen2.5-coder:0.5b
-PYTHONPATH=src python3.13 scripts/serve.py
+PYTHONPATH=src python3.13 scripts/run/serve.py
 ```
 
 ```bash
@@ -349,14 +349,14 @@ Public adapters: [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBi
 
 ```bash
 hf download YauhenBichel/python-vibe-0.5b --local-dir adapters/python-vibe
-PYTHONPATH=src python3.13 scripts/pull_hf.py python-vibe
+PYTHONPATH=src python3.13 scripts/weights/pull_hf.py python-vibe
 ```
 
 To publish a new train (needs `hf auth login` and write access to **your**
 namespace — set `HF_USER` / `HF_REPO`, never implied as the official account):
 
 ```bash
-PYTHONPATH=src python3.13 scripts/push_hf.py python-vibe --what adapters --public
+PYTHONPATH=src python3.13 scripts/weights/push_hf.py python-vibe --what adapters --public
 ```
 
 ---

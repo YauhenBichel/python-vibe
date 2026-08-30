@@ -4,11 +4,11 @@
 Loads the LoRA once. Each file is its own prompt — the 0.5B window cannot
 hold a repo.
 
-  PYTHONPATH=src python scripts/batch_review.py \\
+  PYTHONPATH=src python scripts/measure/batch_review.py \\
     --project /path/to/your/app --limit 100
 
   # rewrite only files whose review was not "no issues"
-  PYTHONPATH=src python scripts/batch_review.py --project … --limit 100 --fix
+  PYTHONPATH=src python scripts/measure/batch_review.py --project … --limit 100 --fix
 
 Writes scratch/batch-review.jsonl. --fix keeps a .bak per file and refuses
 a tiny overwrite. Do not run --fix on OpenSRE until you have read the report.
@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness.act.code import apply_source, extract_python, read_project_file  # noqa: E402

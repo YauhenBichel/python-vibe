@@ -16,8 +16,8 @@ The three jobs this is for: write a test, add a small component, fix a bug.
 Each case runs the code afterwards. "Worked" means the function does the
 job, not that a file was written.
 
-  python scripts/bench.py                 # every tier, needs Ollama
-  python scripts/bench.py --tier 1
+  python scripts/measure/bench.py                 # every tier, needs Ollama
+  python scripts/measure/bench.py --tier 1
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness import Agent, AgentOptions  # noqa: E402

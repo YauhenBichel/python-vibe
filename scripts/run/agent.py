@@ -4,9 +4,9 @@
 The loop lives in `harness.agent`, not here, so the probe, the server and
 this script all drive the same code.
 
-  PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/app \\
+  PYTHONPATH=src python3.13 scripts/run/agent.py --project /path/to/app \\
     "find a real NameError and fix it"
-  PYTHONPATH=src python3.13 scripts/agent.py --project /path/to/app --brief
+  PYTHONPATH=src python3.13 scripts/run/agent.py --project /path/to/app --brief
 
 Writes stay under --project and go through PythonVibeGuard + .bak.
 """
@@ -17,7 +17,7 @@ import argparse
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.everyday import (  # noqa: E402

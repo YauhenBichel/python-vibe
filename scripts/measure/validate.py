@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Local gate that matches CI: unit tests + harness smoke.
 
-  PYTHONPATH=src python scripts/validate.py
+  PYTHONPATH=src python scripts/measure/validate.py
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def main() -> None:
@@ -24,14 +24,14 @@ def main() -> None:
     if tests != 0:
         sys.exit(tests)
     smoke = subprocess.call(
-        [sys.executable, str(ROOT / "scripts" / "smoke.py")],
+        [sys.executable, str(ROOT / "scripts" / "measure" / "smoke.py")],
         cwd=ROOT,
         env=env,
     )
     if smoke != 0:
         sys.exit(smoke)
     gate = subprocess.call(
-        [sys.executable, str(ROOT / "scripts" / "eval_everyday.py")],
+        [sys.executable, str(ROOT / "scripts" / "measure" / "eval_everyday.py")],
         cwd=ROOT,
         env=env,
     )

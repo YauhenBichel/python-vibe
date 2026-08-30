@@ -4,7 +4,7 @@
 Binds 127.0.0.1 by default. Set HARNESS_HOST=0.0.0.0 only if you accept LAN
 clients. POST bodies larger than MAX_BODY (32 KiB) are rejected.
 
-  PYTHONPATH=src python scripts/serve.py
+  PYTHONPATH=src python scripts/run/serve.py
   curl -s localhost:8080/health
   curl -s localhost:8080/v1/python-vibe -d '{"prompt":"jsonl reader"}' -H 'content-type: application/json'
 """
@@ -18,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.models import SPECS  # noqa: E402

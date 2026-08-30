@@ -17,12 +17,12 @@ Redact secrets and describe them instead.
 
 In scope:
 
-- the HTTP sidecar (`scripts/serve.py`) — unbounded body size, binding
+- the HTTP sidecar (`scripts/run/serve.py`) — unbounded body size, binding
   `0.0.0.0` by default, SSRF if `OLLAMA_HOST` is attacker-controlled
 - harness misses that ship a **blocked** class of output (`pass` on a leaked
   key or `curl|sh`)
 - secrets committed to the repository
-- dependency issues reachable from `scripts/serve.py` or the harness
+- dependency issues reachable from `scripts/run/serve.py` or the harness
 
 Out of scope (still a normal issue is fine):
 

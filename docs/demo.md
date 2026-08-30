@@ -13,7 +13,7 @@ Reproduce it:
 
 ```bash
 ollama pull llama3.1:8b
-python scripts/demo.py --markdown docs/demo.md
+python scripts/run/demo.py --markdown docs/demo.md
 ```
 
 Two columns matter. **Agent says** is whether it reported that it had finished. **Checked** is a separate test run against the files afterwards. The two do not always agree. In one run the bug was fixed correctly, and the report described writing a test that was never written.

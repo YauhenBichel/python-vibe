@@ -42,7 +42,7 @@ the public adapters without an account.
 - A harness rule with **two fixtures**: one string that must `block`, one
   near-miss that must `pass`
 - An 8B-shaped skill (`skills/<name>/SKILL.md`, one `Action:` block) after
-  `scripts/skill_probe.py` shows the intended first Action
+  `scripts/measure/skill_probe.py` shows the intended first Action
 - Docs, CI, eval prompts, and drop-in files under `editors/`
 
 ## Before you open a pull request

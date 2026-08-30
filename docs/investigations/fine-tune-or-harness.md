@@ -62,7 +62,7 @@ That last sentence is a harness job.
 | 0.5B parsed `Action:` that day | 0 / 2 | Misses the protocol. More 0.5B steps overfit |
 | 8B first Action on three scoped tasks | 3 / 3 | Start is often right without a LoRA |
 | 8B live Action parse | 2 / 3 early; 7 / 10 later the same day | The prompt and the file opened first, not the weights |
-| `scripts/demo.py` on `demo/orders` | Agent said done; independent check 1 / 4 file jobs | **Finish is a lie.** Oracles, not SFT |
+| `scripts/run/demo.py` on `demo/orders` | Agent said done; independent check 1 / 4 file jobs | **Finish is a lie.** Oracles, not SFT |
 | 7B-class everyday LoRA | Config only | Nothing to compare until traces exist |
 | 30B coder on disk | Timeout at 180s | Bigger local weight is not the everyday path |
 
@@ -167,8 +167,8 @@ this laptop is. The bottleneck is still **finish**.
    refuses), not from a generic chat transcript. A 14B–70B that timed out
    on the laptop is reached with `--engine openai` or `OLLAMA_HOST`; the
    write limit does not move. See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
-5. Evaluate with `scripts/eval_everyday.py --live` and
-   `scripts/demo.py`. Everyday-ready still means: beat the untuned 8B
+5. Evaluate with `scripts/measure/eval_everyday.py --live` and
+   `scripts/run/demo.py`. Everyday-ready still means: beat the untuned 8B
    on parse **and** pass the independent file checks, including the
    planted NameError that the existing suite misses.
 6. If a 7B LoRA loses to untuned 8B + current harness on those checks,

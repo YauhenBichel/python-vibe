@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def _bench():
     spec = importlib.util.spec_from_file_location(
-        "python_vibe_bench", ROOT / "scripts" / "bench.py"
+        "python_vibe_bench", ROOT / "scripts" / "measure" / "bench.py"
     )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -79,7 +79,7 @@ class RepeatReportTest(unittest.TestCase):
 
 class RepeatFlagTest(unittest.TestCase):
     def test_the_flag_exists_and_defaults_to_one(self) -> None:
-        source = (ROOT / "scripts" / "bench.py").read_text(encoding="utf-8")
+        source = (ROOT / "scripts" / "measure" / "bench.py").read_text(encoding="utf-8")
         self.assertIn('"--repeat"', source)
         self.assertIn('row["pass"] = number', source)
 

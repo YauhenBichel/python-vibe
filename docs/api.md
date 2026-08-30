@@ -87,7 +87,7 @@ interpreter, no script paths:
 
 | | Before | After |
 | --- | --- | --- |
-| macOS / Linux | `PYTHONPATH=src python3.13 scripts/agent.py --project ~/app "..."` | `python-vibe run "…"` in that folder |
+| macOS / Linux | `PYTHONPATH=src python3.13 scripts/run/agent.py --project ~/app "..."` | `python-vibe run "…"` in that folder |
 | Windows | did not work: `PYTHONPATH=src` is not valid in cmd or PowerShell | `python-vibe run "…"` in that folder |
 
 Training on Apple Silicon needs extras: `pip install -e ".[train]"`.

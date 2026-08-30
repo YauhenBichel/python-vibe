@@ -3,8 +3,8 @@
 
 Needs Homebrew Python 3.13 + mlx-lm (not 3.14). Adapters stay gitignored.
 
-  PYTHONPATH=src python scripts/generate_mlx.py "jsonl reader that skips bad lines"
-  PYTHONPATH=src python scripts/generate_mlx.py "jsonl reader" --best
+  PYTHONPATH=src python scripts/weights/generate_mlx.py "jsonl reader that skips bad lines"
+  PYTHONPATH=src python scripts/weights/generate_mlx.py "jsonl reader" --best
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.huggingface_store import BEST_ADAPTER, ensure_adapters  # noqa: E402

@@ -73,7 +73,7 @@ refused.
 ```bash
 ollama pull llama3.1:8b
 pip install -e .
-python scripts/demo.py --case brief --case question --case write-tests \
+python scripts/run/demo.py --case brief --case question --case write-tests \
   --case bugfix --case add-feature --case cover-service --case controller-bug
 ```
 

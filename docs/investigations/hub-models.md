@@ -51,7 +51,7 @@ and is already the everyday brain via Ollama.
 
 ## First Action probes, 29 Aug 2026
 
-Same builder as the real loop (`scripts/skill_probe.py`), fixture
+Same builder as the real loop (`scripts/measure/skill_probe.py`), fixture
 `eval/fixtures/add_feature_pkg`. A score of 1 means the first parsed
 Action was the intended one (`done` on a question, `patch` + `Append:`
 on add).
@@ -71,7 +71,7 @@ seed rows is the wrong next spend: the small models fail the first line.
 | --- | --- | --- | --- |
 | Everyday | [meta-llama/Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) | `ollama pull llama3.1:8b` | Keep |
 | Sidecar | [Qwen/Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) + [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b) | `--tiny` / `serve.py` | Demos only |
-| Measure next | [Qwen/Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) (21.4M downloads, Apache-2.0) | `ollama pull qwen2.5-coder:7b` then `scripts/demo.py --model qwen2.5-coder:7b` | Keep only if independent file checks beat the 8B log |
+| Measure next | [Qwen/Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) (21.4M downloads, Apache-2.0) | `ollama pull qwen2.5-coder:7b` then `scripts/run/demo.py --model qwen2.5-coder:7b` | Keep only if independent file checks beat the 8B log |
 | On disk, unusable as default | [Qwen/Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | already pulled | Do not switch the default |
 | Optional later probe | [microsoft/Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct) (3.84B, MIT, 8.8M downloads) | not pulled | Different tokenizer. Measure before any LoRA |
 

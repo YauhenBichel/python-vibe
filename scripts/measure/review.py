@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Review one small first-party .py file in a project.
 
-  PYTHONPATH=src python scripts/review.py --project /path/to/your/app
-  PYTHONPATH=src python scripts/review.py --project /path/to/your/app \\
+  PYTHONPATH=src python scripts/measure/review.py --project /path/to/your/app
+  PYTHONPATH=src python scripts/measure/review.py --project /path/to/your/app \\
     --file src/app.py --fix "add a type hint to main()"
 """
 
@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness.scan.project_scan import list_small_py_files  # noqa: E402
@@ -43,7 +43,7 @@ def main() -> None:
         rel = str(candidates[0].relative_to(project))
         print(f"picked {rel} ({candidates[0].stat().st_size} bytes)", file=sys.stderr)
 
-    vibe = ROOT / "scripts" / "vibe.py"
+    vibe = ROOT / "scripts" / "run" / "vibe.py"
     cmd = [
         sys.executable,
         str(vibe),

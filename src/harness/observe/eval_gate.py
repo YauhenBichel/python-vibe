@@ -1,4 +1,4 @@
-"""Offline everyday gate. Live Ollama comparison is scripts/eval_everyday.py --live."""
+"""Offline everyday gate. Live Ollama comparison is scripts/measure/eval_everyday.py --live."""
 
 from __future__ import annotations
 

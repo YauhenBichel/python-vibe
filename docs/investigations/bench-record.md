@@ -56,7 +56,7 @@ said a result under those conditions would be void. It was.
 
 ## The benchmark
 
-`scripts/bench.py`. Fifteen cases in six tiers. A case counts only if
+`scripts/measure/bench.py`. Fifteen cases in six tiers. A case counts only if
 the function runs and does the job afterwards — not if a file appeared,
 and not if the agent reported success.
 
@@ -198,7 +198,7 @@ there.
 ```bash
 ollama pull llama3.1:8b
 pip install -e .
-python scripts/bench.py --model llama3.1:8b --repeat 5
+python scripts/measure/bench.py --model llama3.1:8b --repeat 5
 ```
 
 `--repeat` runs every case that many times and reports a rate rather than
@@ -223,7 +223,7 @@ hardware, through an OpenAI-compatible host:
 
 ```bash
 export PYTHON_VIBE_BASE_URL=…  PYTHON_VIBE_API_KEY=…
-python scripts/bench.py --engine openai --model <a model that host serves>
+python scripts/measure/bench.py --engine openai --model <a model that host serves>
 ```
 
 The prompt carries the code the harness read, so point that at a host

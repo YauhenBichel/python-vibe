@@ -17,7 +17,7 @@ DEMO_PROJECT = ROOT / "demo" / "orders"
 
 def _load_demo():
     spec = importlib.util.spec_from_file_location(
-        "python_vibe_demo", ROOT / "scripts" / "demo.py"
+        "python_vibe_demo", ROOT / "scripts" / "run" / "demo.py"
     )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
