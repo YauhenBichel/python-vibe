@@ -16,3 +16,4 @@ wandb/
 !.env.example
 hf_token
 *.pem
+.coverage

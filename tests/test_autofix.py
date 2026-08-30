@@ -10,6 +10,9 @@ from unittest import mock
 from harness import Agent, AgentOptions
 from harness.act.autofix import (
     _sample_values,
+
+
+    _test_file_for,
     append_instead_of_replacing,
     apply_add_function,
     apply_cover_test,
@@ -978,6 +981,75 @@ class CoverTestReachesSomethingTest(unittest.TestCase):
                 self.assertIsNone(
                     _sample_values(ROOT / module, name, project=ROOT)
                 )
+
+
+class CoverTestGoesInTheRightFileTest(unittest.TestCase):
+    """A test for `ticket_job` does not belong in `test_agent_api.py`.
+
+    The destination used to be whichever file sorted first. Pointed at
+    its own repository, the harness covered `ticket_job` from
+    `ship/ticket.py` by appending to `tests/test_agent_api.py`. It ran,
+    it passed, and it was filed under something unrelated.
+    """
+
+    def _project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "src").mkdir()
+        (root / "tests").mkdir()
+        (root / "src" / "ticket.py").write_text(
+            "def ticket_job(text: str) -> str:\n    return text.strip()\n",
+            encoding="utf-8",
+        )
+        for name, body in (
+            ("test_agent_api.py", "import unittest\n"),
+            ("test_ticket.py", "import unittest\n"),
+            ("test_other.py", "import unittest\n\nfrom src.ticket import ticket_job\n"),
+        ):
+            (root / "tests" / name).write_text(body, encoding="utf-8")
+        return root
+
+    def _dests(self, root: Path) -> list[Path]:
+        return sorted((root / "tests").glob("test_*.py"))
+
+    def test_a_file_that_already_names_the_symbol_wins(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp)
+            chosen = _test_file_for(
+                "write tests for ticket_job in src/ticket.py",
+                root,
+                "ticket_job",
+                self._dests(root),
+            )
+        self.assertEqual(chosen.name, "test_other.py")
+
+    def test_otherwise_the_file_named_after_the_module(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp)
+            (root / "tests" / "test_other.py").write_text(
+                "import unittest\n", encoding="utf-8"
+            )
+            chosen = _test_file_for(
+                "write tests for ticket_job in src/ticket.py",
+                root,
+                "ticket_job",
+                self._dests(root),
+            )
+        self.assertEqual(chosen.name, "test_ticket.py")
+
+    def test_it_falls_back_rather_than_failing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp)
+            (root / "tests" / "test_other.py").write_text(
+                "import unittest\n", encoding="utf-8"
+            )
+            (root / "tests" / "test_ticket.py").unlink()
+            chosen = _test_file_for(
+                "write tests for mystery in src/nowhere.py",
+                root,
+                "mystery",
+                self._dests(root),
+            )
+        self.assertEqual(chosen.name, "test_agent_api.py")
 
 
 
