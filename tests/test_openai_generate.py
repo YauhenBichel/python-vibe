@@ -174,5 +174,99 @@ class SharedBackendTest(unittest.TestCase):
                 self.assertNotIn("urlopen(request", source)
 
 
+
+class NothingLeavesUnreadTest(unittest.TestCase):
+    """The guard read drafts arriving and never the prompt going out.
+
+    A run pointed at a remote host posted whatever the harness had
+    gathered — for a named-file task, the whole file — with no check at
+    all. These are the checks it has now.
+    """
+
+    def _sent(self, base: str = "https://example.test/v1"):
+        return OpenAIGenerate(
+            "org/model", "sys", base_url=base, api_key="unused-in-assertions"
+        )
+
+    def test_a_secret_in_the_prompt_stops_the_send(self) -> None:
+        from harness.model.outbound import refuse_to_send
+
+        leaked = [{"role": "user", "content": "key = 'AKIA" + "A" * 16 + "'"}]
+        blocked = refuse_to_send(leaked, "https://example.test/v1")
+        self.assertIn("an AWS access key", blocked)
+        self.assertNotIn("AKIA", blocked)
+
+    def test_the_refusal_never_quotes_what_it_found(self) -> None:
+        """Printing the key to explain that it leaked would be the leak."""
+        from harness.model.outbound import refuse_to_send
+
+        token = "ghp_" + "b" * 24
+        blocked = refuse_to_send(
+            [{"role": "user", "content": token}], "https://example.test/v1"
+        )
+        self.assertIn("a GitHub token", blocked)
+        self.assertNotIn(token, blocked)
+
+    def test_a_local_host_is_not_a_send(self) -> None:
+        from harness.model.outbound import leaves_this_machine, refuse_to_send
+
+        self.assertFalse(leaves_this_machine("http://127.0.0.1:11434"))
+        self.assertFalse(leaves_this_machine("http://localhost:8080/v1"))
+        self.assertTrue(leaves_this_machine("https://router.huggingface.co/v1"))
+        leaked = [{"role": "user", "content": "AKIA" + "C" * 16}]
+        self.assertEqual(refuse_to_send(leaked, "http://127.0.0.1:11434"), "")
+
+    def test_a_whole_repository_is_a_mistake_not_a_task(self) -> None:
+        from harness.model.outbound import DEFAULT_MAX_CHARS, refuse_to_send
+
+        huge = [{"role": "user", "content": "x" * (DEFAULT_MAX_CHARS + 1)}]
+        blocked = refuse_to_send(huge, "https://example.test/v1")
+        self.assertIn("Refusing to send", blocked)
+        self.assertIn("PYTHON_VIBE_MAX_SEND", blocked)
+
+    def test_the_cap_can_be_raised_by_someone_who_means_it(self) -> None:
+        from harness.model.outbound import DEFAULT_MAX_CHARS, refuse_to_send
+
+        huge = [{"role": "user", "content": "x" * (DEFAULT_MAX_CHARS + 1)}]
+        with mock.patch.dict(
+            os.environ, {"PYTHON_VIBE_MAX_SEND": str(DEFAULT_MAX_CHARS * 4)}
+        ):
+            self.assertEqual(refuse_to_send(huge, "https://example.test/v1"), "")
+
+    def test_the_send_itself_is_stopped_not_just_reported(self) -> None:
+        backend = self._sent()
+        leaked = [{"role": "user", "content": "AKIA" + "D" * 16}]
+        with mock.patch("urllib.request.urlopen") as opened:
+            with self.assertRaises(RuntimeError) as caught:
+                backend.send(leaked)
+        opened.assert_not_called()
+        self.assertIn("an AWS access key", str(caught.exception))
+
+    def test_what_went_is_a_size_and_a_host_not_the_prompt(self) -> None:
+        from harness.model.outbound import what_was_sent
+
+        line = what_was_sent(
+            [{"role": "user", "content": "private business logic"}],
+            "https://example.test/v1",
+        )
+        self.assertIn("example.test", line)
+        self.assertIn("22 characters", line)
+        self.assertNotIn("private business logic", line)
+
+    def test_a_run_says_once_that_something_left(self) -> None:
+        backend = self._sent()
+        answer = io.BytesIO(
+            json.dumps({"choices": [{"message": {"content": "ok"}}]}).encode()
+        )
+        answer.__enter__ = lambda s=answer: s  # type: ignore[attr-defined]
+        answer.__exit__ = lambda *a: None  # type: ignore[attr-defined]
+        said = io.StringIO()
+        with mock.patch("sys.stderr", said):
+            with mock.patch("urllib.request.urlopen", return_value=answer):
+                backend.send([{"role": "user", "content": "hello"}])
+        self.assertIn("sent 5 characters", said.getvalue())
+        self.assertIn("example.test", said.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()
