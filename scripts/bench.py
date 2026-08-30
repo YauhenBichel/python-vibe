@@ -222,20 +222,107 @@ def run(case: Case, model: str, steps: int) -> dict:
                 "seconds": round(time.time() - started, 1)}
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--tier", type=int, action="append", default=[])
-    parser.add_argument("--model", default=AgentOptions(project=Path(".")).model)
-    parser.add_argument("--steps", type=int, default=10)
-    args = parser.parse_args()
-    cases = [c for c in CASES if not args.tier or c.tier in args.tier]
-    rows = [run(case, args.model, args.steps) for case in cases]
-    for row in rows:
-        print(json.dumps(row), flush=True)
+ONE_RUN_WARNING = (
+    "Only one pass. Ten of these fifteen cases changed verdict between "
+    "identical runs on unchanged code, so a single number cannot show a "
+    "gain or a regression. Use --repeat 5 before believing a comparison."
+)
+
+
+def report(rows: list[dict], passes: int) -> None:
+    """Per-case pass rate and per-pass totals, written to stderr."""
+    cases = list(dict.fromkeys(row["case"] for row in rows))
+    by_case = {
+        case: [r for r in rows if r["case"] == case] for case in cases
+    }
+    if passes > 1:
+        print(f"\n{'case':<18}{'tier':<6}passed", file=sys.stderr)
+        for case in cases:
+            runs = by_case[case]
+            marks = "".join("Y" if r["worked"] == "yes" else "." for r in runs)
+            good = marks.count("Y")
+            print(
+                f"{case:<18}{runs[0]['tier']:<6}{marks}  {good}/{len(runs)}",
+                file=sys.stderr,
+            )
     for tier in sorted({row["tier"] for row in rows}):
         same = [r for r in rows if r["tier"] == tier]
         ok = sum(1 for r in same if r["worked"] == "yes")
-        print(f"tier {tier}: {ok}/{len(same)}", file=sys.stderr)
+        count = len({r["case"] for r in same})
+        if passes > 1:
+            per = [
+                sum(
+                    1
+                    for r in same
+                    if r["pass"] == n and r["worked"] == "yes"
+                )
+                for n in range(1, passes + 1)
+            ]
+            print(
+                f"tier {tier}: {ok}/{len(same)} over {passes} passes "
+                f"({'-'.join(str(x) for x in (min(per), max(per)))} of {count})",
+                file=sys.stderr,
+            )
+        else:
+            print(f"tier {tier}: {ok}/{len(same)}", file=sys.stderr)
+    if passes > 1:
+        totals = [
+            sum(1 for r in rows if r["pass"] == n and r["worked"] == "yes")
+            for n in range(1, passes + 1)
+        ]
+        steady = sum(
+            1
+            for case in cases
+            if all(r["worked"] == "yes" for r in by_case[case])
+        )
+        moved = sum(
+            1
+            for case in cases
+            if len({r["worked"] for r in by_case[case]}) > 1
+        )
+        print(
+            f"\ntotals per pass: {totals}  of {len(cases)}", file=sys.stderr
+        )
+        print(
+            f"passed every pass: {steady}   changed verdict: {moved}",
+            file=sys.stderr,
+        )
+        if moved:
+            print(
+                "A gap smaller than the spread above is noise.",
+                file=sys.stderr,
+            )
+    else:
+        print(f"\n{ONE_RUN_WARNING}", file=sys.stderr)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Measure the agent on tasks of increasing size."
+    )
+    parser.add_argument("--tier", type=int, action="append", default=[])
+    parser.add_argument("--model", default=AgentOptions(project=Path(".")).model)
+    parser.add_argument("--steps", type=int, default=10)
+    parser.add_argument(
+        "--repeat",
+        type=int,
+        default=1,
+        metavar="N",
+        help="run every case N times and report a pass rate (recommended: 5)",
+    )
+    args = parser.parse_args()
+    if args.repeat < 1:
+        print("--repeat must be at least 1", file=sys.stderr)
+        return 2
+    cases = [c for c in CASES if not args.tier or c.tier in args.tier]
+    rows: list[dict] = []
+    for number in range(1, args.repeat + 1):
+        for case in cases:
+            row = run(case, args.model, args.steps)
+            row["pass"] = number
+            rows.append(row)
+            print(json.dumps(row), flush=True)
+    report(rows, args.repeat)
     return 0
 
 

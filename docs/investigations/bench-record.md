@@ -198,11 +198,25 @@ there.
 ```bash
 ollama pull llama3.1:8b
 pip install -e .
-python scripts/bench.py --model llama3.1:8b
+python scripts/bench.py --model llama3.1:8b --repeat 5
 ```
 
-Run it more than once. One run of this benchmark is a sample, not a
-score.
+`--repeat` runs every case that many times and reports a rate rather than
+a verdict:
+
+```
+case              tier  passed
+double            1     YYY  3/3
+largest           1     YYY  3/3
+initials          1     Y..  1/3
+
+totals per pass: [3, 2, 2]  of 3
+passed every pass: 2   changed verdict: 1
+A gap smaller than the spread above is noise.
+```
+
+Without it the run says so, because one pass of this benchmark is a
+sample and not a score.
 
 A model too large for the machine can be reached without buying
 hardware, through an OpenAI-compatible host:
