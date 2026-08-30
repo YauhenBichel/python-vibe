@@ -36,22 +36,7 @@ are listed on [Skills]({{ '/skills/' | relative_url }}).
 
 An agent is a harness around a model. That is the shape the code keeps.
 
-    ┌─ agent ─────────────────────────────────────┐
-    │  what a person or an editor talks to:       │
-    │  cli, server, mcp_stdio, editor_kit         │
-    │                                             │
-    │   ┌─ harness ─────────────────────────────┐ │
-    │   │  the loop, tools, guards, skills:     │ │
-    │   │  agent, act, locate, scan, skillkit,  │ │
-    │   │  ship, observe, guard, task, paths    │ │
-    │   │                                       │ │
-    │   │   ┌─ model ───────────────────────┐   │ │
-    │   │   │  the code that talks to a     │   │ │
-    │   │   │  model: engine, ollama, mlx,  │   │ │
-    │   │   │  openai, route               │   │ │
-    │   │   └───────────────────────────────┘   │ │
-    │   └───────────────────────────────────────┘ │
-    └─────────────────────────────────────────────┘
+{% include diagram-rings.html %}
 
 Nearly all of the behaviour is the middle ring, which is the point of the
 project: what the model gets wrong, the harness catches.
@@ -65,6 +50,10 @@ harness now, and a test refuses the direct import.
 OpenAI-style chat request looks like and nothing about weights, so it
 belongs beside the server that speaks that format. The model package is
 now only the code that talks to a model, and a test keeps it that way.
+
+What one run does before it loads a model:
+
+{% include diagram-run.html %}
 
 One place asks for a generator, `agent/loop.py`, and a test checks that
 too. If a second appeared, there would be two answers to "which model is

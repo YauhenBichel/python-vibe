@@ -1,0 +1,42 @@
+<svg viewBox="0 0 660 330" role="img" aria-labelledby="run-t run-d"
+     style="width:100%;max-width:660px;height:auto;display:block;margin:1.4rem auto">
+  <title id="run-t">What one run does before it loads a model</title>
+  <desc id="run-d">Four questions are asked in order. Each one can finish the
+  run on its own. Only what survives all four reaches the model.</desc>
+  <style>
+    .s { fill: none; stroke: var(--line, #cfc6b6); stroke-width: 1.4; rx: 8; }
+    .s.done { stroke: var(--accent, #8a2d0f); }
+    .q { font: 12px ui-monospace, "SF Mono", Menlo, monospace;
+         fill: var(--ink, #16140f); }
+    .out { font: 11px ui-monospace, "SF Mono", Menlo, monospace;
+           fill: var(--accent, #8a2d0f); }
+    .arm { stroke: var(--line, #cfc6b6); stroke-width: 1.4; fill: none; }
+    .cap { font: italic 12px Georgia, serif; fill: var(--mute, #3f3a33); }
+  </style>
+
+  <rect class="s" x="10" y="14" width="300" height="34"/>
+  <text class="q" x="26" y="36">is the task clear enough to start from?</text>
+  <path class="arm" d="M310 31 H420"/><text class="out" x="428" y="35">ask, and stop</text>
+  <path class="arm" d="M160 48 V70"/>
+
+  <rect class="s" x="10" y="70" width="300" height="34"/>
+  <text class="q" x="26" y="92">is reading the file the whole job?</text>
+  <path class="arm" d="M310 87 H420"/><text class="out" x="428" y="91">answer, and stop</text>
+  <path class="arm" d="M160 104 V126"/>
+
+  <rect class="s" x="10" y="126" width="300" height="34"/>
+  <text class="q" x="26" y="148">can the harness make the change itself?</text>
+  <path class="arm" d="M310 143 H420"/><text class="out" x="428" y="147">write it, 0.1s, no model</text>
+  <path class="arm" d="M160 160 V182"/>
+
+  <rect class="s" x="10" y="182" width="300" height="34"/>
+  <text class="q" x="26" y="204">is there a typo only a person can settle?</text>
+  <path class="arm" d="M310 199 H420"/><text class="out" x="428" y="203">ask what was meant</text>
+  <path class="arm" d="M160 216 V244"/>
+
+  <rect class="s done" x="10" y="244" width="300" height="38"/>
+  <text class="q" x="26" y="268">what is left is what the model is for</text>
+
+  <text class="cap" x="10" y="308">Three of the four cases that pass every single time</text>
+  <text class="cap" x="10" y="324">never reach the bottom box.</text>
+</svg>
