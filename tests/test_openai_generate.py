@@ -121,5 +121,58 @@ class OpenAIGenerateTest(unittest.TestCase):
         self.assertNotIn("secret-value-do-not-print", str(caught.exception))
 
 
+
+class SharedBackendTest(unittest.TestCase):
+    """Both hosts post messages and read one reply. Only the edges differ.
+
+    The two files were 64% the same lines: building the request, opening
+    it, turning a failure into a message, pulling the text out. What a
+    host actually has to say for itself is five things, and a new one
+    should be those five rather than another copy of the transport.
+    """
+
+    def test_both_are_the_same_kind_of_thing(self) -> None:
+        from harness.model.chat_backend import ChatBackend
+        from harness.model.ollama_generate import OllamaGenerate
+        from harness.model.openai_generate import OpenAIGenerate
+
+        for kind in (OllamaGenerate, OpenAIGenerate):
+            with self.subTest(backend=kind.__name__):
+                self.assertTrue(issubclass(kind, ChatBackend))
+
+    def test_each_says_where_to_post_and_what_to_send(self) -> None:
+        from harness.model.ollama_generate import OllamaGenerate
+
+        backend = OllamaGenerate("llama3.1:8b", "system")
+        self.assertTrue(backend.url().endswith("/api/chat"))
+        body = backend.body([{"role": "user", "content": "hello"}])
+        self.assertEqual(body["model"], "llama3.1:8b")
+        self.assertIn("num_ctx", body["options"])
+
+    def test_each_knows_where_its_reply_sits(self) -> None:
+        from harness.model.ollama_generate import OllamaGenerate
+        from harness.model.openai_generate import OpenAIGenerate
+
+        ollama = OllamaGenerate("m", "s")
+        self.assertEqual(
+            ollama.reply_from({"message": {"content": "hi"}}), "hi"
+        )
+        remote = OpenAIGenerate("m", "s", base_url="https://x/v1", api_key="k")
+        self.assertEqual(
+            remote.reply_from({"choices": [{"message": {"content": "hi"}}]}), "hi"
+        )
+        self.assertEqual(remote.reply_from({"choices": []}), "")
+
+    def test_the_transport_lives_in_one_place(self) -> None:
+        """Neither subclass should be opening its own connection."""
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1] / "src" / "harness" / "model"
+        for name in ("ollama_generate.py", "openai_generate.py"):
+            with self.subTest(module=name):
+                source = (root / name).read_text(encoding="utf-8")
+                self.assertNotIn("urlopen(request", source)
+
+
 if __name__ == "__main__":
     unittest.main()

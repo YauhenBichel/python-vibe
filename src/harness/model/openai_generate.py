@@ -8,6 +8,8 @@ They are never written into a trace, a test, or an error string.
 
 from __future__ import annotations
 
+from harness.model.chat_backend import ChatBackend
+
 import json
 import os
 import urllib.error
@@ -65,7 +67,7 @@ def looks_like_an_ollama_tag(model: str) -> bool:
     return ":" in model and "/" not in model
 
 
-class OpenAIGenerate:
+class OpenAIGenerate(ChatBackend):
     def __init__(
         self,
         model: str,
@@ -76,8 +78,6 @@ class OpenAIGenerate:
         api_key: str | None = None,
         timeout: float | None = None,
     ) -> None:
-        self.model = model
-        self.system = system
         self.max_tokens = max_tokens
         self.base_url, self.api_key = resolve_openai_endpoint(
             base_url=base_url, api_key=api_key
@@ -88,7 +88,7 @@ class OpenAIGenerate:
                 timeout = float(raw)
             except ValueError:
                 timeout = 180.0
-        self.timeout = timeout
+        super().__init__(model, system, timeout=timeout)
 
     def _hint(self, code: int) -> str:
         """Say the likely cause. Never quote the key or the headers."""
@@ -105,49 +105,32 @@ class OpenAIGenerate:
             )
         return ""
 
-    def __call__(
-        self, prompt: str, history: Sequence[dict[str, str]] | None = None
-    ) -> str:
-        messages: list[dict[str, str]] = [{"role": "system", "content": self.system}]
-        if history:
-            messages.extend(history)
-        messages.append({"role": "user", "content": prompt})
-        return self.send(messages)
+    def url(self) -> str:
+        return chat_url(self.base_url)
 
-    def send(self, messages: list[dict[str, str]]) -> str:
-        """Post exactly these messages. The caller decides what they are.
+    def body(self, messages: list[dict[str, str]]) -> dict[str, object]:
+        return {
+            "model": self.model,
+            "stream": False,
+            "max_tokens": self.max_tokens,
+            "messages": messages,
+        }
 
-        The conversation is assembled by `harness.memory`, which knows
-        what to keep and what to let go. This only sends it.
-        """
-        body = json.dumps(
-            {
-                "model": self.model,
-                "stream": False,
-                "max_tokens": self.max_tokens,
-                "messages": messages,
-            }
-        ).encode("utf-8")
+    def headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
-        req = urllib.request.Request(
-            chat_url(self.base_url),
-            data=body,
-            headers=headers,
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            raise RuntimeError(
-                f"remote model HTTP {exc.code}{self._hint(exc.code)}"
-            ) from None
-        except urllib.error.URLError as exc:
-            raise RuntimeError("remote model unreachable") from exc
+        return headers
+
+    def reply_from(self, payload: dict[str, object]) -> str:
         choices = payload.get("choices") or []
         if not choices:
             return ""
-        message = choices[0].get("message") or {}
+        message = choices[0].get("message") or {}  # type: ignore[index]
         return str(message.get("content") or "")
+
+    def unreachable(self, exc: Exception) -> str:
+        return "remote model unreachable"
+
+    def refused(self, code: int) -> str:
+        return f"remote model HTTP {code}{self._hint(code)}"
