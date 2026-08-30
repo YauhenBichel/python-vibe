@@ -57,20 +57,10 @@ the public adapters without an account.
 Start at [Welcome — how to pick an issue](https://github.com/YauhenBichel/python-vibe/discussions/10).
 Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe/discussions), not a drive-by PR.
 
-| Level | Label | Seeded issues |
+| Level | Label | Open examples |
 | --- | --- | --- |
-| Very junior | [`good first issue`](https://github.com) and [`intermediate`](https://github.com) | See active open list |
-
-
-
-
-
-
-
-
-
-
-
+| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#96](https://github.com/YauhenBichel/python-vibe/issues/96) naming table · [#97](https://github.com/YauhenBichel/python-vibe/issues/97) refuse util.py |
+| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#99](https://github.com/YauhenBichel/python-vibe/issues/99) two god-module rules · [#100](https://github.com/YauhenBichel/python-vibe/issues/100) demo orders |
 
 What has been measured, and how many runs each number stands on: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
 
