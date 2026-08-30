@@ -390,6 +390,20 @@ Thank you to everyone who has helped python-vibe.
 					<sub><b>Itzsaurav</b></sub>
 				</a>
 			</td>
+			<td align="center">
+				<a href="https://github.com/svkzn">
+					<img src="https://avatars.githubusercontent.com/svkzn?s=48" width="48" alt="svkzn" />
+					<br />
+					<sub><b>svkzn</b></sub>
+				</a>
+			</td>
+			<td align="center">
+				<a href="https://github.com/Aditya-233">
+					<img src="https://avatars.githubusercontent.com/Aditya-233?s=48" width="48" alt="Aditya " />
+					<br />
+					<sub><b>Aditya </b></sub>
+				</a>
+			</td>
 		</tr>
 	</tbody>
 </table>
