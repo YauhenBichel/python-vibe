@@ -2,6 +2,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -122,6 +123,41 @@ class AttributionTest(unittest.TestCase):
             "Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>",
             body,
         )
+
+
+
+class MergeAsksGitHubFirstTest(unittest.TestCase):
+    """A merge is not reversible, so it is not done on an assumption."""
+
+    def test_an_unreadable_pull_request_is_not_merged(self) -> None:
+        """A network hiccup must not turn every check into an optional one."""
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch("harness.ship.git_ship._in_project", return_value=""):
+                with mock.patch(
+                    "harness.ship.git_ship.read_pr_state", return_value={}
+                ) as read:
+                    with mock.patch("harness.ship.git_ship._run") as ran:
+                        answer = merge_pr(Path(tmp), "53", allowed=True)
+        read.assert_called_once()
+        ran.assert_not_called()
+        self.assertIn("cannot read", answer)
+
+    def test_a_major_bump_is_reported_and_not_merged(self) -> None:
+        state = {
+            "title": "Bump actions/github-script from 7 to 9",
+            "mergeable": "MERGEABLE",
+            "mergeStateStatus": "CLEAN",
+            "statusCheckRollup": [{"name": "ci", "conclusion": "SUCCESS"}],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch("harness.ship.git_ship._in_project", return_value=""):
+                with mock.patch(
+                    "harness.ship.git_ship.read_pr_state", return_value=state
+                ):
+                    with mock.patch("harness.ship.git_ship._run") as ran:
+                        answer = merge_pr(Path(tmp), "53", allowed=True)
+        ran.assert_not_called()
+        self.assertIn("major version bump", answer)
 
 
 if __name__ == "__main__":

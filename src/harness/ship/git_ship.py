@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
 from pathlib import Path
 
 from harness.paths import SECRET_NAMES
+from harness.ship.bot_pr import refuse_bot_merge
 from harness.ship.identity import co_author_line, with_co_author
 from harness.ship.ticket import identity_from_user_json, parse_ticket, render_ticket
 
@@ -208,6 +210,25 @@ def create_pr(project: Path, title: str, body: str) -> str:
     return out or "opened pull request" if code == 0 else out
 
 
+PR_FIELDS = "title,mergeable,mergeStateStatus,statusCheckRollup,author"
+
+
+def read_pr_state(project: Path, number: str) -> dict:
+    """What GitHub currently says about this pull request. {} when unknown."""
+    code, out = _run(
+        project,
+        ["gh", "pr", "view", number, "--json", PR_FIELDS],
+        keep_all=True,
+    )
+    if code != 0:
+        return {}
+    try:
+        loaded = json.loads(out)
+    except json.JSONDecodeError:
+        return {}
+    return loaded if isinstance(loaded, dict) else {}
+
+
 def merge_pr(project: Path, number: str, *, allowed: bool) -> str:
     if not allowed:
         return "merge only when the task says merge"
@@ -216,6 +237,14 @@ def merge_pr(project: Path, number: str, *, allowed: bool) -> str:
     blocked = _in_project(project)
     if blocked:
         return blocked
+    state = read_pr_state(project, number)
+    # An empty read means gh could not answer. Merging anyway would make
+    # every check here optional the moment the network hiccups.
+    if not state:
+        return f"cannot read #{number} from GitHub, so not merging it"
+    refused = refuse_bot_merge(state)
+    if refused:
+        return f"not merging #{number}: {refused}"
     code, out = _run(
         project,
         [
