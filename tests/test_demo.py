@@ -201,7 +201,7 @@ class AddFeatureGoesInTheDomainFileTest(unittest.TestCase):
         self.assertIn("orders_controller.py", blocked)
 
     def test_done_is_refused_until_the_function_exists(self) -> None:
-        from harness.skillkit.style import refuse_done_oracle
+        from harness.skillkit.refuse_finish import refuse_done_oracle
 
         blocked = refuse_done_oracle(self.TASK, DEMO_PROJECT, "src/orders_controller.py")
         self.assertIn("total_lines", blocked)

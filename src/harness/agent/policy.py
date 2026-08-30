@@ -38,13 +38,16 @@ from harness.locate import (
 )
 from harness.skillkit.catalog import get_skill, render_skill
 from harness.scan.names import undefined_in_file
-from harness.skillkit.style import (
-    refuse_done_oracle,
+from harness.skillkit.refuse_change import (
     refuse_god_target,
     refuse_smell_wrong_file,
+)
+from harness.skillkit.refuse_finish import (
+    refuse_done_oracle,
     refuse_unwired_addition,
     refuse_write_done,
 )
+
 from harness.task import (
     everyday_example_path,
     looks_like_add_feature,

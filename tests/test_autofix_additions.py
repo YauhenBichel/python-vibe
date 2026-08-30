@@ -90,7 +90,7 @@ class AddCountFunctionTest(unittest.TestCase):
         self.assertIn("Tests passed", result.summary)
 
     def test_open_is_refused_on_an_add(self) -> None:
-        from harness.skillkit.style import refuse_add_opens_file
+        from harness.skillkit.refuse_change import refuse_add_opens_file
 
         blocked = refuse_add_opens_file(
             "add a function total_lines and a test",
@@ -116,7 +116,7 @@ class AddCountFunctionTest(unittest.TestCase):
         else. A task that talks about files, or that names its own
         arguments, is not the case this rule was written for.
         """
-        from harness.skillkit.style import refuse_add_opens_file
+        from harness.skillkit.refuse_change import refuse_add_opens_file
 
         for task in (
             "add a function read_env_file(path) that reads KEY=VALUE lines "

@@ -11,7 +11,8 @@ from harness.agent.policy import LoopState, next_prompt, refuse_done
 from harness.locate import prelude, refuse_question_write
 from harness.scan.design import design_is_clean, render_design_review
 from harness.skillkit.catalog import list_skills, pick_skills
-from harness.skillkit.style import refuse_god_target, refuse_write_done
+from harness.skillkit.refuse_change import refuse_god_target
+from harness.skillkit.refuse_finish import refuse_write_done
 from harness.task import looks_like_design_loop
 
 

@@ -18,7 +18,7 @@ mcp_stdio    editor child process        JSON-RPC on stdin/stdout
 observe/     what a run leaves behind    trace_record, report_md, eval_gate
 locate.py    find the symbol before acting
 act/         intent becomes a change     parse, tools, gate, patch_fix, code
-skillkit/    the skill kit               catalog, target, style
+skillkit/    the skill kit               catalog, target, refuse_change, refuse_finish
 scan/        facts about a tree          project_brief, repo_map, layout
 guard/       what ships, what is refused python_vibe, run, types
 editor_kit   copy drop-in editor files

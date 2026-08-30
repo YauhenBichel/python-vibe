@@ -1,7 +1,7 @@
 """Whether one proposed change may be written.
 
 Each rule reads a draft and answers with a refusal or nothing. They
-are run in order by `STYLE_RULES` in `act/tools.py`, and each was
+are run in order by `CHANGE_RULES` in `act/gate.py`, and each was
 written from a run that went wrong: a module shadowing the standard
 library, a function whose body was `...`, a test asserting nothing.
 """
@@ -355,7 +355,7 @@ def refuse_weak_test(rel: str, draft: str) -> str:
 
     Calibrated against this project's own tests: none of them is refused.
     A rule that rejects the code it is shipped with is not a style rule, it
-    is an obstacle, so `tests/test_style.py` checks that directly.
+    is an obstacle, so `tests/test_refusals.py` checks that directly.
 
     Only a draft holding a single test is judged on arrangement. A whole
     file holds many tests written over time, and judging it as one unit

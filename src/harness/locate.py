@@ -333,7 +333,7 @@ def _what_to_do_next(
         # has already said what it takes, and telling the model to use the
         # neighbours' `prices` instead sent it round the loop until the
         # steps ran out.
-        from harness.skillkit.style import task_names_arguments
+        from harness.skillkit.refuse_change import task_names_arguments
 
         if names and not task_names_arguments(task):
             neighbor = max(set(names), key=names.count)
