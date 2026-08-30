@@ -388,5 +388,44 @@ class NothingIsWrittenAndForgottenTest(unittest.TestCase):
 
 
 
+class ToolsAreOnlyToolsTest(unittest.TestCase):
+    """`act/tools.py` holds the things the agent can do, and nothing else.
+
+    It had grown to 419 lines doing three jobs at once: the seven tools,
+    the gate that judges a draft before it is written, and the helpers
+    that repair one. Asked where the tools were, nobody could point at a
+    file. The gate moved to `act/gate.py`; this keeps the answer short.
+    """
+
+    TOOLS = {
+        "glob_py", "grep_py", "map_py", "read_py",
+        "patch_py", "edit_py", "run_python",
+    }
+
+    def _top_level(self, module: str) -> set[str]:
+        source = (ROOT / "src" / "harness" / "act" / module).read_text(
+            encoding="utf-8"
+        )
+        return {
+            node.name
+            for node in ast.parse(source).body
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef))
+        }
+
+    def test_tools_holds_the_seven_tools_and_nothing_else(self) -> None:
+        self.assertEqual(self._top_level("tools.py"), self.TOOLS)
+
+    def test_no_refusal_is_written_in_tools(self) -> None:
+        """A refusal is the gate's job, whichever file it ends up in."""
+        stray = sorted(
+            name for name in self._top_level("tools.py")
+            if name.startswith("refuse_")
+        )
+        self.assertEqual(stray, [], f"belongs in act/gate.py: {stray}")
+
+    def test_the_gate_holds_no_tool(self) -> None:
+        self.assertEqual(self._top_level("gate.py") & self.TOOLS, set())
+
+
 if __name__ == "__main__":
     unittest.main()

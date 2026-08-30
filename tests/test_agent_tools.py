@@ -223,7 +223,7 @@ class ImportRepairFollowsTheStyleRulesTest(unittest.TestCase):
     )
 
     def _append(self, body: str) -> str:
-        from harness.act.tools import repair_unittest_append
+        from harness.act.gate import repair_unittest_append
 
         out = repair_unittest_append(self.ORIGINAL, body)
         self.assertIsNotNone(out)
