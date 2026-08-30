@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from harness.task import looks_like_fix_smell, looks_like_new_package, rename_target, smell_symbol
@@ -368,6 +370,83 @@ class StubBodyTest(unittest.TestCase):
             refuse_stub_body(self.TASK, "tests/test_x.py", "def slugify(t): ...\n"),
             "",
         )
+
+
+class EveryRuleIsWiredTest(unittest.TestCase):
+    """A rule that is written and not listed does nothing.
+
+    The refusals used to run as thirty lines of `blocked = rule(...); if
+    blocked: return blocked`, eleven times over, which hid both the order
+    they run in and the fact that a new rule has to be added to it. I
+    added `refuse_stub_body` and only found the missing line because a
+    mutation check went green with the call removed.
+    """
+
+    # Rules that judge a proposed change. Anything else in style.py
+    # answers a different question and is called from somewhere else.
+    NOT_ABOUT_A_DRAFT = {
+        "refuse_done_oracle",      # judges the project after a run
+        "refuse_write_done",       # judges whether a run may finish
+        "refuse_package_done",     # the same, for a new package
+        "refuse_god_target",       # judges the file a change would target
+        "refuse_smell_wrong_file",
+        "refuse_opaque_names",     # called from the draft rules themselves
+        "refuse_duplicate_module",
+        "refuse_missing_import_target",
+    }
+
+    def test_every_draft_rule_is_in_the_list(self) -> None:
+        import ast
+
+        from harness.act.tools import STYLE_RULES
+
+        source = (ROOT / "src" / "harness" / "skillkit" / "style.py").read_text(
+            encoding="utf-8"
+        )
+        written = {
+            node.name
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.FunctionDef) and node.name.startswith("refuse_")
+        }
+        listed = (ROOT / "src" / "harness" / "act" / "tools.py").read_text(
+            encoding="utf-8"
+        )
+        start = listed.index("STYLE_RULES")
+        table = listed[start : listed.index("def _style_blocks")]
+        missing = sorted(
+            name
+            for name in written - self.NOT_ABOUT_A_DRAFT
+            if name not in table
+        )
+        self.assertEqual(
+            missing,
+            [],
+            f"written but never run: {missing}. Add it to STYLE_RULES, "
+            "or to NOT_ABOUT_A_DRAFT with the reason.",
+        )
+        self.assertEqual(len(STYLE_RULES), 11)
+
+    def test_each_entry_is_named_and_callable(self) -> None:
+        from harness.act.tools import STYLE_RULES
+
+        for name, rule in STYLE_RULES:
+            with self.subTest(rule=name):
+                self.assertTrue(name.strip())
+                self.assertTrue(callable(rule))
+
+    def test_the_rules_run_in_order_and_stop_at_the_first(self) -> None:
+        from harness.act.tools import ProposedChange, _style_blocks
+
+        change = ProposedChange(
+            task="add a helper",
+            rel="pkg/math.py",          # shadows the standard library
+            original="",
+            draft="def f():\n    return 1\n",
+        )
+        first = _style_blocks(
+            change.task, change.rel, change.original, change.draft
+        )
+        self.assertIn("math", first, "the earliest rule should answer")
 
 
 
