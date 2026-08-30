@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass
+
 import re
 import subprocess
 import sys
@@ -212,40 +215,63 @@ def refuse_missing_import_target(project: Path, rel: str, draft: str) -> str:
     )
 
 
+@dataclass(frozen=True)
+class ProposedChange:
+    """One change the model has proposed, and what it is judged on.
+
+    Fields:
+        task: what the user asked for, in their own words.
+        rel: the file the change targets, project-relative.
+        original: the file as it stands, or "" when it is new.
+        draft: the file as this change would leave it.
+        fragment: only the part being added, when the change appends.
+            Judging a whole file as one test turns a single inline
+            assertion anywhere into a refusal for everything in it.
+    """
+
+    task: str
+    rel: str
+    original: str
+    draft: str
+    fragment: str = ""
+
+
+# Every rule a proposed change is put through, in the order they run.
+# This was thirty lines of `blocked = rule(...); if blocked: return
+# blocked`, eleven times over, which hid both the order and the fact that
+# a new rule has to be added to it. A rule written and not listed here
+# does nothing, and a test below checks for exactly that.
+STYLE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
+    ("stdlib shadow", lambda c: refuse_stdlib_shadow(c.rel, c.original)),
+    ("layout", lambda c: refuse_layout(c.rel, c.original, c.draft)),
+    ("opens a file", lambda c: refuse_add_opens_file(c.task, c.rel, c.draft)),
+    ("shell fetch", lambda c: refuse_shell_fetch(c.rel, c.draft)),
+    ("platform draft", lambda c: refuse_platform_draft(c.rel, c.draft)),
+    ("operations draft", lambda c: refuse_ops_draft(c.rel, c.draft)),
+    ("test in implementation", lambda c: refuse_test_in_impl(c.rel, c.draft)),
+    ("stub body", lambda c: refuse_stub_body(c.task, c.rel, c.draft)),
+    (
+        "undefined name",
+        lambda c: refuse_undefined_draft(c.task, c.rel, c.original, c.draft),
+    ),
+    (
+        "half a rename",
+        lambda c: refuse_rename_incomplete(c.task, c.rel, c.draft),
+    ),
+    ("weak test", lambda c: refuse_weak_test(c.rel, c.fragment or c.draft)),
+)
+
+
 def _style_blocks(
     task: str, rel: str, original: str, draft: str, fragment: str = ""
 ) -> str:
-    blocked = refuse_stdlib_shadow(rel, original)
-    if blocked:
-        return blocked
-    blocked = refuse_layout(rel, original, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_add_opens_file(task, rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_shell_fetch(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_platform_draft(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_ops_draft(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_test_in_impl(rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_stub_body(task, rel, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_undefined_draft(task, rel, original, draft)
-    if blocked:
-        return blocked
-    blocked = refuse_rename_incomplete(task, rel, draft)
-    if blocked:
-        return blocked
-    return refuse_weak_test(rel, fragment or draft)
+    """The first refusal a proposed change earns, or "" if it earns none."""
+    change = ProposedChange(task, rel, original, draft, fragment)
+    for _name, rule in STYLE_RULES:
+        refusal = rule(change)
+        if refusal:
+            return refusal
+    return ""
 
 
 def _already_defined(original: str, append: str, rel: str) -> str:
