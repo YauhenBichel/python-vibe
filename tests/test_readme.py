@@ -55,6 +55,26 @@ class ReadmeContributorsTest(unittest.TestCase):
         # The step-level guard is subsumed by the job-level one.
         self.assertNotIn("head.repo.full_name", steps)
 
+    def test_a_stale_list_on_main_becomes_a_pull_request(self) -> None:
+        """Pushing to a branch nobody merges is not updating anything.
+
+        main takes changes only through a reviewed pull request, so the
+        workflow cannot commit there. It used to force-push the refresh
+        to `docs/contributors` and stop. Nothing merged that branch, so
+        a new contributor never reached the README.
+        """
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("gh pr create", text)
+        self.assertIn("pull-requests: write", text)
+        self.assertIn("GH_TOKEN", text)
+        # and it must not open a second one on every push
+        self.assertIn("gh pr list --head docs/contributors", text)
+
+    def test_a_branch_of_this_repo_still_takes_it_in_place(self) -> None:
+        """No pull request is needed where a plain push works."""
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn('if [ "$BRANCH" != "$DEFAULT_BRANCH" ]', text)
+
     def test_workflow_keeps_a_fork_merge_on_a_writable_branch(self) -> None:
         """A fork PR cannot be pushed, and protected main cannot either.
 
