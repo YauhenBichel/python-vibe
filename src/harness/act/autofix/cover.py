@@ -76,6 +76,26 @@ def _test_file_for(
     return dests[0]
 
 
+def _already_exercised(body: str, name: str, safe: str) -> bool:
+    """Does this test file actually put the name to work?
+
+    The word appearing somewhere is not the same as the name being
+    tested. `name in body` matched prose: asked to "add a check", the
+    harness took `check` for a symbol, found the English word in a
+    docstring, and finished the run saying a test already existed. The
+    word is in 17 of this project's test files; it is called in 5.
+
+    A call or a test named after it is the difference between a file
+    that mentions something and a file that exercises it.
+    """
+    return (
+        f"{name}(" in body
+        or f"{safe}(" in body
+        or f"def test_{safe}_" in body
+        or f"def test_{safe}(" in body
+    )
+
+
 def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     """Add one AAA test for the named function.
 
@@ -98,7 +118,7 @@ def apply_cover_test(project: Path, task: str, *, write: bool = True) -> str:
     dest = _test_file_for(task, project, name, dests)
     body = dest.read_text(encoding="utf-8")
     safe = name.replace(".", "_")
-    if name in body or f"def test_{safe}_" in body:
+    if _already_exercised(body, name, safe):
         return f"already has a test for {name}"
     impl = named_project_file(task, project)
     if not impl:

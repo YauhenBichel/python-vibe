@@ -227,5 +227,53 @@ class CoverTestGoesInTheRightFileTest(unittest.TestCase):
         self.assertEqual(chosen.name, "test_agent_api.py")
 
 
+
+class MentionIsNotCoverageTest(unittest.TestCase):
+    """A word in a docstring is not a test for the thing it names.
+
+    Asked to "add a check in openai_generate.py that refuses ...", the
+    harness took `check` for a symbol, found the English word in some
+    test file, and finished the run reporting that a test already
+    existed. Nothing was written and nothing was checked. The word is in
+    17 of this project's own test files; it is called in 5.
+    """
+
+    def test_the_word_in_prose_is_not_a_test(self) -> None:
+        from harness.act.autofix.cover import _already_exercised
+
+        body = '"""Run the check before sending."""\nx = 1\n'
+        self.assertFalse(_already_exercised(body, "check", "check"))
+
+    def test_calling_it_is(self) -> None:
+        from harness.act.autofix.cover import _already_exercised
+
+        body = "def test_it(self):\n    self.assertTrue(check(3))\n"
+        self.assertTrue(_already_exercised(body, "check", "check"))
+
+    def test_a_test_named_after_it_is(self) -> None:
+        from harness.act.autofix.cover import _already_exercised
+
+        self.assertTrue(
+            _already_exercised("def test_check_rejects(self):\n", "check", "check")
+        )
+
+    def test_a_dotted_name_is_matched_by_its_call(self) -> None:
+        from harness.act.autofix.cover import _already_exercised
+
+        body = "OrdersController_handle(1)\n"
+        self.assertTrue(
+            _already_exercised(body, "OrdersController.handle", "OrdersController_handle")
+        )
+
+    def test_an_import_alone_is_not_coverage(self) -> None:
+        """A name imported and never called is a name never exercised."""
+        from harness.act.autofix.cover import _already_exercised
+
+        body = "from mod import apply_discount\nx = 1\n"
+        self.assertFalse(
+            _already_exercised(body, "apply_discount", "apply_discount")
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
