@@ -193,6 +193,50 @@ The lesson is the one the benchmark keeps giving: a rule written from
 one observed failure, applied to every file, finds things that are not
 there.
 
+## File operations
+
+Moving things is what a person actually asks for once a project has been
+going a while, and it is checkable in a way that "write a function" is
+not: the file is either there or it is not, the imports either point at
+it or they do not, and the suite either survives.
+
+Each of these was given to python-vibe on a clean copy of this
+repository, and judged by looking at the file system afterwards rather
+than by reading the reply.
+
+| Job | Result |
+| --- | --- |
+| Move a whole file, repair its imports | **worked** — file moved, 4 imports repaired, 0 stale, 581 tests green |
+| Rename a module (`draft_rules.py` to `refuse_change.py`) | **worked** — 2 imports repaired, 0 stale, 642 tests green |
+| Move one function into a new file | **failed** — 20 steps, the new file was never created |
+| Add one field to a dict in a 330-line file | **failed 3 of 3**, three different ways |
+
+The first two are the same mechanical repair, which is why they are
+reliable: no model steps are involved once the two paths are read out of
+the task, and everything is checked before anything is written — both
+paths inside the project, source present, destination absent, and every
+rewritten file still parsing. A half-applied move is worse than none, so
+it refuses whole.
+
+The third is the more common job and is not built. Its closing draft was
+`from .gate import refuse_duplicate_module` — a relative import, which
+this project does not use anywhere, for a file it had not created.
+
+The fourth is the one worth reading about separately: it failed honestly
+twice and dishonestly once. See
+[When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}).
+
+### What the first version of the move got wrong
+
+It reported success and left four imports pointing at a file that no
+longer existed. The module name was computed from the project root,
+giving `src.harness.observe.report_md`, while every import in the
+project says `harness.observe.report_md` — because `src/` is what ends
+up on the path, not part of the name. Nothing matched, so nothing was
+rewritten, and the summary said it had worked.
+
+The tests did not catch it. Running the job on a real repository did.
+
 ## Reproducing this
 
 ```bash

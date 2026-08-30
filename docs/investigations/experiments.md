@@ -192,6 +192,72 @@ tasks pass on the fixture, which is worth knowing about the fixture.
 
 Detail: [Bench record]({{ '/investigations/bench-record/' | relative_url }}).
 
+## When a run says done and means nothing
+
+The worst outcome is not a failure. It is a run that finishes, reports
+success, and leaves the file exactly as it was — because the only way to
+find that out is to go and look.
+
+Counting why each run stopped, across 45 benchmark runs, put a number on
+it: two of the nine failures reported `done`.
+
+**Result**
+
+| One task, ten runs each side | Reported success having changed nothing |
+| --- | --- |
+| Before | **5 of 10** |
+| After two fixes | **0 of 10** |
+
+Neither fix was a missing guard. One guard existed and its escape hatch
+was a sentence the refusal itself handed the model, which the model
+handed back. The other cause was not in the model at all: the harness
+took a word out of the task, found it as a substring in a test file, and
+finished. The word is in 17 of this project's test files and called in 5.
+
+Write-up: [When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}).
+
+## Asking a bigger model, rarely
+
+If the harness could put a question to a larger model the user has
+registered, when should it? The call is easy; knowing when to make it is
+not.
+
+**Result**
+
+| Why a run stopped, 45 runs | Share | Was it really stuck? |
+| --- | --- | --- |
+| Asked a question | 7% | **3 of 3** |
+| Ran out of steps | 18% | 4 of 8 |
+| Said done, was wrong | 4% | no stop reason catches it |
+
+A run that stops to ask has earned it: asking is capped at two, and
+refused outright once files have changed. Running out of steps means
+much less. Seven of the nine failures were platform and operations work,
+the tier that moved 37% to 70% on harness fixes alone — gaps in the
+tool, which sending them away would hide.
+
+Write-up: [Asking a bigger model, rarely]({{ '/investigations/asking-a-bigger-model/' | relative_url }}).
+
+## A chain of easy tasks
+
+If the model is not very good, is it better to give it several small
+instructions than one composite one?
+
+**Result**
+
+| Same work, same fixture, 8 runs each | Worked | Average |
+| --- | --- | --- |
+| One instruction | **5 of 8** | 20s |
+| Split in two, sent blind | 4 of 8 | 46s |
+| Split, each step checked and retried | 4 of 8 | 42s |
+
+Splitting bought nothing and cost twice the clock. A run is already up
+to twenty turns, each a single action, so splitting from outside adds a
+second copy of the decomposition rather than more of it — and each run
+builds its own memory, so every step started from nothing.
+
+Write-up: [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}).
+
 ## A larger open model
 
 **Example.** The 30B already timed out on this laptop. `--engine openai`
