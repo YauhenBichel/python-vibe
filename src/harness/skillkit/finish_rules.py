@@ -165,3 +165,80 @@ def refuse_write_done(task: str, ran_tests: bool, *, wrote: bool = True) -> str:
 
 def refuse_package_done(task: str, ran_tests: bool, wrote: bool = True) -> str:
     return refuse_write_done(task, ran_tests, wrote=wrote)
+
+
+# Names a framework calls, so nobody in this project has to.
+_CALLED_BY_SOMETHING_ELSE = ("test", "_", "main")
+
+
+def _added_functions(path: Path) -> list[str]:
+    """Top-level functions this run put in the file that were not there.
+
+    The original is on disk: every write leaves a `.bak` beside the file
+    it changed. Without it there is no way to tell a function the run
+    added from one that was already there, and refusing on the second
+    would be refusing somebody else's code.
+    """
+    backup = path.with_suffix(path.suffix + ".bak")
+    try:
+        now = ast.parse(path.read_text(encoding="utf-8"))
+        before = ast.parse(backup.read_text(encoding="utf-8"))
+    except (SyntaxError, ValueError, OSError):
+        return []
+    was = {
+        n.name for n in before.body
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    return [
+        n.name for n in now.body
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and n.name not in was
+        and not n.name.startswith(_CALLED_BY_SOMETHING_ELSE)
+    ]
+
+
+def _anything_calls(project: Path, name: str, skip: Path) -> bool:
+    """Does any other file in the project call this by name?"""
+    called = re.compile(rf"\b{re.escape(name)}\s*\(")
+    for path in project.rglob("*.py"):
+        if path == skip or path.name.endswith(".bak") or ".git" in path.parts:
+            continue
+        try:
+            body = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if called.search(body) or _a_test_uses(body, name):
+            return True
+    return False
+
+
+def refuse_unwired_addition(project: Path, last_path: str) -> str:
+    """A function added, and nobody left to call it.
+
+    Asked to add a check that refuses to send when a prompt carries a
+    token, a run wrote `reject_github_tokens_in_prompt` and wired it to
+    nothing. The file parsed and the suite stayed green, because a
+    function nobody calls cannot fail. It also cannot work.
+
+    Whether the body is any good needs a reader. Whether anything will
+    ever run it does not, so that much is checked here.
+    """
+    if not last_path:
+        return ""
+    path = Path(project) / last_path
+    for name in _added_functions(path):
+        try:
+            here = path.read_text(encoding="utf-8")
+        except OSError:
+            return ""
+        if re.search(rf"\b{re.escape(name)}\s*\(", here.replace(f"def {name}(", "")):
+            continue
+        if _anything_calls(Path(project), name, path):
+            continue
+        return (
+            f"`{name}` was added to {last_path} and nothing calls it. A "
+            "function nobody calls cannot fail, and cannot work either. "
+            "Action: patch the place that should use it, or write a test "
+            "that calls it."
+        )
+    return ""

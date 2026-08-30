@@ -42,6 +42,7 @@ from harness.skillkit.style import (
     refuse_done_oracle,
     refuse_god_target,
     refuse_smell_wrong_file,
+    refuse_unwired_addition,
     refuse_write_done,
 )
 from harness.task import (
@@ -507,6 +508,8 @@ def refuse_done(state: LoopState, turn) -> str:
         if thin and state.thin_done_refused < MAX_THIN_DONE:
             state.thin_done_refused += 1
             blocked = thin
+    if not blocked:
+        blocked = refuse_unwired_addition(state.project, state.last_path)
     if not blocked:
         blocked = refuse_design_dirty(state.task, state.design_report)
     if not blocked:
