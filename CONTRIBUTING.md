@@ -59,9 +59,18 @@ Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe
 
 | Level | Label | Seeded issues |
 | --- | --- | --- |
-| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#1](https://github.com/YauhenBichel/python-vibe/issues/1) PV005 test · [#2](https://github.com/YauhenBichel/python-vibe/issues/2) `.env.example` · [#3](https://github.com/YauhenBichel/python-vibe/issues/3) one training pair · [#4](https://github.com/YauhenBichel/python-vibe/issues/4) README clone path |
-| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#5](https://github.com/YauhenBichel/python-vibe/issues/5) localhost + body cap · [#6](https://github.com/YauhenBichel/python-vibe/issues/6) HTTP sidecar tests · [#7](https://github.com/YauhenBichel/python-vibe/issues/7) best val checkpoint |
-| Research | [`research`](https://github.com/YauhenBichel/python-vibe/labels/research) | [#8](https://github.com/YauhenBichel/python-vibe/issues/8) guard evasion · [#9](https://github.com/YauhenBichel/python-vibe/issues/9) 45 pairs vs style prior |
+| Very junior | [`good first issue`](https://github.com) and [`intermediate`](https://github.com) | See active open list |
+
+
+
+
+
+
+
+
+
+
+
 
 What has been measured, and how many runs each number stands on: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
 
@@ -99,3 +108,4 @@ Do **not** open a public issue. See [SECURITY.md](./SECURITY.md).
 
 By contributing you agree that your contributions are licensed under the
 [Apache-2.0 licence](./LICENSE) that covers this project.
+ 
