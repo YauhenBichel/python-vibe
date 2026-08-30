@@ -16,19 +16,20 @@ import re
 from pathlib import Path
 
 from harness.paths import rel_posix
-from harness.skillkit.style import (
-    refuse_layout,
-    refuse_stdlib_shadow,
+from harness.skillkit.refuse_change import (
     refuse_add_opens_file,
+    refuse_layout,
     refuse_ops_draft,
     refuse_platform_draft,
     refuse_rename_incomplete,
     refuse_shell_fetch,
+    refuse_stdlib_shadow,
     refuse_stub_body,
     refuse_test_in_impl,
     refuse_undefined_draft,
     refuse_weak_test,
 )
+
 
 
 _TEST_METH = re.compile(r"def\s+(test_\w+)\s*\(")
@@ -55,7 +56,7 @@ def _add_import_symbol(text: str, name: str) -> str:
 def _called_name(original: str, append: str) -> str:
     """The function the new test needs imported.
 
-    It used to be read out of `assertEqual(multiply(...))`. The style rules
+    It used to be read out of `assertEqual(multiply(...))`. The change rules
     ask for the opposite shape — `got = multiply(...)`, then assert `got` —
     so following them meant the import was never added and the suite broke.
     Reading the names the new test leaves unbound covers both shapes.
@@ -167,7 +168,7 @@ class ProposedChange:
 # blocked`, eleven times over, which hid both the order and the fact that
 # a new rule has to be added to it. A rule written and not listed here
 # does nothing, and a test below checks for exactly that.
-STYLE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
+CHANGE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
     ("stdlib shadow", lambda c: refuse_stdlib_shadow(c.rel, c.original)),
     ("layout", lambda c: refuse_layout(c.rel, c.original, c.draft)),
     ("opens a file", lambda c: refuse_add_opens_file(c.task, c.rel, c.draft)),
@@ -188,12 +189,12 @@ STYLE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
 )
 
 
-def style_blocks(
+def first_refusal(
     task: str, rel: str, original: str, draft: str, fragment: str = ""
 ) -> str:
     """The first refusal a proposed change earns, or "" if it earns none."""
     change = ProposedChange(task, rel, original, draft, fragment)
-    for _name, rule in STYLE_RULES:
+    for _name, rule in CHANGE_RULES:
         refusal = rule(change)
         if refusal:
             return refusal

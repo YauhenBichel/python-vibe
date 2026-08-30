@@ -6,12 +6,13 @@ from pathlib import Path
 
 from harness.act.tools import edit_py, patch_py
 from harness.scan.names import new_undefined, undefined_names
-from harness.skillkit.style import (
-    refuse_done_oracle,
+from harness.skillkit.refuse_change import (
     refuse_rename_incomplete,
     refuse_test_in_impl,
     refuse_undefined_draft,
 )
+from harness.skillkit.refuse_finish import refuse_done_oracle
+
 
 
 ORDERS = '''TAX_RATE = 0.2

@@ -8,7 +8,10 @@ from harness.act.code import resolve_project_file
 from harness.act.tools import edit_py, glob_py
 from harness.paths import is_windows, venv_python
 from harness.skillkit.catalog import list_skills, pick_skills
-from harness.skillkit.style import refuse_ops_draft, refuse_platform_draft
+from harness.skillkit.refuse_change import (
+    refuse_ops_draft,
+    refuse_platform_draft,
+)
 from harness.task import everyday_example_path, looks_like_ops, looks_like_platform
 
 ROOT = Path(__file__).resolve().parents[1]

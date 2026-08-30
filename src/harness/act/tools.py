@@ -28,23 +28,24 @@ from harness.act.gate import (
     refuse_duplicate_module,
     refuse_missing_import_target,
     repair_unittest_append,
-    style_blocks,
+    first_refusal,
 )
 from harness.paths import is_secret_name, rel_posix, suffix_globs
 from harness.act.patch_fix import align_indent, find_match, miss_message
-from harness.skillkit.style import (
-    refuse_layout,
-    refuse_stdlib_shadow,
+from harness.skillkit.refuse_change import (
     refuse_add_opens_file,
+    refuse_layout,
     refuse_ops_draft,
     refuse_platform_draft,
     refuse_rename_incomplete,
     refuse_shell_fetch,
+    refuse_stdlib_shadow,
     refuse_stub_body,
     refuse_test_in_impl,
     refuse_undefined_draft,
     refuse_weak_test,
 )
+
 from harness.task import looks_like_bugfix, looks_like_fix_smell, rename_pair
 from harness.scan.project_brief import render_map, resolve_scope
 from harness.scan.project_scan import SKIP_DIR
@@ -183,7 +184,7 @@ def patch_py(
     if not blocked:
         blocked = refuse_missing_import_target(project, rel, text)
     if not blocked:
-        blocked = style_blocks(task, rel, original, text, fragment=append or replace)
+        blocked = first_refusal(task, rel, original, text, fragment=append or replace)
     if blocked:
         return blocked
     apply_source(path, text, original=original)
@@ -201,7 +202,7 @@ def edit_py(project: Path, rel: str, source: str, task: str = "") -> str:
     if not blocked:
         blocked = refuse_missing_import_target(project, rel, source)
     if not blocked:
-        blocked = style_blocks(task, rel, original, source)
+        blocked = first_refusal(task, rel, original, source)
     if blocked:
         return blocked
     # A short draft of only-new definitions is an addition, not a rewrite.

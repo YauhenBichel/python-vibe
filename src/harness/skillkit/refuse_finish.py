@@ -10,7 +10,7 @@ from __future__ import annotations
 
 # The oracle reuses one draft rule: a half-finished rename is a
 # reason to refuse a finish as well as a draft.
-from harness.skillkit.draft_rules import refuse_rename_incomplete
+from harness.skillkit.refuse_change import refuse_rename_incomplete
 
 """SoC / readable-name guards. Deterministic. No model."""
 import ast

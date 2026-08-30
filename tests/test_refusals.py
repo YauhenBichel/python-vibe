@@ -8,18 +8,21 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from harness.task import looks_like_fix_smell, looks_like_new_package, rename_target, smell_symbol
-from harness.skillkit.style import (
-    refuse_done_oracle,
-    refuse_stub_body,
-    refuse_stdlib_shadow,
+from harness.skillkit.refuse_change import (
     refuse_layout,
     refuse_opaque_names,
-    refuse_package_done,
     refuse_shell_fetch,
     refuse_smell_wrong_file,
+    refuse_stdlib_shadow,
+    refuse_stub_body,
     refuse_weak_test,
     wrap_bare_unittest,
 )
+from harness.skillkit.refuse_finish import (
+    refuse_done_oracle,
+    refuse_package_done,
+)
+
 
 
 class StyleHarnessTest(unittest.TestCase):
@@ -391,7 +394,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
     mutation check went green with the call removed.
     """
 
-    # Rules that judge a proposed change. Anything else in style.py
+    # Rules that judge a proposed change. Anything else in refuse_change.py
     # answers a different question and is called from somewhere else.
     NOT_ABOUT_A_DRAFT = {
         "refuse_done_oracle",      # judges the project after a run
@@ -407,9 +410,9 @@ class EveryRuleIsWiredTest(unittest.TestCase):
     def test_every_draft_rule_is_in_the_list(self) -> None:
         import ast
 
-        from harness.act.gate import STYLE_RULES
+        from harness.act.gate import CHANGE_RULES
 
-        source = (ROOT / "src" / "harness" / "skillkit" / "style.py").read_text(
+        source = (ROOT / "src" / "harness" / "skillkit" / "refuse_change.py").read_text(
             encoding="utf-8"
         )
         written = {
@@ -420,8 +423,8 @@ class EveryRuleIsWiredTest(unittest.TestCase):
         listed = (ROOT / "src" / "harness" / "act" / "gate.py").read_text(
             encoding="utf-8"
         )
-        start = listed.index("STYLE_RULES")
-        table = listed[start : listed.index("def style_blocks")]
+        start = listed.index("CHANGE_RULES")
+        table = listed[start : listed.index("def first_refusal")]
         missing = sorted(
             name
             for name in written - self.NOT_ABOUT_A_DRAFT
@@ -430,21 +433,21 @@ class EveryRuleIsWiredTest(unittest.TestCase):
         self.assertEqual(
             missing,
             [],
-            f"written but never run: {missing}. Add it to STYLE_RULES, "
+            f"written but never run: {missing}. Add it to CHANGE_RULES, "
             "or to NOT_ABOUT_A_DRAFT with the reason.",
         )
-        self.assertEqual(len(STYLE_RULES), 11)
+        self.assertEqual(len(CHANGE_RULES), 11)
 
     def test_each_entry_is_named_and_callable(self) -> None:
-        from harness.act.gate import STYLE_RULES
+        from harness.act.gate import CHANGE_RULES
 
-        for name, rule in STYLE_RULES:
+        for name, rule in CHANGE_RULES:
             with self.subTest(rule=name):
                 self.assertTrue(name.strip())
                 self.assertTrue(callable(rule))
 
     def test_the_rules_run_in_order_and_stop_at_the_first(self) -> None:
-        from harness.act.gate import ProposedChange, style_blocks
+        from harness.act.gate import ProposedChange, first_refusal
 
         change = ProposedChange(
             task="add a helper",
@@ -452,7 +455,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
             original="",
             draft="def f():\n    return 1\n",
         )
-        first = style_blocks(
+        first = first_refusal(
             change.task, change.rel, change.original, change.draft
         )
         self.assertIn("math", first, "the earliest rule should answer")
@@ -544,7 +547,7 @@ class NothingCallsItTest(unittest.TestCase):
         return root
 
     def test_an_addition_nobody_calls_is_refused(self) -> None:
-        from harness.skillkit.style import refuse_unwired_addition
+        from harness.skillkit.refuse_finish import refuse_unwired_addition
 
         with tempfile.TemporaryDirectory() as tmp:
             root = self._project(
@@ -557,7 +560,7 @@ class NothingCallsItTest(unittest.TestCase):
             self.assertIn("nothing calls it", blocked)
 
     def test_an_addition_the_same_file_calls_is_fine(self) -> None:
-        from harness.skillkit.style import refuse_unwired_addition
+        from harness.skillkit.refuse_finish import refuse_unwired_addition
 
         with tempfile.TemporaryDirectory() as tmp:
             root = self._project(
@@ -569,7 +572,7 @@ class NothingCallsItTest(unittest.TestCase):
             self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
 
     def test_a_test_that_calls_it_is_enough(self) -> None:
-        from harness.skillkit.style import refuse_unwired_addition
+        from harness.skillkit.refuse_finish import refuse_unwired_addition
 
         with tempfile.TemporaryDirectory() as tmp:
             root = self._project(
@@ -584,7 +587,7 @@ class NothingCallsItTest(unittest.TestCase):
             self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
 
     def test_a_function_that_was_already_there_is_not_this_runs_problem(self) -> None:
-        from harness.skillkit.style import refuse_unwired_addition
+        from harness.skillkit.refuse_finish import refuse_unwired_addition
 
         with tempfile.TemporaryDirectory() as tmp:
             orphan = "def nobody_calls_me(x):\n    return x\n"
@@ -593,7 +596,7 @@ class NothingCallsItTest(unittest.TestCase):
 
     def test_without_the_backup_it_says_nothing(self) -> None:
         """No original means no way to tell an addition from the rest."""
-        from harness.skillkit.style import refuse_unwired_addition
+        from harness.skillkit.refuse_finish import refuse_unwired_addition
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
