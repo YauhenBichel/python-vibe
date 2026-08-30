@@ -7,6 +7,7 @@ from unittest import mock
 
 from harness import Agent, AgentOptions
 from harness.act.autofix import (
+    append_instead_of_replacing,
     apply_add_function,
     apply_cover_test,
     apply_function_rename,
@@ -852,6 +853,55 @@ class MethodNameIsNotInScopeTest(unittest.TestCase):
                 ),
                 None,
             )
+
+class ShortDraftIsAnAdditionTest(unittest.TestCase):
+    """A correct new function must not be thrown away for being short.
+
+    `edit` replaces a whole file, so a new function sent on its own is
+    shorter than what it would replace and was refused for that. A live
+    8B wrote a working `slugify`, had it rejected twice — once for a
+    missing fence, then for being 89 characters against 276 — and spent
+    the rest of its budget sending the same correct code back.
+    """
+
+    ORIGINAL = (
+        '"""Order arithmetic."""\n\n\n'
+        "def compute_total(prices: list[int]) -> int:\n"
+        "    return sum(prices)\n\n\n"
+        "def apply_discount(total: int, percent: int) -> int:\n"
+        "    return total - (total * percent) // 100\n"
+    )
+    DRAFT = (
+        "def slugify(text: str) -> str:\n"
+        "    return '-'.join(word.lower() for word in text.split())\n"
+    )
+
+    def test_the_new_function_is_appended_and_the_file_kept(self) -> None:
+        merged = append_instead_of_replacing(self.ORIGINAL, self.DRAFT)
+        self.assertIn("def compute_total", merged)
+        self.assertIn("def apply_discount", merged)
+        self.assertIn("def slugify", merged)
+        namespace: dict = {}
+        exec(compile(merged, "m", "exec"), namespace)
+        self.assertEqual(namespace["slugify"]("Hello There"), "hello-there")
+
+    def test_a_real_rewrite_is_left_alone(self) -> None:
+        """Only an addition. A shorter rewrite is still the caller's problem."""
+        rewrite = self.ORIGINAL.replace("sum(prices)", "sum(p for p in prices)")
+        self.assertEqual(append_instead_of_replacing(self.ORIGINAL, rewrite), "")
+
+    def test_redefining_an_existing_name_is_not_an_addition(self) -> None:
+        same = "def compute_total(prices):\n    return 0\n"
+        self.assertEqual(append_instead_of_replacing(self.ORIGINAL, same), "")
+
+    def test_a_bare_statement_is_not_an_addition(self) -> None:
+        self.assertEqual(
+            append_instead_of_replacing(self.ORIGINAL, "print('hi')\n"), ""
+        )
+
+    def test_an_empty_file_is_left_to_the_normal_path(self) -> None:
+        self.assertEqual(append_instead_of_replacing("", self.DRAFT), "")
+
 
 
 if __name__ == "__main__":

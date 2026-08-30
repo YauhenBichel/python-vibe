@@ -279,6 +279,108 @@ class DuplicateModuleTest(unittest.TestCase):
                 refuse_duplicate_module(root, "src/orders.py", original), ""
             )
 
+class DuplicateDefinitionTest(unittest.TestCase):
+    """Appending a function the file already defines is refused.
+
+    Only `def test_...` was checked, so an ordinary function could go in
+    twice: a live run appended `def slugify` to one file on two separate
+    turns and left both there.
+    """
+
+    ORIGINAL = (
+        "def compute_total(prices):\n"
+        "    return sum(prices)\n\n\n"
+        "def slugify(text):\n"
+        "    return text.lower()\n"
+    )
+
+    def _project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "src").mkdir()
+        (root / "src" / "orders.py").write_text(self.ORIGINAL, encoding="utf-8")
+        return root
+
+    def test_a_second_copy_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = patch_py(
+                self._project(tmp),
+                "src/orders.py",
+                "",
+                "",
+                "def slugify(text):\n    return text.upper()\n",
+            )
+        self.assertIn("already defined", out)
+
+    def test_a_genuinely_new_function_still_goes_in(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp)
+            out = patch_py(
+                root,
+                "src/orders.py",
+                "",
+                "",
+                "def shout(text):\n    return text.upper()\n",
+            )
+            body = (root / "src" / "orders.py").read_text(encoding="utf-8")
+        self.assertNotIn("already defined", out)
+        self.assertIn("def shout", body)
+        self.assertEqual(body.count("def slugify"), 1)
+
+
+class EditRepairsGoThroughTheToolTest(unittest.TestCase):
+    """The repairs must be reachable from `edit`, not just importable.
+
+    Both were first tested by calling the helper directly, so removing
+    the call from `edit_py` left every test passing. A mutation check
+    caught that; these go through the tool.
+    """
+
+    ORIGINAL = (
+        '"""Order arithmetic."""\n\n\n'
+        "def compute_total(prices: list[int]) -> int:\n"
+        "    return sum(prices)\n\n\n"
+        "def apply_discount(total: int, percent: int) -> int:\n"
+        "    return total - (total * percent) // 100\n"
+    )
+
+    def _project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "src").mkdir()
+        (root / "src" / "orders.py").write_text(self.ORIGINAL, encoding="utf-8")
+        return root
+
+    def test_a_short_new_function_is_appended_not_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp)
+            out = edit_py(
+                root,
+                "src/orders.py",
+                "def slugify(text: str) -> str:\n"
+                "    return '-'.join(w.lower() for w in text.split())\n",
+                task="add a function slugify(text) and a unit test",
+            )
+            body = (root / "src" / "orders.py").read_text(encoding="utf-8")
+        self.assertNotIn("too short", out)
+        self.assertIn("appended", out)
+        self.assertIn("def compute_total", body)
+        namespace: dict = {}
+        exec(compile(body, "m", "exec"), namespace)
+        self.assertEqual(namespace["slugify"]("Hello There"), "hello-there")
+
+    def test_a_stub_body_is_refused_through_edit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(tmp)
+            out = edit_py(
+                root,
+                "src/orders.py",
+                "def slugify(text: str) -> str: ...\n",
+                task="add a function slugify(text) and a unit test",
+            )
+            body = (root / "src" / "orders.py").read_text(encoding="utf-8")
+        self.assertIn("no body", out)
+        self.assertNotIn("def slugify", body)
+
+
 
 if __name__ == "__main__":
     unittest.main()

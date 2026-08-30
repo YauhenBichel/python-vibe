@@ -243,6 +243,72 @@ def apply_person_bind(
     return f"bound `{found.bad}` → {repl} in {found.rel} (your answer)"
 
 
+def _top_level_names(tree: ast.Module) -> set[str]:
+    """Names a module defines at its top level."""
+    found: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            found.add(node.name)
+        else:
+            found.update(_assign_names_for_module(node))
+    return found
+
+
+def _assign_names_for_module(node: ast.AST) -> set[str]:
+    if isinstance(node, ast.Assign):
+        names: set[str] = set()
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                names.add(target.id)
+        return names
+    if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        return {node.target.id}
+    if isinstance(node, (ast.Import, ast.ImportFrom)):
+        return {alias.asname or alias.name.split(".")[0] for alias in node.names}
+    return set()
+
+
+def append_instead_of_replacing(original: str, draft: str) -> str:
+    """Merge a short draft of new definitions onto the file, or "".
+
+    `edit` replaces a whole file, so a correct new function sent on its
+    own is shorter than what it would replace and is refused for that.
+    A live 8B wrote a working `slugify`, had it thrown away twice — once
+    for a missing fence, then for being 89 characters against 276 — and
+    spent the rest of its budget sending the same correct code back.
+
+    Appending is what it meant, and it is safe: nothing in the file is
+    removed. Only when every top-level name in the draft is new, so this
+    cannot quietly drop a rewrite of something that already exists.
+    """
+    if not original.strip() or not draft.strip():
+        return ""
+    if len(draft) >= max(40, (len(original) * 2) // 3):
+        return ""  # long enough to be a real rewrite; leave it alone
+    try:
+        first, second = ast.parse(original), ast.parse(draft)
+    except (SyntaxError, ValueError):
+        return ""
+    allowed = (
+        ast.FunctionDef,
+        ast.AsyncFunctionDef,
+        ast.ClassDef,
+        ast.Import,
+        ast.ImportFrom,
+    )
+    if not second.body or not all(isinstance(n, allowed) for n in second.body):
+        return ""
+    added = _top_level_names(second)
+    if not added or added & _top_level_names(first):
+        return ""
+    merged = original.rstrip() + "\n\n\n" + draft.strip() + "\n"
+    try:
+        ast.parse(merged)
+    except SyntaxError:
+        return ""
+    return merged
+
+
 def _rename_name_tokens(source: str, bad: str, good: str) -> str:
     """Replace `bad` where Python reads it as a name, and nowhere else.
 

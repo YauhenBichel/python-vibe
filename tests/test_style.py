@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from harness.task import looks_like_fix_smell, looks_like_new_package, rename_target, smell_symbol
 from harness.skillkit.style import (
     refuse_done_oracle,
+    refuse_stub_body,
     refuse_stdlib_shadow,
     refuse_layout,
     refuse_opaque_names,
@@ -326,6 +327,48 @@ class AnImportIsNotCoverageTest(unittest.TestCase):
             root = self._project(tmp, body)
             blocked = refuse_done_oracle(self.TASK, root, "")
         self.assertIn("no test calls redact_slack_token", blocked)
+
+class StubBodyTest(unittest.TestCase):
+    """`def slugify(text): ...` parses, names right, and does nothing.
+
+    A live 8B wrote exactly that when asked to create the function, and
+    nothing rejected it: it is valid Python with a sensible name.
+    """
+
+    TASK = "create a function slugify(text) that lowercases and joins words"
+
+    def test_an_ellipsis_body_is_refused(self) -> None:
+        blocked = refuse_stub_body(
+            self.TASK, "src/orders.py", "def slugify(text: str) -> str: ...\n"
+        )
+        self.assertIn("no body", blocked)
+
+    def test_a_pass_body_is_refused(self) -> None:
+        blocked = refuse_stub_body(
+            self.TASK, "src/orders.py", "def slugify(text):\n    pass\n"
+        )
+        self.assertIn("no body", blocked)
+
+    def test_a_real_body_is_allowed(self) -> None:
+        self.assertEqual(
+            refuse_stub_body(
+                self.TASK,
+                "src/orders.py",
+                "def slugify(text):\n    return text.lower()\n",
+            ),
+            "",
+        )
+
+    def test_a_docstring_plus_a_body_is_allowed(self) -> None:
+        draft = 'def slugify(text):\n    """Lowercase it."""\n    return text.lower()\n'
+        self.assertEqual(refuse_stub_body(self.TASK, "src/orders.py", draft), "")
+
+    def test_a_test_file_is_not_judged(self) -> None:
+        self.assertEqual(
+            refuse_stub_body(self.TASK, "tests/test_x.py", "def slugify(t): ...\n"),
+            "",
+        )
+
 
 
 if __name__ == "__main__":
