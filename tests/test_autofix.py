@@ -1005,7 +1005,11 @@ class ResolveConflictTest(unittest.TestCase):
 
     def test_a_merge_that_would_not_parse_is_refused(self) -> None:
         source = (
-            "<<<<<<< HEAD\ndef f():\n=======\n    return 1\n>>>>>>> main\n"
+            "<<<<<<< HEAD\n"
+            "def f():\n    return 1\n"
+            "=======\n"
+            "    else:\n        pass\n"
+            ">>>>>>> main\n"
         )
         self.assertEqual(resolve_keeping_both(source), "")
 
