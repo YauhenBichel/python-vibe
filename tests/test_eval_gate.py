@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from finetune.everyday import is_tiny_model
 from harness.observe.eval_gate import action_parse_rate, bugfix_fixture_ready, held_out_run_pass
-from harness.model.openai_compat import parse_chat_body, warn_tiny
+from harness.openai_api import parse_chat_body, warn_tiny
 
 
 class EvalGateTest(unittest.TestCase):

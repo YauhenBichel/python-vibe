@@ -1,4 +1,13 @@
-"""OpenAI-compatible request helpers. Local editors talk to this; Ollama is the backend."""
+"""The shapes an OpenAI-compatible client sends and expects.
+
+Request parsing and reply payloads for `server.py`, so an editor can
+talk to this project using the API it already speaks.
+
+This is the wire format, not the model. It knows what a chat request
+looks like and nothing about weights, which is why it sits beside the
+server rather than inside `model/`: that package is only the code that
+talks to a model, and the CLI and the server do not reach into it.
+"""
 
 from __future__ import annotations
 

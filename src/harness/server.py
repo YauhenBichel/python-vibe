@@ -18,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from harness.agent import Agent, AgentOptions
-from harness.model.openai_compat import (
+from harness.openai_api import (
     chat_completion_payload,
     last_user_text,
     models_payload,

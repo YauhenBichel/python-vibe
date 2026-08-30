@@ -32,6 +32,44 @@ Read a layer top-down and you learn what the harness does. Read it
 bottom-up and you learn what it refuses. The kit skills `skillkit/` loads
 are listed on [Skills]({{ '/skills/' | relative_url }}).
 
+## Three rings
+
+An agent is a harness around a model. That is the shape the code keeps.
+
+    ┌─ agent ─────────────────────────────────────┐
+    │  what a person or an editor talks to:       │
+    │  cli, server, mcp_stdio, editor_kit         │
+    │                                             │
+    │   ┌─ harness ─────────────────────────────┐ │
+    │   │  the loop, tools, guards, skills:     │ │
+    │   │  agent, act, locate, scan, skillkit,  │ │
+    │   │  ship, observe, guard, task, paths    │ │
+    │   │                                       │ │
+    │   │   ┌─ model ───────────────────────┐   │ │
+    │   │   │  the code that talks to a     │   │ │
+    │   │   │  model: engine, ollama, mlx,  │   │ │
+    │   │   │  openai, route               │   │ │
+    │   │   └───────────────────────────────┘   │ │
+    │   └───────────────────────────────────────┘ │
+    └─────────────────────────────────────────────┘
+
+Nearly all of the behaviour is the middle ring, which is the point of the
+project: what the model gets wrong, the harness catches.
+
+The outer ring does not reach into the inner one. The command line and
+the server used to import `harness.model` directly, so the model package
+could not change shape without changing them. They go through the
+harness now, and a test refuses the direct import.
+
+`openai_api` used to sit in the model package. It knows what an
+OpenAI-style chat request looks like and nothing about weights, so it
+belongs beside the server that speaks that format. The model package is
+now only the code that talks to a model, and a test keeps it that way.
+
+One place asks for a generator, `agent/loop.py`, and a test checks that
+too. If a second appeared, there would be two answers to "which model is
+this run using".
+
 ## Why `task.py` is the bottom
 
 Every layer needs to know whether the user asked a question or asked for a
