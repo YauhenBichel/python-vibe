@@ -16,7 +16,7 @@ _ALSO_REDACT = re.compile(r"(HF_TOKEN=|-----BEGIN )")
 _HOME = re.compile(r"/(Users|home)/[^/\s]+")
 _URL_HOST = re.compile(r"\b([a-z][a-z0-9+.-]*://)(?:[^/@\s]+@)?([^/\s]+)", re.IGNORECASE)
 _BARE_HOST = re.compile(
-    r"\b[A-Za-z0-9-]+\.(?:local|lan|internal|corp|home)(?::\d+)?\b"
+    r"\b[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.(?:local|lan|internal|corp|home)(?::\d+)?\b"
 )
 
 

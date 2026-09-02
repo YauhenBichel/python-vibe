@@ -14,10 +14,14 @@ class TraceRecordTest(unittest.TestCase):
         self.assertIn("/Users/you", redact("/Users/someone/DevBox/app"))
 
     def test_redact_linux_home_and_hosts(self) -> None:
-        text = redact("/home/alice/app https://devbox.example.internal:8080/logs db.internal")
+        text = redact(
+            "/home/alice/app https://devbox.example.internal:8080/logs "
+            "db.internal runner.example.internal:8443"
+        )
         self.assertIn("/home/you/app", text)
         self.assertIn("https://[host]/logs", text)
-        self.assertTrue(text.endswith("[host]"))
+        self.assertIn("[host] [host]", text)
+        self.assertNotIn("runner.", text)
 
     def test_redact_keeps_python_dotted_names(self) -> None:
         self.assertIn("os.path.exists", redact("check os.path.exists before writing"))
