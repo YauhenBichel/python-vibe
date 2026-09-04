@@ -39,7 +39,7 @@ What you type:
 | [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. |
 | [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. |
 | [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) | Eleven demo tasks. Laptop 8B vs a hosted IDE agent. |
-| [What the harness cannot fix]({{ '/investigations/limits/' | relative_url }}) | A refusal calibrated 0 for 5, a pointer the model ignored 3 of 3, and a fine-tune that lost to its own base model. |
+| [What the harness cannot fix]({{ '/investigations/limits/' | relative_url }}) | A refusal calibrated 0 for 5, a pointer the model ignored 3 of 3, and a week of real work that produced no training data. |
 | [When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}) | Five runs in ten claimed work they had not done. After two fixes, none did. |
 | [Asking a bigger model]({{ '/investigations/asking-a-bigger-model/' | relative_url }}) | A run that stops to ask has failed 3 times out of 3. That makes the question worth a remote call, and a spent step budget not. |
 | [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}) | Splitting one task into a chain of easy ones bought nothing and cost twice the time. The loop was already a chain. |
