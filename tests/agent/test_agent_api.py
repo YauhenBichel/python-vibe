@@ -435,7 +435,7 @@ class LateQuestionTest(unittest.TestCase):
                 "harness.agent.loop.make_generate",
                 _scripted(
                     "Action: patch\nPath: src/app.py\nAppend:\n"
-                    "def multiply(a: int, b: int) -> int:\n    return a * b\n",
+                    "def multiply(left: int, right: int) -> int:\n    return left * right\n",
                     "Action: ask\nQuery: which reading did you mean?",
                     "Action: run\nArgv: -m unittest discover -s tests -q",
                     "Action: done\nSummary: added multiply to src/app.py",
@@ -461,7 +461,7 @@ class LateQuestionTest(unittest.TestCase):
                 _scripted(
                     "Action: ask\nQuery: which module?",
                     "Action: patch\nPath: src/app.py\nAppend:\n"
-                    "def multiply(a: int, b: int) -> int:\n    return a * b\n",
+                    "def multiply(left: int, right: int) -> int:\n    return left * right\n",
                     "Action: run\nArgv: -m unittest discover -s tests -q",
                     "Action: done\nSummary: added multiply to src/app.py",
                 ),

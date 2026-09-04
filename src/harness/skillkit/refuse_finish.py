@@ -216,7 +216,7 @@ def refuse_unwired_addition(project: Path, last_path: str) -> str:
     """A function added, and nobody left to call it.
 
     Asked to add a check that refuses to send when a prompt carries a
-    token, a run wrote `reject_github_tokens_in_prompt` and wired it to
+    token, a run wrote `reject_github_tokens_in_prompt` and left nothing
     nothing. The file parsed and the suite stayed green, because a
     function nobody calls cannot fail. It also cannot work.
 

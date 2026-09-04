@@ -37,7 +37,7 @@ DEPTH = {
     "locate": 5,
     "observe": 6,
     "agent": 7,
-    # The OpenAI wire format the server speaks. It imports nothing from
+    # The request and reply shape the server speaks. It imports nothing from
     # this project, so it sits below the server that uses it.
     "openai_api": 7,
     "server": 8,

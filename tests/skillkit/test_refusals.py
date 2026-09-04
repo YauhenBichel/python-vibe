@@ -384,7 +384,7 @@ class StubBodyTest(unittest.TestCase):
         )
 
 
-class EveryRuleIsWiredTest(unittest.TestCase):
+class EveryRuleIsInTheTableTest(unittest.TestCase):
     """A rule that is written and not listed does nothing.
 
     The refusals used to run as thirty lines of `blocked = rule(...); if
@@ -402,7 +402,6 @@ class EveryRuleIsWiredTest(unittest.TestCase):
         "refuse_package_done",     # the same, for a new package
         "refuse_god_target",       # judges the file a change would target
         "refuse_smell_wrong_file",
-        "refuse_opaque_names",     # called from the draft rules themselves
         "refuse_duplicate_module",
         "refuse_missing_import_target",
     }
@@ -436,7 +435,7 @@ class EveryRuleIsWiredTest(unittest.TestCase):
             f"written but never run: {missing}. Add it to CHANGE_RULES, "
             "or to NOT_ABOUT_A_DRAFT with the reason.",
         )
-        self.assertEqual(len(CHANGE_RULES), 11)
+        self.assertEqual(len(CHANGE_RULES), 12)
 
     def test_each_entry_is_named_and_callable(self) -> None:
         from harness.act.gate import CHANGE_RULES
@@ -533,7 +532,7 @@ class NothingCallsItTest(unittest.TestCase):
         def reject_github_tokens_in_prompt(prompt: str) -> bool:
             return 'github_token' in prompt
 
-    and wired it to nothing. The file parsed and the suite stayed green.
+    and called it from nowhere. The file parsed and the suite stayed green.
     Whether the body is any good needs a reader; whether anything will
     ever run it does not.
     """
@@ -602,6 +601,56 @@ class NothingCallsItTest(unittest.TestCase):
             root = Path(tmp)
             (root / "app.py").write_text("def lonely(x):\n    return x\n", encoding="utf-8")
             self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
+
+
+
+class ANameTheTaskAskedForTest(unittest.TestCase):
+    """This rule was written and tested, and nothing ever called it.
+
+    It sat excluded from the "every draft rule is in the list" check
+    behind a comment saying it was "called from the draft rules
+    themselves", which was not true. Wiring it as it stood would have
+    refused the benchmark's own tier-1 case: the task is `add a function
+    double(n) that returns n times two`, and `n` is the parameter the
+    task names. Refusing a draft for doing what it was told is worse
+    than not checking at all.
+    """
+
+    def test_a_parameter_the_task_names_is_allowed(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_names
+
+        draft = "def double(n: int) -> int:\n    return n * 2\n"
+        task = "add a function double(n) that returns n times two"
+        self.assertEqual(refuse_opaque_names(draft, task), "")
+
+    def test_the_same_parameter_is_refused_when_the_task_is_silent(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_names
+
+        draft = "def double(n: int) -> int:\n    return n * 2\n"
+        self.assertIn("opaque parameter n", refuse_opaque_names(draft, "make it twice"))
+
+    def test_an_opaque_function_name_the_task_asks_for_is_allowed(self) -> None:
+        """The person typed it. Arguing is not the harness's job."""
+        from harness.skillkit.refuse_change import refuse_opaque_names
+
+        draft = "def calc(price, rate):\n    return price * rate\n"
+        self.assertEqual(refuse_opaque_names(draft, "add calc(price, rate)"), "")
+
+    def test_the_same_function_name_is_refused_when_the_task_is_silent(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_names
+
+        draft = "def calc(price, rate):\n    return price * rate\n"
+        self.assertIn("opaque name calc", refuse_opaque_names(draft, "work out the total"))
+
+    def test_prose_alone_asks_for_nothing(self) -> None:
+        """Only a spelled signature counts, not a word appearing in the task."""
+        from harness.skillkit.refuse_change import names_the_task_asked_for
+
+        self.assertEqual(names_the_task_asked_for("fix app.py for Windows"), frozenset())
+        self.assertEqual(
+            names_the_task_asked_for("add retry(action, times)"),
+            frozenset({"retry", "action", "times"}),
+        )
 
 
 if __name__ == "__main__":

@@ -8,7 +8,8 @@ type: article
 # Investigation: can python-vibe be everyday laptop work?
 
 **Answer:** no — not this 0.5B LoRA. Comfortable daily explore / edit / run
-needs a larger model, tool-use training, and a local editor wired to Ollama.
+needs a larger model, tool-use training, and a local editor connected to
+Ollama.
 Keep python-vibe-0.5b as a cheap draft + harness.
 
 Related: [research-vibe-review](../research-vibe-review.md) ·
