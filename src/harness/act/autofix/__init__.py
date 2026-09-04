@@ -59,6 +59,7 @@ from harness.act.autofix.missing_imports import (
 )
 from harness.act.autofix.moves import (
     apply_file_move,
+    apply_function_move,
     module_name,
     move_targets,
 )
