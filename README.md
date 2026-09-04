@@ -399,9 +399,9 @@ Thank you to everyone who has helped python-vibe.
 			</td>
 			<td align="center">
 				<a href="https://github.com/Aditya-233">
-					<img src="https://avatars.githubusercontent.com/Aditya-233?s=48" width="48" alt="Aditya " />
+					<img src="https://avatars.githubusercontent.com/Aditya-233?s=48" width="48" alt="Aditya" />
 					<br />
-					<sub><b>Aditya </b></sub>
+					<sub><b>Aditya</b></sub>
 				</a>
 			</td>
 		</tr>
