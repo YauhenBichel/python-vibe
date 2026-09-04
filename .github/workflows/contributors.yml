@@ -62,6 +62,14 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add README.md
           git diff --cached --quiet && exit 0
+          # A refresh should only ever add people. A name disappearing
+          # means the API answered short — a rate limit, a transient
+          # failure — not that someone stopped being a contributor. That
+          # has happened: a hand-run refresh in a pull request removed
+          # four. Additions merge themselves; a removal waits for a
+          # person.
+          REMOVED=$(git diff --cached -U0 -- README.md \
+            | grep -c '^-.*avatars\.githubusercontent\.com' || true)
           git commit -m "docs: refresh README contributors"
           if [ "$BRANCH" != "$DEFAULT_BRANCH" ]; then
             # A branch of this repository takes the commit in place.
@@ -71,8 +79,22 @@ jobs:
           # main is review-only, so offer the refresh as a pull request.
           git checkout -B docs/contributors
           git push --force --set-upstream origin docs/contributors
-          if [ -z "$(gh pr list --head docs/contributors --state open --json number -q '.[0].number')" ]; then
-            gh pr create --base "$DEFAULT_BRANCH" --head docs/contributors \
+          NUMBER="$(gh pr list --head docs/contributors --state open --json number -q '.[0].number')"
+          if [ -z "$NUMBER" ]; then
+            if [ "$REMOVED" -gt 0 ]; then
+              NOTE="This refresh removes $REMOVED name(s), so it is left for a person to read. A name should not disappear from this list; if one has, the contributors API most likely answered short."
+            else
+              NOTE="Additions only, so this merges itself once the checks pass."
+            fi
+            NUMBER="$(gh pr create --base "$DEFAULT_BRANCH" --head docs/contributors \
               --title "docs: refresh README contributors" \
-              --body "The contributors list changed. Filled from the GitHub contributors API, bots omitted. Opened by the Contributors workflow because main takes changes only through a pull request."
+              --body "The contributors list changed. Filled from the GitHub contributors API, bots omitted. Opened by the Contributors workflow because main takes changes only through a pull request.
+
+          $NOTE" | grep -o '[0-9]*$')"
+          fi
+          if [ "$REMOVED" -eq 0 ] && [ -n "$NUMBER" ]; then
+            # Adding a name to a generated table is not a change anybody
+            # needs to read. Auto-merge still waits for the checks.
+            gh pr merge "$NUMBER" --auto --squash || \
+              echo "auto-merge not enabled; leaving #$NUMBER for a person"
           fi
