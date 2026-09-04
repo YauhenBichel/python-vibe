@@ -48,7 +48,16 @@ def main() -> None:
     parser.add_argument("--max-tokens", type=int, default=700)
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--dry-run", dest="allow_writes", action="store_false")
-    parser.add_argument("--record", type=Path)
+    parser.add_argument(
+        "--record",
+        type=Path,
+        help="write turns here instead of .python-vibe/traces.jsonl",
+    )
+    parser.add_argument(
+        "--no-record",
+        action="store_true",
+        help="write no trace of this run",
+    )
     args = parser.parse_args()
 
     project = args.project.expanduser().resolve()
@@ -85,6 +94,7 @@ def main() -> None:
         max_tokens=args.max_tokens,
         allow_writes=args.allow_writes,
         record=args.record,
+        keep_no_record=args.no_record,
         on_event=_printer(True),
         on_question=_prompt_user if sys.stdin.isatty() else None,
     )

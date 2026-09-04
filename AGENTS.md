@@ -91,7 +91,8 @@ third-party products.
 get a file list and comfortable daily explore / edit / run. Large projects
 get a harness: `Action: map`, `--scope`, truncated grep. `--tiny` / mlx 0.5B
 is smoke only. Local editor: [docs/local-editor.md](./docs/local-editor.md).
-Train the 7B-class tool LoRA with `scripts/run/agent.py --record data/agent-loop/extra.jsonl`,
+Train the 7B-class tool LoRA from `.python-vibe/traces.jsonl` (written
+unless `--no-record`) or `scripts/run/agent.py --record data/agent-loop/extra.jsonl`,
 then `scripts/weights/build_agent_data.py` and `scripts/weights/train.py --everyday`. Name it in
 Ollama with `scripts/weights/export_ollama.py --create`. Do not spend more 0.5B train
 steps expecting everyday-agent quality.

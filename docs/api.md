@@ -36,7 +36,8 @@ result.refusals  # what the harness stopped, and why
 | `steps` | `20` | Maximum model turns before the run stops |
 | `max_tokens` | `700` | Maximum length of one model reply |
 | `allow_writes` | `True` | When `False`, patch, edit and run are refused |
-| `record` | `None` | File to append redacted turns to |
+| `record` | `None` | File to append redacted turns to. `None` writes `.python-vibe/traces.jsonl` in the project |
+| `keep_no_record` | `False` | Write no trace (`--no-record`) |
 | `on_event` | `None` | Called with progress messages |
 | `on_question` | `None` | Called when the agent needs you to choose |
 

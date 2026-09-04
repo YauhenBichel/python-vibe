@@ -102,6 +102,7 @@ def _options(args, *, interactive: bool) -> AgentOptions:
         max_tokens=args.max_tokens,
         allow_writes=getattr(args, "allow_writes", True),
         record=getattr(args, "record", None),
+        keep_no_record=getattr(args, "no_record", False),
         on_event=_printer(args.verbose),
         on_question=_prompt_user if interactive else None,
     )
@@ -118,7 +119,16 @@ def _add_agent_flags(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument("--steps", type=int, default=DEFAULT_STEPS)
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
-    parser.add_argument("--record", type=Path)
+    parser.add_argument(
+        "--record",
+        type=Path,
+        help="write turns here instead of .python-vibe/traces.jsonl",
+    )
+    parser.add_argument(
+        "--no-record",
+        action="store_true",
+        help="write no trace of this run",
+    )
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("--json", action="store_true", help="print the result as JSON")
 

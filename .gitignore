@@ -17,3 +17,6 @@ wandb/
 hf_token
 *.pem
 .coverage
+
+# Turns recorded by a run, for measuring it later.
+.python-vibe/
