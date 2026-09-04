@@ -258,6 +258,30 @@ builds its own memory, so every step started from nothing.
 
 Write-up: [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}).
 
+## What the harness cannot fix
+
+Most gaps here close when the harness stops guessing and starts
+checking. Four did not, and they are more informative than the ones that
+did.
+
+**Result**
+
+| Measurement | Outcome |
+| --- | --- |
+| Refusing a bot's major version bump | **0 of 5** — five merged safely, nothing caught |
+| Telling the model what the project already has | Pointer correct, **ignored 3 of 3** |
+| Platform work on stock `llama3.1:8b` | **6 of 8** over two passes, no new weights |
+| This project's own fine-tune | **0 of 4** held-out, worse than its base model |
+
+Three of the four are cases where the harness knew something and it made
+no difference. The one that worked, worked by running something: a
+dependency's major bump was cleared by installing the version and
+calling every function the project uses against it.
+
+What closes a gap is an oracle. What does not is telling the model more.
+
+Write-up: [What the harness cannot fix]({{ '/investigations/limits/' | relative_url }}).
+
 ## A larger open model
 
 **Example.** The 30B already timed out on this laptop. `--engine openai`
