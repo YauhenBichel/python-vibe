@@ -20,12 +20,19 @@ from __future__ import annotations
 
 import re
 
-# "Bump x from 7 to 9", "chore(deps): bump x from 1.2.3 to 1.3.0".
+# The bot writes two shapes, and reading only one of them missed a
+# major bump entirely. Actions get "bump x from 7 to 9"; Python
+# requirements get "update x requirement from >=0.26.0 to >=1.29.0".
 _BUMP = re.compile(
-    r"\bbump\s+(?P<what>\S+)\s+from\s+(?P<old>v?[\w.\-]+)\s+to\s+(?P<new>v?[\w.\-]+)",
+    r"\b(?:bump|update)\s+(?P<what>\S+)"
+    r"(?:\s+requirement)?"
+    r"\s+from\s+(?P<old>[<>=~^!]*\s*v?[\w.\-]+)"
+    r"\s+to\s+(?P<new>[<>=~^!]*\s*v?[\w.\-]+)",
     re.I,
 )
-_LEADING_NUMBER = re.compile(r"^v?(\d+)")
+# A requirement carries its comparator: `>=0.26.0` is version 0, not a
+# string starting with a bracket.
+_LEADING_NUMBER = re.compile(r"^[<>=~^!\s]*v?(\d+)")
 
 
 def bump_in(title: str) -> tuple[str, str, str] | None:
@@ -49,18 +56,46 @@ def is_a_major_bump(old: str, new: str) -> bool:
     return before.group(1) != after.group(1)
 
 
-def _check_state(pull: dict) -> tuple[list[str], list[str]]:
-    """(failing, unfinished) check names."""
-    failing, unfinished = [], []
+# CANCELLED, SKIPPED and STALE are deliberately absent from both sets
+# below. A cancelled run did not fail; it gave no answer, usually
+# because a newer push superseded it. Naming it as a failure refused two
+# pull requests whose checks had passed.
+_FAILED = {"FAILURE", "TIMED_OUT", "ACTION_REQUIRED", "STARTUP_FAILURE"}
+_RUNNING = {"PENDING", "IN_PROGRESS", "QUEUED", "EXPECTED", "WAITING", ""}
+
+
+def latest_of_each(pull: dict) -> list[dict]:
+    """One entry per check name: the most recent run of it.
+
+    A pull request keeps every run of a check, not just the current one.
+    Pushing again cancels the run in flight and starts another, so the
+    rollup holds a cancelled entry and a successful entry under the same
+    name. Reading them all as equal reported "checks are failing: readme"
+    on two pull requests whose readme check had passed forty seconds
+    after being superseded.
+    """
+    newest: dict[str, dict] = {}
     for check in pull.get("statusCheckRollup") or []:
+        name = str(check.get("name") or check.get("context") or "a check")
+        when = str(check.get("completedAt") or check.get("startedAt") or "")
+        seen = newest.get(name)
+        if seen is None or when >= str(
+            seen.get("completedAt") or seen.get("startedAt") or ""
+        ):
+            newest[name] = check
+    return [newest[name] for name in sorted(newest)]
+
+
+def _check_state(pull: dict) -> tuple[list[str], list[str]]:
+    """(failing, unfinished) check names, counting each check once."""
+    failing, unfinished = [], []
+    for check in latest_of_each(pull):
         name = str(check.get("name") or check.get("context") or "a check")
         conclusion = (check.get("conclusion") or "").upper()
         state = (check.get("state") or check.get("status") or "").upper()
-        if conclusion in {"FAILURE", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED"}:
+        if conclusion in _FAILED:
             failing.append(name)
-        elif conclusion in {"", "NEUTRAL"} and state in {
-            "PENDING", "IN_PROGRESS", "QUEUED", "EXPECTED", "WAITING", ""
-        }:
+        elif conclusion in {"", "NEUTRAL"} and state in _RUNNING:
             unfinished.append(name)
     return sorted(set(failing)), sorted(set(unfinished))
 
