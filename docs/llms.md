@@ -32,7 +32,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [First-run four jobs]({{ '/investigations/first-run-four/' | absolute_url }}): The four Start commands. First fail, then mechanical pass. 29 Aug 2026.
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.
-- [What the harness cannot fix]({{ '/investigations/limits/' | absolute_url }}): Four measurements where the harness knew something and it made no difference.
+- [What the harness cannot fix]({{ '/investigations/limits/' | absolute_url }}): Five measurements where the harness knew something and it made no difference.
 - [When a run says done and means nothing]({{ '/investigations/false-finish/' | absolute_url }}): A fifth of failures reported success having written nothing. Measured 5 in 10, then 0 in 10.
 - [Asking a bigger model]({{ '/investigations/asking-a-bigger-model/' | absolute_url }}): A run that stops to ask has failed 3 times out of 3. A spent step budget means nothing half the time.
 - [Small steps, measured]({{ '/investigations/small-steps/' | absolute_url }}): A chain of easy tasks did not beat one hard task, because separate runs do not share a memory.

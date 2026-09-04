@@ -1,13 +1,13 @@
 ---
 title: What the harness cannot fix
-description: Four measurements from one week. A refusal calibrated 0 for 5, a pointer the model ignored 3 times out of 3, platform work at three of four on stock weights, and a fine-tune that scored 0 of 4.
+description: Five measurements from one week. A refusal calibrated 0 for 5, a pointer the model ignored 3 times out of 3, platform work at three of four on stock weights, a fine-tune that scored 0 of 4, and a week of real work that produced no training data at all.
 permalink: /investigations/limits/
 date: 2026-09-04
 type: article
 ---
 
 Most of the work on this harness has been finding gaps a refusal or an
-oracle can close, and most of them can be closed. These four could not,
+oracle can close, and most of them can be closed. These five could not,
 and each says something different about where the line is.
 
 ## A refusal that was right and useless
@@ -103,9 +103,44 @@ The idea is right in one specific form and the sequencing is the whole
 of it. The harness comes first. A fine-tune done alone is not a smaller
 win, it is a loss.
 
+
+## The measurement that could not be taken
+
+The question behind all of this is whether to train a model of your own:
+Python and platform work only, small enough to run on a laptop. Deciding
+it needs a fine-tune measured against the harness-only baseline, and
+that measurement could not be taken, for a reason worth writing down.
+
+```
+data/agent-loop/train.jsonl     30 rows
+data/python-vibe/train.jsonl    35 rows
+```
+
+Sixty-five rows. Not because the data is hard to come by — the harness
+records every turn of every run — but because recording was behind a
+flag, and nobody passes a flag they have to remember. A week of real
+work on this repository, doing exactly the jobs the tool is for,
+produced none of it.
+
+A trace not written is not recoverable. The run happened, the model
+answered, the file changed, and the record of it is gone.
+
+Recording is on by default now. Measured on a copy of this project, one
+run leaves twenty rows and two runs leave forty — **more than the
+project had accumulated in its whole life.**
+
+So the answer to the question is not "no". It is that the input does not
+exist yet, and the reason it does not exist was a default. At a few
+thousand traces the experiment is cheap and decisive: train a LoRA, run
+it against the harness-only baseline on tier 6 at `--repeat 5`, and
+believe a gap only if it is bigger than four cases.
+
+Until then, the honest position is the one the other three measurements
+above point at. The weights have not been the constraint.
+
 ## What these have in common
 
-Three of the four are cases where the harness knew something and it
+Four of the five are cases where the harness knew something and it
 made no difference — a refusal nobody needed, a pointer nobody used,
 weights that were not the constraint. The fourth is the one that
 worked, and it worked by checking rather than by knowing: install the

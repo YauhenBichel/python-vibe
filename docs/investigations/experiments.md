@@ -272,6 +272,7 @@ did.
 | Telling the model what the project already has | Pointer correct, **ignored 3 of 3** |
 | Platform work on stock `llama3.1:8b` | **6 of 8** over two passes, no new weights |
 | This project's own fine-tune | **0 of 4** held-out, worse than its base model |
+| Training data collected in a week of real work | **0 rows** — recording was behind a flag |
 
 Three of the four are cases where the harness knew something and it made
 no difference. The one that worked, worked by running something: a
