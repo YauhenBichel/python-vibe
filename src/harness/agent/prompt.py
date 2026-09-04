@@ -18,6 +18,7 @@ from pathlib import Path
 from harness.act.autofix import apply_mechanical
 from harness.agent.options import AgentOptions
 from harness.locate import prelude, signature_line
+from harness.scan.existing import already_covers
 from harness.scan.project_brief import (
     ProjectBrief,
     classify_project,
@@ -97,6 +98,14 @@ def build_preamble(options: AgentOptions) -> Preamble:
     )
     if pre_text:
         notes.append(pre_text)
+
+    # What the project already has for this. A run once wrote its own
+    # worse copy of a check that was three files away, because nothing
+    # said so.
+    covered = already_covers(project, task, skip=located_path)
+    if covered:
+        notes.append(covered)
+        pre_text = f"{pre_text}\n\n{covered}" if pre_text else covered
 
     ticket = issue_number(task)
     if ticket:
