@@ -35,6 +35,18 @@ def redact(text: str) -> str:
     return _BARE_HOST.sub("[host]", text)
 
 
+# Where a run writes its turns when nobody says otherwise. Inside the
+# project, because the traces are about that project's code, and hidden
+# because nobody wants it in a listing.
+TRACE_DIR = ".python-vibe"
+TRACE_FILE = "traces.jsonl"
+
+
+def default_trace_path(project: Path) -> Path:
+    """Where turns go when no --record is given."""
+    return Path(project) / TRACE_DIR / TRACE_FILE
+
+
 def append_turn(path: Path, row: dict[str, str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     clean = {key: redact(str(value)) for key, value in row.items()}

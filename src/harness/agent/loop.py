@@ -13,6 +13,7 @@ an allowed action out.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from harness.act.autofix import apply_cover_test, apply_person_bind, unbound_typo
 from harness.act.parse import parse_turn_smart
@@ -32,7 +33,7 @@ from harness.locate import named_file_review_summary
 from harness.memory import Conversation
 from harness.model.engine import make_generate
 from harness.model.ollama_generate import CONTEXT_TOKENS
-from harness.observe.trace_record import append_turn
+from harness.observe.trace_record import append_turn, default_trace_path
 from harness.scan.design import render_design_review
 from harness.task import (
     looks_like_add_feature,
@@ -62,6 +63,37 @@ class Question:
             return self.text
         listed = "\n".join(f"  {i}. {opt}" for i, opt in enumerate(self.options, 1))
         return f"{self.text}\n{listed}"
+
+
+def trace_path(options: AgentOptions) -> Path | None:
+    """Where this run writes its turns, or None when it writes none.
+
+    Recording is on unless asked not to. A run that records nothing
+    leaves no way to measure it afterwards, and there is no getting the
+    trace back: this project reached sixty-five rows of training data
+    while doing a week of real work, because the flag was opt-in.
+    """
+    if options.keep_no_record:
+        return None
+    if options.record is not None:
+        return options.record.expanduser()
+    return default_trace_path(options.resolved_project())
+
+
+def _trace_result(options: AgentOptions, result: AgentResult) -> None:
+    """Keep a row for a run that never reached the model."""
+    dest = trace_path(options)
+    if dest is None:
+        return
+    append_turn(
+        dest,
+        {
+            "user": options.task,
+            "assistant": result.summary,
+            "action": result.stopped,
+            "stopped": result.stopped,
+        },
+    )
 
 
 def _question_from(turn) -> Question:
@@ -163,6 +195,7 @@ class Agent:
         ):
             finished = decide(run)
             if finished is not None:
+                _trace_result(run.options, finished)
                 return finished
 
         return self._work_with_the_model(run)
@@ -341,9 +374,10 @@ class Agent:
                 question=looks_like_question(options.task),
                 ship=looks_like_ship(options.task),
             )
-            if options.record:
+            trace = trace_path(options)
+            if trace is not None:
                 append_turn(
-                    options.record.expanduser(),
+                    trace,
                     {
                         "user": prompt,
                         "assistant": draft,

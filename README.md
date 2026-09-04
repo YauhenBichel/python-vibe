@@ -255,17 +255,17 @@ PYTHONPATH=src python3.13 scripts/weights/build_data.py
 PYTHONPATH=src python3.13 scripts/weights/train.py
 ```
 
-Everyday tool loop (7B-class, after you record traces):
+Everyday tool loop (7B-class, after you have traces):
 
 ```bash
-PYTHONPATH=src python3.13 scripts/run/agent.py --project /path/to/your/app \
-  --record data/agent-loop/extra.jsonl \
-  "find a real NameError and fix it"
+python-vibe run "find a real NameError and fix it"
 PYTHONPATH=src python3.13 scripts/weights/build_agent_data.py
 PYTHONPATH=src python3.13 scripts/weights/train.py --everyday
 ```
 
-`extra.jsonl` is gitignored. Do not commit live paths or keys.
+Turns land in `.python-vibe/traces.jsonl` unless you pass `--no-record`.
+That folder is gitignored. `--record path.jsonl` writes somewhere else.
+Do not commit live paths or keys.
 
 ## Test
 

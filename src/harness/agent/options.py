@@ -38,6 +38,11 @@ class AgentOptions:
         allow_writes: when False, patch, edit and run are refused and the
             project is not modified. Used for the HTTP server and --dry-run.
         record: file to append redacted turns to, for training data.
+            None means the project's own `.python-vibe/traces.jsonl`,
+            which is the default: a run that records nothing leaves no
+            way to measure it later, and every trace thrown away is a
+            trace nobody gets back. `keep_no_record` turns it off.
+        keep_no_record: write no trace at all.
         system: system prompt template. Placeholders are filled per run.
         on_event: called with progress messages. None means print nothing.
         on_question: called when the agent asks the user something. None
@@ -54,6 +59,7 @@ class AgentOptions:
     max_tokens: int = DEFAULT_MAX_TOKENS
     allow_writes: bool = True
     record: Path | None = None
+    keep_no_record: bool = False
     system: str = AGENT_SYSTEM
     on_event: Callable[[str, str], None] | None = None
     # Answering a question is optional. No handler means the loop stops
