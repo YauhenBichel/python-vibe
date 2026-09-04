@@ -404,6 +404,13 @@ Thank you to everyone who has helped python-vibe.
 					<sub><b>Aditya</b></sub>
 				</a>
 			</td>
+			<td align="center">
+				<a href="https://github.com/kkkhs">
+					<img src="https://avatars.githubusercontent.com/kkkhs?s=48" width="48" alt="Huangshuo Kuang" />
+					<br />
+					<sub><b>Huangshuo Kuang</b></sub>
+				</a>
+			</td>
 		</tr>
 	</tbody>
 </table>
