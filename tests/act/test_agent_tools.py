@@ -62,13 +62,16 @@ class AgentToolsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             dest = root / "ok.py"
-            dest.write_text("def add(a: int, b: int) -> int:\n    return a + b\n", encoding="utf-8")
+            dest.write_text(
+                "def add(left: int, right: int) -> int:\n    return left + right\n",
+                encoding="utf-8",
+            )
             out = patch_py(
                 root,
                 "ok.py",
                 "",
                 "",
-                append="def multiply(a: int, b: int) -> int:\n    return a * b\n",
+                append="def multiply(left: int, right: int) -> int:\n    return left * right\n",
             )
             self.assertIn("patched", out)
             text = dest.read_text(encoding="utf-8")

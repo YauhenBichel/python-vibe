@@ -108,7 +108,7 @@ A free bash tool does not transfer to an 8B on a laptop working tree.
 
 ## Improve next (already specified in-tree)
 
-1. Design loop is wired: review may edit, re-scan after each one-split, refuse done while findings remain.
+1. The design loop runs: review may edit, re-scan after each one-split, refuse done while findings remain.
 2. Auto-pick review-design, refactor-split, readable-layout. refuse_thin_review is in the done handler.
 3. Refuse done on add / rename until a passing unittest (new-package already does).
 4. Quote more of a small file so answers include nearby constants.

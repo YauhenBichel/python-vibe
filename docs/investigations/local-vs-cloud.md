@@ -8,7 +8,7 @@ type: article
 
 # Local loop vs hosted agents
 
-Every weight, CLI, and wiring path in this repo, set next to a hosted IDE agent with native tools, extra servers, a browser, and a 100k–1M context window.
+Every weight, CLI, and way of connecting them in this repo, set next to a hosted IDE agent with native tools, extra servers, a browser, and a 100k–1M context window.
 
 Measured on one laptop (29 Aug 2026): Ollama `llama3.1:8b`, `qwen2.5-coder:0.5b`, Hub [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b). The hosted column is a frontier coding agent in an IDE, not a local weight.
 

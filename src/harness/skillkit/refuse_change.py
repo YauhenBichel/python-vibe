@@ -62,14 +62,14 @@ _OPAQUE = frozenset(
 )
 
 
-def _opaque_param(draft: str) -> str:
+def _opaque_param(draft: str, asked: frozenset[str] = frozenset()) -> str:
     for match in re.finditer(r"^def\s+\w+\s*\((.*?)\)", draft, re.MULTILINE | re.DOTALL):
         for part in match.group(1).split(","):
             token = part.strip()
             if not token or token.startswith("*"):
                 continue
             name = token.split(":")[0].split("=")[0].strip()
-            if name in _OK_PARAM:
+            if name in _OK_PARAM or name in asked:
                 continue
             if len(name) == 1 or name in _OPAQUE:
                 return (
@@ -285,12 +285,46 @@ def refuse_platform_draft(rel: str, draft: str) -> str:
     return ""
 
 
-def refuse_opaque_names(draft: str) -> str:
+# A task that spells a signature has chosen the names in it. `add a
+# function double(n) that returns n times two` asks for `n`, and a rule
+# that refuses `n` there is arguing with the person who typed it.
+_SIGNATURE = re.compile(r"\b([a-zA-Z_]\w*)\s*\(([^)]*)\)")
+
+
+def names_the_task_asked_for(task: str) -> frozenset[str]:
+    """Every function and parameter name the task spells out itself."""
+    asked: set[str] = set()
+    for match in _SIGNATURE.finditer(task or ""):
+        asked.add(match.group(1))
+        for part in match.group(2).split(","):
+            name = part.strip().split(":")[0].split("=")[0].strip()
+            if name and name.isidentifier():
+                asked.add(name)
+    return frozenset(asked)
+
+
+def refuse_opaque_names(draft: str, task: str = "") -> str:
+    """Refuse a name nobody can read, unless the task asked for it.
+
+    This rule was written and tested, and nothing ever called it. It sat
+    from the test that checks every draft rule is in the table, behind a
+    comment saying it was "called from the draft rules themselves",
+    which was not true.
+
+    Wiring it as it stood would have refused the benchmark's own tier-1
+    case: the task is `add a function double(n) that returns n times
+    two`, and `n` is the parameter the task names. Refusing a draft for
+    doing what it was told is worse than not checking at all, and is
+    the likeliest reason this was left dead rather than fixed.
+    """
     if not draft.strip():
         return ""
+    asked = names_the_task_asked_for(task)
     for match in _DEF.finditer(draft):
         name = match.group(1)
         if name.startswith("test_") or (name.startswith("__") and name.endswith("__")):
+            continue
+        if name in asked:
             continue
         if len(name) == 1 or name in _OPAQUE:
             return (
@@ -299,7 +333,7 @@ def refuse_opaque_names(draft: str) -> str:
             )
         if name != name.lower() or any(ch.isupper() for ch in name):
             return f"functions are snake_case: {name}"
-    param = _opaque_param(draft)
+    param = _opaque_param(draft, asked)
     if param:
         return param
     for match in _CLASS.finditer(draft):

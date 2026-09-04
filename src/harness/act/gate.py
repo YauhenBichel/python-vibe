@@ -19,6 +19,7 @@ from harness.paths import rel_posix
 from harness.skillkit.refuse_change import (
     refuse_add_opens_file,
     refuse_layout,
+    refuse_opaque_names,
     refuse_ops_draft,
     refuse_platform_draft,
     refuse_rename_incomplete,
@@ -186,6 +187,7 @@ CHANGE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
         lambda c: refuse_rename_incomplete(c.task, c.rel, c.draft),
     ),
     ("weak test", lambda c: refuse_weak_test(c.rel, c.fragment or c.draft)),
+    ("opaque names", lambda c: refuse_opaque_names(c.draft, c.task)),
 )
 
 
