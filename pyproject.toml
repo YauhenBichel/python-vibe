@@ -28,8 +28,8 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-hub = ["huggingface_hub>=0.26.0"]
-train = ["mlx-lm[train]>=0.26.0", "pyyaml>=6.0", "huggingface_hub>=0.26.0"]
+hub = ["huggingface_hub>=1.29.0"]
+train = ["mlx-lm[train]>=0.26.0", "pyyaml>=6.0", "huggingface_hub>=1.29.0"]
 
 [project.scripts]
 python-vibe = "harness.cli:main"

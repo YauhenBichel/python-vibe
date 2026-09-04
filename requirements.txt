@@ -2,4 +2,4 @@
 # Use Homebrew Python 3.13 — mlx does not install cleanly on 3.14 yet.
 mlx-lm[train]>=0.31.3
 pyyaml>=6.0.3
-huggingface_hub>=1.28.0
+huggingface_hub>=1.29.0
