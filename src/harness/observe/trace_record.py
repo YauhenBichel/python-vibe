@@ -15,8 +15,15 @@ from harness.secrets import secret_in
 _ALSO_REDACT = re.compile(r"(HF_TOKEN=|-----BEGIN )")
 _HOME = re.compile(r"/(Users|home)/[^/\s]+")
 _URL_HOST = re.compile(r"\b([a-z][a-z0-9+.-]*://)(?:[^/@\s]+@)?([^/\s]+)", re.IGNORECASE)
+# A hostname with no scheme in front of it. `.home` and `.local` are
+# deliberately absent from the list without a port: `Path.home()` is
+# standard Python and `settings.local.json` is a real file name, and a
+# trace is training data, so mangling either teaches the model a
+# mistake. With a port there is no ambiguity — `box.local:8443` is a
+# host and `Path.home()` never carries one.
 _BARE_HOST = re.compile(
-    r"\b[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.(?:local|lan|internal|corp|home)(?::\d+)?\b"
+    r"\b[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*"
+    r"(?:\.(?:lan|internal|corp)(?::\d+)?|\.(?:local|home):\d+)\b"
 )
 
 
