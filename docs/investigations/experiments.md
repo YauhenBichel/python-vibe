@@ -249,8 +249,19 @@ tokens (`num_ctx` 8,192). Same builder as `eval_daily.py`. Cap 180s.
 The 8B and the 7B coder opened with `Action: patch`. DeepSeek opened
 with `Action: skill` then a patch. SWE-agent-LM opened with prose.
 The helper first turn is not too big to finish once a generate has
-already succeeded on the machine. Daily clamp still timed out on a
-load that did not return in 180s. That is not a nine-cell table.
+already succeeded on the machine.
+
+**Cold first helper chat, same night.** Unload (`keep_alive` 0),
+then the same first clamp chat. Cap 180s.
+
+| Model | Load | Wall |
+| --- | --- | --- |
+| `llama3.1:8b` | 8.0 s (7B still listed) | **17.1 s** |
+| `deepseek-coder:6.7b` | 25.2 s (empty) | **53.6 s** |
+| `swe-agent-lm:7b` | 28.2 s (empty) | **37.9 s** |
+
+A clean cold first turn is well under 180s. Daily clamp still timed
+out when a load returned no bytes. That is not a nine-cell table.
 **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
@@ -627,11 +638,11 @@ python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 
 **Result.** Both tags are on disk. A one-word generate hit 180s on
 OpenCoder and finished in 19.6 s on SWE-agent-LM. The first helper
-clamp chat (~1,700 tokens) finished in 33 s on SWE-agent-LM. Daily
-clamp timed out on a load that did not return in 180s (write-tests
-3 / 3 is the compiler bind, no model). That is not a score. Default
-stays `llama3.1:8b`. Other 7B–8B weights that fit this laptop, and
-the ones that do not, are listed on
+clamp chat (~1,700 tokens) finished in 38 s on a clean cold load of
+SWE-agent-LM. Daily clamp timed out when a load returned no bytes
+(write-tests 3 / 3 is the compiler bind, no model). That is not a
+score. Default stays `llama3.1:8b`. Other 7B–8B weights that fit
+this laptop, and the ones that do not, are listed on
 [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).

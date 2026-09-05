@@ -69,7 +69,7 @@ One laptop. 29 Aug–5 Sep 2026. **Not everyday-ready.**
 | Four Start commands on `demo/orders` | **0 / 4**, then **4 / 4** after the harness |
 | Same bench, code must run | 8B **6–9 / 9**; 7B coder 7 / 9; 30B timeout |
 | Same-night daily (write tests, clamp, sum × 3) | 8B **9 / 9**, 7B coder **7 / 9**. Keep the 8B |
-| Extra 7B–8B on disk | First helper clamp chat is ~1,700 tokens and 12–39 s. Daily still timed out on a cold load |
+| Extra 7B–8B on disk | Clean cold first helper chat 38–54 s. Daily timed out when a load returned no bytes |
 | A real repository (4,580 files) | reading works; writing **1 / 12** |
 
 The long table: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).

@@ -47,11 +47,11 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `llama3.2:1b` → [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 1.3 GB | On disk. **No `Action:` parse.** |
 | `qwen3coder` 30B-class | 18 GB | Already timed out at the 180s Ollama cap. |
 | `qwen2.5-coder:7b` | 4.7 GB | On disk. Same-night daily **7 / 9**. Do not switch. |
-| `deepseek-coder:6.7b` | 3.8 GB | On disk. First helper clamp chat **39 s**. Daily clamp still incomplete. |
+| `deepseek-coder:6.7b` | 3.8 GB | On disk. Cold first helper chat **54 s**. Daily clamp still incomplete. |
 | `starcoder2:7b` | 4.0 GB | On disk. One-word generate hit 180s. Completion-style. |
 | `codellama:7b-python` | 3.8 GB | On disk. One-word generate hit 180s. |
 | `opencoder:8b` | 4.7 GB | On disk. One-word generate hit 180s. |
-| `swe-agent-lm:7b` | 4.7 GB | On disk. First helper clamp chat **33 s**. Daily still timed out on a cold load. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Cold first helper chat **38 s**. Daily timed out when a load returned no bytes. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -83,11 +83,10 @@ repeat it.
 
 **Result.** Both tags are on this laptop: `opencoder:8b` and
 `swe-agent-lm:7b`. The first helper clamp chat is about 1,700 tokens.
-SWE-agent-LM finished it in 33 s (opened with prose, not `Action:`).
-OpenCoder still misses a one-word generate. Daily clamp timed out on
-a load that did not return in 180s. Write-tests was 3 / 3 with no
-model (harness AAA bind). That is not a score. Do not switch the
-default.
+A clean cold first turn on SWE-agent-LM was 38 s (load 28 s).
+OpenCoder still misses a one-word generate. Daily clamp timed out
+when a load returned no bytes. Write-tests was 3 / 3 with no model
+(harness AAA bind). That is not a score. Do not switch the default.
 
 ## What else fits this laptop
 
@@ -111,7 +110,7 @@ These write Python. None of them were trained on python-vibe
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. One-word generate hit 180s. Completion-style. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | On disk. One-word generate hit 180s. |
 | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. One-word generate hit 180s. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. First helper clamp chat 33 s. Daily still timed out on a cold load. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Cold first helper chat 38 s. Daily timed out when a load returned no bytes. |
 
 ### Fits, measure later
 
