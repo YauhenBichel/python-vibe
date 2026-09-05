@@ -46,6 +46,8 @@ class PagesInvestigationsTest(unittest.TestCase):
             "investigations/hub-models.md",
             "investigations/first-run-four.md",
             "investigations/experiments.md",
+            "investigations/held-out-exec-eval.md",
+            "cite.md",
             "investigations/bench-record.md",
             "investigations/cloud-weights.md",
         )

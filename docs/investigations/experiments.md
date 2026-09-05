@@ -15,8 +15,8 @@ a bug, add one function. One laptop. 29–30 August 2026.
 `llama3.1:8b` on live parse **and** a real ≥1 KB fix.
 
 <div class="stats">
-  <div class="stat"><b>0 / 4</b><span>0.5B held-out vibe</span></div>
-  <div class="stat"><b>0 / 4 → 4 / 4</b><span>Four Start commands</span></div>
+  <div class="stat"><b>7 / 54</b><span>0.5B exact stdout</span></div>
+  <div class="stat"><b>12 / 54</b><span>0.5B after one repair</span></div>
   <div class="stat"><b>8 / 15</b><span>8B live first Action</span></div>
   <div class="stat"><b>6–9 / 9</b><span>8B when the code must run, six runs</span></div>
 </div>
@@ -34,6 +34,7 @@ GitHub thread:
 <p>On this page</p>
 <ol>
   <li><a href="#the-05b-as-daily-work">The 0.5B as daily work</a></li>
+  <li><a href="#exact-stdout-on-the-05b">Exact stdout on the 0.5B</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
   <li><a href="#which-small-open-model">Which small open model</a></li>
   <li><a href="#train-more-or-not">Train more, or not</a></li>
@@ -62,6 +63,27 @@ The 0.5B is a style prior. It is not daily work. I am not training more
 
 Write-up: [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }})
 · [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}).
+
+## Exact stdout on the 0.5B
+
+**Example.** Eighteen held-out scripts. None of the 45 train prompts.
+Extract the Python block, run it, demand an exact line. Repeat each
+task three times. Then send the traceback back once.
+
+**Result, 5 September 2026**, Ollama `qwen2.5-coder:0.5b`:
+
+| Variant | Passed |
+| --- | --- |
+| base | **7 / 54** |
+| one traceback repair | **12 / 54** |
+
+24 of 54 base runs crashed (often `sys` used, never imported). 23 printed
+the right number with extra words (`Clamped value: 10`). Eleven of
+eighteen tasks never passed. LoRA was not measured (`mlx-lm` missing).
+Unit tests for the checkers passed.
+
+Write-up: [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}).
+Cite: [Cite]({{ '/cite/' | relative_url }}).
 
 ## Four jobs, as typed
 
