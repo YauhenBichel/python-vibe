@@ -141,6 +141,7 @@ Bench record (machine, models, every run) {{ '/investigations/bench-record/' | a
 Cloud weights {{ '/investigations/cloud-weights/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
 Same jobs {{ '/investigations/same-jobs/' | absolute_url }}
+Where the failures are {{ '/investigations/failures/' | absolute_url }}
 What the harness cannot fix {{ '/investigations/limits/' | absolute_url }}
 When a run says done and means nothing {{ '/investigations/false-finish/' | absolute_url }}
 Asking a bigger model {{ '/investigations/asking-a-bigger-model/' | absolute_url }}
