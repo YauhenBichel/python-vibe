@@ -120,7 +120,9 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn("prefers-color-scheme: dark", css)
         self.assertIn("color-scheme: light dark", css)
-        self.assertLess(len(css.encode("utf-8")), 9000)
+        self.assertIn("border-radius", css)
+        self.assertIn("--card", css)
+        self.assertLess(len(css.encode("utf-8")), 14000)
 
     def test_no_personal_devbox_paths_in_pages(self) -> None:
         hits: list[str] = []
@@ -179,7 +181,10 @@ class PagesInvestigationsTest(unittest.TestCase):
 
     def test_home_is_a_short_map_in_plain_words(self) -> None:
         home = (DOCS / "index.md").read_text(encoding="utf-8")
-        self.assertIn("| Command | What it does |", home)
+        self.assertIn('class="cards"', home)
+        self.assertIn("<code>brief</code>", home)
+        self.assertIn("<code>ask</code>", home)
+        self.assertIn("<code>run</code>", home)
         self.assertIn("| Page | What is on it |", home)
         self.assertIn("{{ '/api/' | relative_url }}", home)
         self.assertIn("{{ '/tree/' | relative_url }}", home)

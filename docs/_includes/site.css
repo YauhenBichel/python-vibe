@@ -1,30 +1,29 @@
 :root {
   color-scheme: light dark;
-  --paper: #f3eee4;
-  --ink: #16140f;
-  --mute: #3f3a33;
-  --line: #cfc6b6;
-  --accent: #8a2d0f;
-  --code: #e8e1d4;
-  --focus: #0b57d0;
-  --space: clamp(1rem, 3vw, 1.35rem);
-  /* Prose stays near 70 characters, which is where reading is easiest.
-     Everything else — the header, code, tables, diagrams — may use the
-     window. The whole page used to stop at 48rem, so a wide screen showed
-     a narrow strip with most of the glass empty. */
-  --measure: 46rem;   /* running prose, about 72 characters */
-  --wide: 84rem;      /* the whole layout, header bar included */
-  --side: 13.5rem;    /* the section list beside the page */
+  --paper: #f5f6f8;
+  --ink: #12141a;
+  --mute: #5b6170;
+  --line: #dfe3ea;
+  --accent: #2563eb;
+  --code: #eceff4;
+  --card: #fff;
+  --focus: #2563eb;
+  --radius: 0.85rem;
+  --space: clamp(1rem, 3vw, 1.5rem);
+  --measure: 46rem;
+  --wide: 84rem;
+  --side: 13.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #14130f;
-    --ink: #ece7dc;
-    --mute: #c4bdb0;
-    --line: #3a372f;
-    --accent: #e8a07a;
-    --code: #1e1c17;
+    --paper: #0b0c0f;
+    --ink: #eceef2;
+    --mute: #a7adb8;
+    --line: #2a2d36;
+    --accent: #8ab4ff;
+    --code: #16181e;
+    --card: #14161c;
     --focus: #8ab4ff;
   }
 }
@@ -38,7 +37,7 @@
 html {
   background: var(--paper);
   color: var(--ink);
-  font: 1rem/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  font: 1.02rem/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -55,60 +54,95 @@ body {
   left: var(--space);
   top: 0.4rem;
   padding: 0.4rem 0.7rem;
-  background: var(--paper);
+  background: var(--card);
   color: var(--ink);
   transform: translateY(-160%);
-  z-index: 5;
+  z-index: 6;
 }
 
 .skip:focus { transform: none; }
 
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  border-bottom: 1px solid var(--line);
+  box-shadow: inset 0 -2px 0 var(--accent);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.top-in {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(var(--wide), 100%);
+  margin: 0 auto;
+  padding: 0.65rem var(--space);
+}
+
 .mark {
-  font: 600 0.95rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font: 650 0.98rem/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.03em;
   color: var(--ink);
   text-decoration: none;
-  min-height: 2.75rem;
+  min-height: 2.5rem;
   display: inline-flex;
   align-items: center;
 }
 
 .tag {
-  margin: -0.55rem 0 0.15rem;
+  margin: 0;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
   color: var(--mute);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.15rem 0.2rem;
-  width: 100%;
-  font: 0.82rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-
-.nav a {
-  color: var(--accent);
+.top-in .src {
+  margin-left: auto;
+  color: var(--ink);
   text-decoration: none;
-  min-height: 2.5rem;
-  padding: 0 0.5rem;
+  font-size: 0.88rem;
+  min-height: 2.25rem;
   display: inline-flex;
   align-items: center;
 }
 
-.nav a.nav-source {
-  color: var(--ink);
+.top-in .src:hover { color: var(--accent); }
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  width: 100%;
+  font-size: 0.92rem;
 }
+
+.nav a {
+  color: var(--mute);
+  text-decoration: none;
+  min-height: 2.35rem;
+  padding: 0 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+}
+
+.nav a:hover { color: var(--ink); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 
 .nav a[aria-current="page"] {
   color: var(--ink);
-  box-shadow: inset 0 -2px 0 var(--ink);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .crumbs {
-  font: 0.8rem/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
   color: var(--mute);
-  margin: 0 0 1rem;
+  margin: 0 0 1.1rem;
 }
 
 .crumbs a { color: var(--accent); }
@@ -116,37 +150,36 @@ body {
 .toc {
   max-width: var(--measure);
   margin: 0 0 1.5rem;
-  padding: 0.7rem 0 0.7rem 1rem;
-  border-left: 2px solid var(--line);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
 }
 
 .toc p { margin: 0 0 0.35rem; color: var(--mute); font-size: 0.85rem; }
 .toc ol { margin: 0; padding-left: 1.1rem; }
 
-.quiet { font-size: 0.8rem; }
+.quiet { font-size: 0.8rem; color: var(--mute); }
 
 h1, h2, h3 {
-  line-height: 1.25;
-  font-weight: 600;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.03em;
   text-wrap: balance;
-  scroll-margin-top: 4.25rem;
+  scroll-margin-top: 5rem;
 }
 
-h1 { font-size: clamp(1.45rem, 1.1rem + 1.4vw, 1.85rem); margin: 0 0 0.55rem; }
-h2 { font-size: 1.2rem; margin: 1.85rem 0 0.5rem; }
-h3 { font-size: 1.02rem; margin: 1.3rem 0 0.35rem; }
+h1 { font-size: clamp(1.7rem, 1.2rem + 2vw, 2.35rem); margin: 0 0 0.7rem; }
+h2 { font-size: 1.15rem; margin: 2rem 0 0.65rem; }
+h3 { font-size: 1rem; margin: 1.3rem 0 0.35rem; }
 
 p, li { color: var(--ink); }
-.lede, .page > p:first-of-type { color: var(--mute); }
+.lede, .page > p:first-of-type { color: var(--mute); font-size: 1.08rem; }
 
 a { color: var(--accent); text-underline-offset: 0.15em; }
 a:hover { text-decoration-thickness: 2px; }
 
-:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 :target { outline: 2px dashed var(--line); outline-offset: 4px; }
 
 code, pre, kbd {
@@ -156,18 +189,20 @@ code, pre, kbd {
 
 code, kbd {
   background: var(--code);
-  padding: 0.1em 0.35em;
+  border-radius: 0.35rem;
+  padding: 0.12em 0.38em;
 }
 
 pre {
-  background: var(--code);
-  padding: 0.85rem 1rem;
+  background: var(--card);
+  padding: 1rem 1.1rem;
   overflow-x: auto;
   border: 1px solid var(--line);
+  border-radius: var(--radius);
   -webkit-overflow-scrolling: touch;
 }
 
-img { max-width: 100%; height: auto; }
+img { max-width: 100%; height: auto; border-radius: var(--radius); }
 
 pre code { background: none; padding: 0; font-size: 0.95em; }
 
@@ -176,8 +211,11 @@ table {
   width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
-  font-size: 0.9rem;
-  margin: 1rem 0 1.35rem;
+  font-size: 0.92rem;
+  margin: 1rem 0 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -186,35 +224,39 @@ thead, tbody { display: table; width: 100%; }
 th, td {
   text-align: left;
   vertical-align: top;
-  padding: 0.5rem 0.7rem 0.5rem 0;
+  padding: 0.7rem 0.9rem;
   border-bottom: 1px solid var(--line);
 }
 
 th {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--mute);
 }
 
-.stats {
+.stats, .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
-  gap: 0.75rem;
-  margin: 1.15rem 0 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.8rem;
+  margin: 1.2rem 0 1.6rem;
 }
 
-.stat {
-  border-top: 2px solid var(--ink);
-  padding-top: 0.4rem;
+.stat, .card, .track {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.05rem;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
 }
 
-.stat b {
+.stat b, .card-k {
   display: block;
-  font: 600 1.25rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  margin: 0 0 0.35rem;
+  font: 650 1.05rem/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
-.stat span { color: var(--mute); font-size: 0.85rem; }
+.stat span, .card p { margin: 0; color: var(--mute); font-size: 0.92rem; }
 
 .tracks {
   display: grid;
@@ -227,50 +269,64 @@ th {
   .tracks { grid-template-columns: 1fr 1fr; }
 }
 
-.track {
-  border: 1px solid var(--line);
-  padding: 0.85rem 1rem;
-}
-
 .track h2 { margin-top: 0; }
 
 .cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem 0.7rem;
-  margin: 1.15rem 0 1.5rem;
+  gap: 0.65rem;
+  margin: 1.35rem 0 1.7rem;
 }
 
 .cta a {
   display: inline-flex;
   align-items: center;
-  min-height: 2.75rem;
-  padding: 0 0.9rem;
+  min-height: 2.7rem;
+  padding: 0 1.05rem;
   text-decoration: none;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
   color: var(--ink);
 }
 
 .cta a:first-child {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
-.need {
-  max-width: var(--measure);
-  margin: 0 0 1.25rem;
-  padding-left: 1.15rem;
+.hero {
+  margin: 0 0 1.6rem;
+  padding: 1.35rem 1.35rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 0.15rem);
+  background:
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 55%),
+    var(--card);
 }
+
+.hero h1 { margin-bottom: 0.55rem; }
+.hero > p:first-of-type { margin-top: 0; color: var(--mute); font-size: 1.08rem; max-width: 40rem; }
+.hero .cta { margin-bottom: 0.15rem; }
+
+.need { max-width: var(--measure); margin: 0 0 1.25rem; padding-left: 1.15rem; }
 
 ul { padding-left: 1.2rem; }
 
+.foot {
+  margin-top: 2.5rem;
+  padding: 1.4rem var(--space) 2rem;
+  border-top: 1px solid var(--line);
+  color: var(--mute);
+  font-size: 0.88rem;
+}
+
+.foot p { max-width: min(var(--wide), 100%); margin: 0.25rem auto; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-  }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
 @media print {
@@ -281,89 +337,49 @@ ul { padding-left: 1.2rem; }
   pre, table { overflow: visible; }
 }
 
-/* A table wider than the window scrolls itself rather than the page. */
-
-/* ---- the shell -------------------------------------------------------
-   A bar across the top, a list of sections down the left, the page beside
-   it. The site used to be one narrow column down the middle, so a wide
-   screen showed a strip of text with the rest of the glass empty, and the
-   navigation wrapped onto a second row. */
-
-.top-in {
-  display: flex;
-  align-items: baseline;
-  gap: 0.9rem;
-  width: min(var(--wide), 100%);
-  margin: 0 auto;
-  padding: 0.7rem var(--space);
-}
-
-.top-in .src { margin-left: auto; color: var(--ink); text-decoration: none;
-  font: 0.82rem ui-monospace, "SF Mono", Menlo, monospace; }
-.top-in .src:hover { color: var(--accent); }
-
 .shell {
   width: min(var(--wide), 100%);
   margin: 0 auto;
-  padding: 0 var(--space);
+  padding: 0 var(--space) 2rem;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0 2.5rem;
+  gap: 0 2.4rem;
   flex: 1;
 }
 
-.side { padding-top: 1.1rem; }
+.side { padding-top: 1.2rem; }
 
-.side .nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.1rem 0.15rem;
-  width: 100%;
-}
+.side .nav { display: flex; flex-wrap: wrap; gap: 0.15rem; width: 100%; }
 
 @media (min-width: 62rem) {
   .shell { grid-template-columns: var(--side) minmax(0, 1fr); }
   .side {
     position: sticky;
-    top: 3.4rem;
+    top: 4.2rem;
     align-self: start;
-    max-height: calc(100vh - 4rem);
+    max-height: calc(100vh - 5rem);
     overflow-y: auto;
-    padding-top: 1.6rem;
-    border-right: 1px solid var(--line);
-    padding-right: 1rem;
+    padding-top: 1.7rem;
   }
-  /* One section per line, so nothing wraps and the current page reads. */
-  .side .nav { flex-direction: column; flex-wrap: nowrap; gap: 0.05rem; }
-  .side .nav a { min-height: 2rem; padding: 0.15rem 0.5rem; width: 100%; }
-  .side .nav a[aria-current="page"] {
-    box-shadow: none;
-    border-left: 2px solid var(--accent);
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-  }
+  .side .nav { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+  .side .nav a { width: 100%; border-radius: 0.65rem; }
 }
 
-/* Prose keeps a comfortable line. Everything else may use the column. */
+.page { padding-top: 1.4rem; }
 .page > :is(p, ul, ol, .lede, blockquote) { max-width: var(--measure); }
-.page > :is(pre, table, .stats, svg, .cta, .tracks) { max-width: 100%; }
+.page > :is(pre, table, .stats, .cards, svg, .cta, .tracks, .hero) { max-width: 100%; }
 .page > table { display: block; overflow-x: auto; }
 .page table td:first-child, .page table th:first-child { white-space: nowrap; }
-
-/* ---- sizes ------------------------------------------------------------
-   One column on a phone with the sections as a scrolling strip, two
-   columns once there is room for a list, and a wider text column on a
-   large screen so the line length grows with the glass instead of the
-   margin. */
 
 @media (max-width: 61.99rem) {
   .side {
     position: sticky;
-    top: 3.1rem;
-    z-index: 2;
+    top: 3.35rem;
+    z-index: 3;
     background: var(--paper);
     border-bottom: 1px solid var(--line);
     margin: 0 calc(var(--space) * -1);
-    padding: 0.35rem var(--space);
+    padding: 0.4rem var(--space);
   }
   .side .nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .side .nav::-webkit-scrollbar { display: none; }

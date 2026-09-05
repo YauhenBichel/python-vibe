@@ -4,22 +4,19 @@ description: A command-line tool for one Python project. Ask a question, write a
 date: 2026-09-06
 ---
 
-# A local tool for one Python folder
-
-`python-vibe` is a command-line tool. You point it at **one Python
-project**. It can answer a question, write a unit test, fix a failing
-test, or add a small function. It only reads and writes files in that
-folder.
-
+<div class="hero">
+<h1>A local tool for one Python folder</h1>
+<p><code>python-vibe</code> is a command-line tool. You point it at <strong>one Python project</strong>. It can answer a question, write a unit test, fix a failing test, or add a small function. It only reads and writes files in that folder.</p>
 <p class="cta"><a href="{{ '/start/' | relative_url }}">Install</a> <a href="{{ '/live/' | relative_url }}">See a demo</a></p>
+</div>
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `brief` | Lists the files in the folder. No model needed. |
-| `ask` | Answers a question. Does not change files. |
-| `run` | Changes files, then runs the tests. |
+<div class="cards">
+<article class="card"><p class="card-k"><code>brief</code></p><p>Lists the files in the folder. No model needed.</p></article>
+<article class="card"><p class="card-k"><code>ask</code></p><p>Answers a question. Does not change files.</p></article>
+<article class="card"><p class="card-k"><code>run</code></p><p>Changes files, then runs the tests.</p></article>
+</div>
 
 ## Try it
 
