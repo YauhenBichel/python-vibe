@@ -34,8 +34,10 @@ python-vibe run  "find the NameError and fix it"
 python-vibe run  "add a function total_lines and a test"
 ```
 
-`python-vibe` with no arguments reprints that list. Point at another folder
-by putting it first: `python-vibe ask ~/app "what does add return?"`.
+`python-vibe` with no arguments reprints that list. After a write, `run`
+executes the suite and sends a failing traceback back to the model once.
+Point at another folder by putting it first:
+`python-vibe ask ~/app "what does add return?"`.
 
 ```python
 from harness import Agent, AgentOptions
