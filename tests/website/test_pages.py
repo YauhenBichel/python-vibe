@@ -122,6 +122,10 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("color-scheme: light dark", css)
         self.assertIn("border-radius", css)
         self.assertIn("--card", css)
+        self.assertIn("viewport-fit=cover", layout)
+        self.assertIn("safe-area-inset", css)
+        self.assertIn("max-width: 36rem", css)
+        self.assertIn("min-width: 48rem", css)
         self.assertLess(len(css.encode("utf-8")), 14000)
 
     def test_no_personal_devbox_paths_in_pages(self) -> None:
