@@ -72,6 +72,9 @@ from harness.task import (
 MAX_QUESTIONS = 2
 # How often the loop may send a summary back for being too thin.
 MAX_THIN_DONE = 2
+# How often a failed Action: run is sent back with the traceback.
+# One repair is the daily-work default; a second failure is reported.
+MAX_REPAIRS = 1
 # How often a change task may finish without changing anything before the
 # run stops calling it done.
 MAX_EMPTY_DONE = 2
@@ -105,6 +108,9 @@ class LoopState:
         guard: record of read-only actions already performed.
         files_seen: files whose text this run has in front of it, either
             because it read them or because the harness located them.
+        repairs: how many failed runs have already been sent back with
+            the traceback. Daily work gets one; a second failure stops
+            the nudge so the model reports rather than looping.
     """
 
     task: str
@@ -125,6 +131,7 @@ class LoopState:
     instructions: tuple[str, ...] = ()
     guard: LoopGuard = field(default_factory=LoopGuard)
     files_seen: set[str] = field(default_factory=set)
+    repairs: int = 0
 
 
 def refuse_patch_before_reading(state: LoopState, turn) -> str:
@@ -568,6 +575,26 @@ def refuse_done(state: LoopState, turn) -> str:
     return blocked
 
 
+def repair_after_failed_run(state: LoopState, result: str) -> str:
+    """Send the traceback back once. A second failure is for the model to stop on."""
+    err = result.strip()
+    if len(err) > 1200:
+        err = err[-1200:]
+    rel = state.last_path or "the file you changed"
+    if state.repairs >= MAX_REPAIRS:
+        return (
+            "The repair still fails. Action: done Summary: quote the "
+            "traceback line you could not fix.\n"
+        )
+    state.repairs += 1
+    return (
+        "The script failed when I ran it.\n"
+        f"```\n{err}\n```\n"
+        f"Action: patch Path: {rel} with a Find: line copied whole from "
+        "the file. Then Action: run Argv: -m unittest discover -s tests -q\n"
+    )
+
+
 def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
     """A tool just ran. Name the one right next step, or "" to stay open."""
     path = (turn.path or state.last_path).lower()
@@ -578,6 +605,12 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
         for line in result.splitlines():
             if line.startswith("Next:"):
                 return line.split(":", 1)[1].strip() + "\n"
+    if turn.action == "run" and not result.startswith("exit 0"):
+        if result.startswith("refusing") or "no tests/ directory" in result:
+            return ""
+        if state.wrote_something:
+            return repair_after_failed_run(state, result)
+        return ""
     if (
         turn.action == "run"
         and result.startswith("exit 0")

@@ -51,8 +51,9 @@ python-vibe run  "add a function total_lines and a test"
 ```
 
 `ask` never changes a file. `run` only touches that folder and keeps a
-`.bak` of anything it edits. `python-vibe` with no arguments reprints
-this list.
+`.bak` of anything it edits. After a write, `run` executes the suite; a
+failing traceback is sent back to the model once. `python-vibe` with no
+arguments reprints this list.
 
 On a large project: `python-vibe run --scope src "write tests for apply_discount"`.
 

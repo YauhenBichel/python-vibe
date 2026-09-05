@@ -404,13 +404,88 @@ class TestsPassedTest(unittest.TestCase):
             got = next_prompt(state, self._run_turn(), "exit 0\nOK")
         self.assertIn("multiply is not in the project", got)
 
-    def test_a_failing_suite_never_ends_the_task(self) -> None:
+    def test_a_failing_suite_is_sent_back_once(self) -> None:
         from harness.agent.policy import next_prompt
 
         with tempfile.TemporaryDirectory() as tmp:
             state = self._state("add multiply(a, b) and a test", _project(tmp))
             state.wrote_something = True
+            state.last_path = "src/app.py"
+            first = next_prompt(state, self._run_turn(), "exit 1\nNameError: x")
+            self.assertIn("failed when I ran it", first)
+            self.assertIn("NameError: x", first)
+            self.assertIn("Action: patch Path: src/app.py", first)
+            second = next_prompt(state, self._run_turn(), "exit 1\nNameError: x")
+            self.assertIn("repair still fails", second)
+
+    def test_a_failing_suite_before_any_change_says_nothing(self) -> None:
+        from harness.agent.policy import next_prompt
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state("add multiply(a, b) and a test", _project(tmp))
             self.assertEqual(next_prompt(state, self._run_turn(), "exit 1\nE"), "")
+
+    def test_a_refused_run_is_not_a_repair(self) -> None:
+        from harness.agent.policy import next_prompt
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state("add multiply(a, b) and a test", _project(tmp))
+            state.wrote_something = True
+            self.assertEqual(
+                next_prompt(state, self._run_turn(), "refusing that argv"), ""
+            )
+            self.assertEqual(
+                next_prompt(state, self._run_turn(), "no tests/ directory"), ""
+            )
+
+    def test_a_failed_run_is_repaired_once(self) -> None:
+        """Write a bad body, run, see the traceback, patch, run, done."""
+        prompts: list[str] = []
+        remaining = [
+            "Action: read\nPath: src/app.py",
+            "Action: patch\nPath: src/app.py\nFind:     return 0\n"
+            "Replace:     return 1\n",
+            "Action: run\nArgv: -m unittest discover -s tests -q",
+            "Action: patch\nPath: src/app.py\nFind:     return 1\n"
+            "Replace:     return sum(rows)\n",
+            "Action: run\nArgv: -m unittest discover -s tests -q",
+            "Action: done\nSummary: compute_total now sums the rows",
+        ]
+
+        def generate(prompt: str) -> str:
+            prompts.append(prompt)
+            return remaining.pop(0) if remaining else "Action: done\nSummary: out"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "__init__.py").write_text("", encoding="utf-8")
+            (root / "src" / "app.py").write_text(
+                "def compute_total(rows: list[int]) -> int:\n    return 0\n",
+                encoding="utf-8",
+            )
+            (root / "tests" / "test_app.py").write_text(
+                "import unittest\n\nfrom src.app import compute_total\n\n\n"
+                "class AppTest(unittest.TestCase):\n"
+                "    def test_total(self) -> None:\n"
+                "        self.assertEqual(compute_total([1, 2]), 3)\n",
+                encoding="utf-8",
+            )
+            options = AgentOptions(
+                project=root,
+                task="fix compute_total in src/app.py so it sums the rows",
+                keep_no_record=True,
+            )
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                lambda *a, **k: ("scripted", generate),
+            ):
+                result = Agent(options).run()
+            body = (root / "src" / "app.py").read_text(encoding="utf-8")
+        self.assertTrue(result.ok, result.summary)
+        self.assertIn("return sum(rows)", body)
+        self.assertTrue(any("failed when I ran it" in p for p in prompts), prompts)
 
 
 class LateQuestionTest(unittest.TestCase):
