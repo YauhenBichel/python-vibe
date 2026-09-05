@@ -277,6 +277,35 @@ No model. Seeded list+show+comment tree.
 python-vibe run "add pagination to the GitHub PR CLI"
 ```
 
+Same evening, config from a list+show+comment+`page=` tree. Typed:
+`add a config file via Path.home`. Twelve steps × 3.
+
+| Repeat | Config gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | open | steps | none |
+| 2 | open | steps | none |
+| 3 | open | steps | none |
+
+**0 / 3** closed config. The tree already looked finished, so the 8B
+wrote nothing — the pagination 0/3 shape.
+
+Same prompt, after the harness wrote `pkg/config.py` with `Path.home()`
+(#241). No model. Seeded list+show+comment+`page=` tree.
+
+| Repeat | Config gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | closed | `done` | `pkg/config.py` |
+| 2 | closed | `done` | `pkg/config.py` |
+| 3 | closed | `done` | `pkg/config.py` |
+
+**3 / 3** closed config. Comment, pagination, and config are all later
+typed runs that the harness can finish without the 8B. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_overflow_config.py`.
+
+```bash
+python-vibe run "add a config file via Path.home"
+```
+
 Everyday-ready is still the older bar.
 
 ## Everyday-ready bar
@@ -302,8 +331,19 @@ script, same twelve steps.
 | ≥1 KB logic fix | **0 / 3** (`steps`; writes `[]` × 3) | **3 / 3** (one-shot) |
 
 #229 stopped the test rewrite. It did not get a patch on
-`compute_total`. Harness still beats clean on parse. Clean still beats
-harness on the real fix. **Not everyday-ready.** Replay:
+`compute_total`.
+
+After #238 (refuse explore once the named impl is open). Same evening,
+same script, same twelve steps.
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **11 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **0 / 3** (`steps` × 2, `done` × 1; writes `[]` × 3) | **3 / 3** (one-shot) |
+
+#238 did not get a patch on `compute_total`. Harness still beats clean
+on parse. Clean still beats harness on the real fix.
+**Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed
