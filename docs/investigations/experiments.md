@@ -287,7 +287,19 @@ Same evening, config from a list+show+comment+`page=` tree. Typed:
 | 3 | open | steps | none |
 
 **0 / 3** closed config. The tree already looked finished, so the 8B
-wrote nothing — the pagination 0/3 shape. Replay:
+wrote nothing — the pagination 0/3 shape.
+
+Same prompt, after the harness wrote `pkg/config.py` with `Path.home()`
+(#241). No model. Seeded list+show+comment+`page=` tree.
+
+| Repeat | Config gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | closed | `done` | `pkg/config.py` |
+| 2 | closed | `done` | `pkg/config.py` |
+| 3 | closed | `done` | `pkg/config.py` |
+
+**3 / 3** closed config. Comment, pagination, and config are all later
+typed runs that the harness can finish without the 8B. Replay:
 `PYTHONPATH=src python scripts/measure/eval_cli_overflow_config.py`.
 
 ```bash
