@@ -191,6 +191,7 @@ OpenCoder and SWE-agent-LM came from Hub GGUFs
 | `codellama:7b-python` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
 | `opencoder:8b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
 | `swe-agent-lm:7b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
+| `swe-agent-lm:7b` (empty VRAM) | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
 
 Write-tests 3 / 3 on the extra tags is the harness writing the AAA
 test. The model is not called. The first job that does call it is
@@ -280,8 +281,12 @@ left `{"models":[]}`. Then the same script:
 | Add clamp | **1 pass** (`steps` after 12), then 180s timeout on the second |
 | Logic bug | not run |
 
-That is still not a nine-cell table. The first clamp did finish from
-empty VRAM. **Do not switch.** Default stays `llama3.1:8b`.
+The same empty-VRAM start on `swe-agent-lm:7b` (`ollama stop`
+DeepSeek first): write-tests 3 / 3 (compiler), first clamp generate
+180s timeout. After the timeout the tag *was* loaded. An isolated
+first chat on that tag was 38 s; the daily first generate did not
+return in 180s. Still not a nine-cell table.
+**Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
