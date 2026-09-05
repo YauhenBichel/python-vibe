@@ -57,17 +57,20 @@ Three repeats. Twelve steps.
 | --- | --- | --- | --- | --- |
 | `llama3.1:8b` | 3 / 3 | 3 / 3 | 3 / 3 | **9 / 9** |
 | `qwen2.5-coder:7b` | 3 / 3 | 1 / 3 | 3 / 3 | **7 / 9** |
+| `deepseek-coder:6.7b` | 3 / 3 (compiler) | 1 pass, 1 `steps`, 180s timeout | not run | incomplete |
+| `starcoder2:7b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
+| `codellama:7b-python` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
+| `opencoder:8b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
+| `swe-agent-lm:7b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
 
 The 7B coder stopped twice to ask where `clamp` should go. The logic-bug
-3 / 3 on both sides is a compiler `return 0` bind, not the model writing
-the sum. A two-case gap is noise. **Do not switch.**
+3 / 3 on the 8B and 7B coder is a compiler `return 0` bind, not the
+model writing the sum. A two-case gap is noise.
 
-Also queued for the same nine jobs, no cell yet: `deepseek-coder:6.7b`,
-`starcoder2:7b`, `codellama:7b-python`. StarCoder2 is often a completion
-model and may miss `Action:`. OpenCoder 8B and SWE-agent-LM 7B are not
-`ollama pull` tags; import them with
-`scripts/weights/import_hf_ollama.py`, then remasure.
-See [Hub models](./hub-models.md).
+Write-tests 3 / 3 on the extra tags does not call the model. Clamp is
+the first generate. A cold load plus one reply burned the 180s Ollama
+cap. That is not a score. **Do not switch.** See
+[Hub models](./hub-models.md).
 
 ## One run is not a score
 

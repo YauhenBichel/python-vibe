@@ -42,6 +42,7 @@ if you want the map, not this long list.
   <li><a href="#sample-four-drafts-then-greedy">Sample four drafts, then greedy</a></li>
   <li><a href="#8b-daily-jobs">8B daily jobs</a></li>
   <li><a href="#same-night-daily-jobs-7b-coder">Same-night daily jobs, 7B coder</a></li>
+  <li><a href="#more-7b8b-on-disk-5-september-2026">More 7B–8B on disk</a></li>
   <li><a href="#8b-greenfield-cli">8B greenfield CLI</a></li>
   <li><a href="#everyday-ready-bar">Everyday-ready bar</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
@@ -169,6 +170,40 @@ The 7B clip bar the same evening:
 `everyday_ready` stayed false. The 7B coder speaks more first Actions
 than a clean 7B and still does not write `clip`. Same wall as the 8B
 clip remasure.
+
+## More 7B–8B on disk, 5 September 2026
+
+**Example.** Same script (`scripts/measure/eval_daily.py`), same twelve
+steps, same fixtures. Tags now on this laptop: DeepSeek-Coder 6.7B,
+StarCoder2 7B, CodeLlama 7B Python, OpenCoder 8B, SWE-agent-LM 7B.
+OpenCoder and SWE-agent-LM came from Hub GGUFs
+(`scripts/weights/import_hf_ollama.py`), not `ollama pull`.
+
+**Result**
+
+| Model | Write tests | Add clamp | Logic bug | Passed |
+| --- | --- | --- | --- | --- |
+| `llama3.1:8b` (same night) | 3 / 3 | 3 / 3 | 3 / 3 | **9 / 9** |
+| `qwen2.5-coder:7b` (same night) | 3 / 3 | 1 / 3 | 3 / 3 | **7 / 9** |
+| `deepseek-coder:6.7b` | 3 / 3 (compiler) | 1 pass, 1 `steps`, then 180s timeout | not run | incomplete |
+| `starcoder2:7b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
+| `codellama:7b-python` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
+| `opencoder:8b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
+| `swe-agent-lm:7b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
+
+Write-tests 3 / 3 on the extra tags is the harness writing the AAA
+test. The model is not called. The first job that does call it is
+clamp, and a cold 7B–8B load plus one generate burned the 180s Ollama
+cap. DeepSeek got one clamp through, then `steps`, then the same cap.
+
+That is not a nine-cell table. **Do not switch.** Default stays
+`llama3.1:8b`.
+
+Replay one finished table:
+`PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
+
+Write-up: [Which model]({{ '/investigations/which-model/' | relative_url }})
+· [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 ## 8B greenfield CLI
 
@@ -536,10 +571,11 @@ python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
 python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
-**Result.** The import path is in-tree. No daily score yet. Neither
-weight was trained on this `Action:` / `Find:` loop. Default stays
-`llama3.1:8b`. Other 7B–8B weights that fit this laptop, and the ones
-that do not, are listed on [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
+**Result.** Both tags are on disk. The first daily pass timed out at
+the 180s Ollama cap on clamp (write-tests 3 / 3 is the compiler bind,
+no model). That is not a score. Default stays `llama3.1:8b`. Other
+7B–8B weights that fit this laptop, and the ones that do not, are
+listed on [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
