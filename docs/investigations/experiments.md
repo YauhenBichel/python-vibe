@@ -223,28 +223,18 @@ Later the same day, overflow from a runnable list+show tree. Typed:
 | Timed cell (12 steps × 3) | **0 / 3** closed the comment gap. Every repeat hit the cap |
 | After hint tighten | first Action `edit`; `def comment_on` on disk; `done` refused because nothing called it |
 
-`def comment` now counts. Overflow `done` is allowed once that piece
-exists — argparse wiring is not demanded by the unused-function guard.
-Pagination and config stay later runs, not `--steps`. Replay:
-`python scripts/measure/eval_cli_overflow.py`.
+After #219 (refuse grep) and the unused-function crash fix (`refuse_unwired_addition`
+takes the task and skips overflow), same script, twelve steps:
 
-```bash
-python-vibe run "add the comment subcommand and a mocked test"
-```
+| Repeat | Comment gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | closed | steps | `pkg/pr_review.py` |
+| 2 | closed | steps | `pkg/pr_review.py` |
+| 3 | still open | steps | none |
 
-Later the same day, overflow from a runnable list+show tree. Typed:
-`add the comment subcommand and a mocked test`. After #216.
-
-| Check | Result |
-| --- | --- |
-| First try | `grep` `comment` (add-feature hint). 20 steps. No comment |
-| Timed cell (12 steps × 3) | **0 / 3** closed the comment gap. Every repeat hit the cap |
-| After hint tighten | first Action `edit`; `def comment_on` on disk; `done` refused because nothing called it |
-
-`def comment` now counts. Overflow `done` is allowed once that piece
-exists — argparse wiring is not demanded by the unused-function guard.
-Pagination and config stay later runs, not `--steps`. Replay:
-`python scripts/measure/eval_cli_overflow.py`.
+**2 / 3.** None said `done`. Pagination and config stay later runs.
+`def comment` counts. Overflow `done` is allowed once that piece exists.
+Replay: `python scripts/measure/eval_cli_overflow.py`.
 
 ```bash
 python-vibe run "add the comment subcommand and a mocked test"
