@@ -26,6 +26,7 @@ from harness.guard.loop_guard import LoopGuard
 from harness.paths import as_project_rel
 from harness.locate import (
     refuse_app_ask,
+    refuse_app_overflow_explore,
     refuse_app_tests_first,
     refuse_app_wrong_path,
     refuse_design_dirty,
@@ -337,6 +338,7 @@ def _tool_refusals(state: LoopState, turn) -> str:
     path = turn.path or state.last_path
     checks = (
         lambda: refuse_write_tests_ask(state.task, turn.action),
+        lambda: refuse_app_overflow_explore(state.task, turn.action),
         lambda: refuse_app_ask(state.task, turn.action),
         lambda: refuse_app_tests_first(state.task, state.project, turn.action, path),
         lambda: refuse_app_wrong_path(state.task, turn.action, path),
@@ -586,7 +588,9 @@ def refuse_done(state: LoopState, turn) -> str:
             state.thin_done_refused += 1
             blocked = thin
     if not blocked:
-        blocked = refuse_unwired_addition(state.project, state.last_path)
+        blocked = refuse_unwired_addition(
+            state.project, state.last_path, state.task
+        )
     if not blocked:
         blocked = refuse_design_dirty(state.task, state.design_report)
     if not blocked:
