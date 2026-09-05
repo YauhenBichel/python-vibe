@@ -85,8 +85,13 @@ everyday brain.
   **0 / 15**; fix still **0 / 3**, writes `[]` × 3. After #246 (same
   evening): parse **9 / 15** vs **0 / 15**; harness fix **3 / 3** with no
   model turns (the harness wrote the sum) while a clean one-shot passed
-  **3 / 3**. That is not everyday-ready. Replay:
-  `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
+  **3 / 3**. A whole-line `return 0` on a named sum is compiler-class,
+  like `subtotl` and `page=`. That ≥1 KB cell is retired as a model job.
+  Do not remasure it. Everyday-ready is still not met. Replay of the last
+  recorded night:
+  `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`. The next
+  live cell is a ≥1 KB logic bug we commit never to autofix, scored only
+  when turns are non-empty.
 
 Live `agent.py` + `llama3.1:8b` loops on this machine (29 Aug 2026):
 

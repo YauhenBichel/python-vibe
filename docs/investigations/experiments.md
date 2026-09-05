@@ -12,7 +12,9 @@ I tried to use a small open LLM for daily Python: ask, write a test, fix
 a bug, add one function. One laptop. 29–30 August and 5 September 2026.
 
 **Not everyday-ready.** Everyday-ready still means beating an untuned
-`llama3.1:8b` on live parse **and** a real ≥1 KB fix.
+`llama3.1:8b` on live parse **and** a real ≥1 KB fix the model wrote.
+The first ≥1 KB cell was a whole-line `return 0.0` on a named sum. That
+is compiler-class. It is retired as a model job.
 
 <div class="stats">
   <div class="stat"><b>12 / 18</b><span>0.5B four drafts + later loop</span></div>
@@ -129,8 +131,8 @@ a green suite. Replay one of the wins:
 [Live demo]({{ '/live/' | relative_url }}) (daily recording).
 
 Everyday-ready is still the older bar: beat a clean 8B on parse **and**
-a real ≥1 KB fix. This table is the daily loop on small fixtures, not
-that bar.
+a real ≥1 KB fix the model wrote. This table is the daily loop on small
+fixtures, not that bar. The first ≥1 KB cell is retired below.
 
 ## 8B greenfield CLI
 
@@ -364,8 +366,16 @@ evening, same script, same twelve steps.
 
 The model never ran. The harness wrote the sum and stopped. Parse still
 beats clean. The fix ties clean, so the script's `harness_fix > clean_fix`
-is false. **Not everyday-ready.** Replay:
+is false. **Not everyday-ready.**
+
+That whole-line `return 0` / `return 0.0` on a named sum is the same
+class as `subtotl` and `page=`: the compiler writes it. The ≥1 KB cell
+that used that shape is **retired as a model job**. Do not remasure
+`eval/fixtures/everyday_fix`. Replay of the last recorded night:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
+
+The next live ≥1 KB cell is a later job: a logic bug we commit never to
+autofix, scored only when `#248` turns are non-empty.
 
 ## Four jobs, as typed
 
