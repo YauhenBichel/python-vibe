@@ -66,7 +66,11 @@ from harness.act.autofix.moves import (
 from harness.act.autofix.mechanical import (
     apply_mechanical,
 )
-from harness.act.autofix.scaffold import apply_cli_mock_test, apply_package_scaffold
+from harness.act.autofix.scaffold import (
+    apply_cli_mock_test,
+    apply_list_page_query,
+    apply_package_scaffold,
+)
 
 __all__ = [
     "apply_file_move",
@@ -85,6 +89,7 @@ __all__ = [
     "apply_cover_test",
     "apply_function_rename",
     "apply_cli_mock_test",
+    "apply_list_page_query",
     "apply_mechanical",
     "apply_package_scaffold",
     "apply_missing_imports",
