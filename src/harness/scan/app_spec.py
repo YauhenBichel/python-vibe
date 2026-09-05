@@ -129,7 +129,20 @@ def _tests_call_list_or_show(tests: str) -> bool:
 
 
 def _has_pagination(impl: str) -> bool:
-    return bool(re.search(r"\b(page=|rel=[\"']next|Link)\b", impl))
+    """True when page= (or Link next) sits on an indented list URL.
+
+    A live 8B left ``url = f"...pulls?page="`` at module scope. That
+    NameErrors on import. Count only a line inside a function or the
+    list argparse branch.
+    """
+    for line in impl.splitlines():
+        if not line[:1].isspace():
+            continue
+        if re.search(r"\bpage=", line):
+            return True
+        if re.search(r"rel=[\"']next|\bLink\b", line):
+            return True
+    return False
 
 
 def _has_home_config(impl: str) -> bool:
@@ -198,8 +211,9 @@ def app_gaps(project: Path, task: str, *, include_overflow: bool = True) -> list
             gaps.append(
                 Gap(
                     "pagination",
-                    f"Next Action must be patch Path: {module} so the list URL "
-                    "includes page=. Do not rename list_pulls.",
+                    f"Next Action must be patch Path: {module} so the list_pulls "
+                    "URL includes page=. Do not rename list_pulls. "
+                    "Do not add weekday or another module.",
                 )
             )
         if not _has_home_config(impl):
@@ -256,8 +270,9 @@ def overflow_edit_line(task: str, project: Path | None = None) -> str:
     noun = package_noun(task)
     if key == "pagination":
         return (
-            f"Next Action must be patch Path: pkg/{noun}.py so the list URL "
-            "includes page=. Do not rename list_pulls."
+            f"Next Action must be patch Path: pkg/{noun}.py so the list_pulls "
+            "URL includes page=. Do not rename list_pulls. "
+            "Do not add weekday or another module."
         )
     if key == "config":
         return (
