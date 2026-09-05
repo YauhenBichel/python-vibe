@@ -482,13 +482,16 @@ class TestsPassedTest(unittest.TestCase):
 
         task = "design and develop a small cli app for reviewing github PRs"
         with tempfile.TemporaryDirectory() as tmp:
-            state = self._state(task, Path(tmp))
+            from harness.act.autofix.scaffold import apply_package_scaffold
+
+            root = Path(tmp)
+            apply_package_scaffold(root, task)
+            state = self._state(task, root)
             state.wrote_something = True
             state.last_path = "pkg/__init__.py"
             turn = SimpleNamespace(action="edit", path="pkg/__init__.py")
             got = next_prompt(state, turn, "wrote pkg/__init__.py")
         self.assertIn("pkg/pr_review.py", got)
-        self.assertIn("argparse", got)
         self.assertIn("urllib", got)
         self.assertNotIn("weekday_name", got)
 

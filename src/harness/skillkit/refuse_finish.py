@@ -24,6 +24,7 @@ from harness.task import (
     looks_like_everyday_code,
     looks_like_fix_smell,
     looks_like_write_tests,
+    looks_like_app_loop,
     looks_like_new_package,
     looks_like_refactor,
     question_symbol,
@@ -179,6 +180,22 @@ def refuse_write_done(task: str, ran_tests: bool, *, wrote: bool = True) -> str:
 
 def refuse_package_done(task: str, ran_tests: bool, wrote: bool = True) -> str:
     return refuse_write_done(task, ran_tests, wrote=wrote)
+
+
+def refuse_app_done(task: str, project: Path) -> str:
+    """Refuse done while list/show/http/mocked tests are still missing."""
+    if not looks_like_app_loop(task):
+        return ""
+    from harness.scan.app_spec import next_app_action, render_app_review, required_gaps
+
+    if required_gaps(project, task):
+        return (
+            "not done. "
+            + next_app_action(project, task).strip()
+            + "\n"
+            + render_app_review(project, task)
+        )
+    return ""
 
 
 # Names a framework calls, so nobody in this project has to.

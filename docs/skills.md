@@ -39,6 +39,7 @@ also gets `stay-scoped`.
 | Open a PR, commit, or push | `open-pr` |
 | Read a GitHub issue or pull request | `read-issue` |
 | Create a package or project layout | `new-package` |
+| Design or develop a GitHub CLI app | `new-package`, `write-cli-app`, `call-http`, `write-tests` |
 | Rename or clean up a smell | `fix-smell` |
 | Review one named file | `review-code` |
 | Review structure / design / layout | `review-design`, `refactor-split`, `readable-layout` |
@@ -61,7 +62,7 @@ GitHub user appears on that commit.
 
 ## Kit catalog
 
-Twenty skills ship with python-vibe.
+Twenty-four skills ship with python-vibe.
 
 ### Code changes
 
@@ -69,6 +70,7 @@ Twenty skills ship with python-vibe.
 | --- | --- | --- |
 | [`add-feature`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/add-feature/SKILL.md) | Add one requested function, then a test. One `Append:` patch. | Task starts with add, implement, or introduce. Not for questions or one-line bugs. |
 | [`write-script`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/write-script/SKILL.md) | One argparse module in `pkg/` with `if __name__`. | Script, CLI, argv, weekday-style helpers. |
+| [`write-cli-app`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/write-cli-app/SKILL.md) | One argparse GitHub PR CLI with urllib. Token from the environment. | Design or develop a CLI that talks to GitHub. Not a weekday script. |
 | [`walk-files`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/walk-files/SKILL.md) | Reach every file under a folder with `rglob`: find by suffix, total the sizes. | The task says under, inside, recursively, or every file in a folder. |
 | [`use-archive`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/use-archive/SKILL.md) | Pack a folder into a zip, or list what an archive holds. Standard library, no shell. | Zip, unzip, tar, archive, compress, extract. |
 | [`compare-things`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/skills/compare-things/SKILL.md) | Report what differs between two files or two dicts, and return it rather than print it. | Compare, diff, changed, missing. |

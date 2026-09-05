@@ -82,7 +82,7 @@ Writes stay under --project. Suffixes .py .pyi .md .toml .yml .yaml .cfg .ini .j
 
 Skills live in skills/*/SKILL.md as one copy-paste Action. Catalog: {{ '/skills/' | absolute_url }}. The loop auto-picks from the task; --skill names win; a large tree also gets stay-scoped. Project AGENTS.md and <project>/skills/ outrank the kit. Do not put third-party product names in skill text.
 
-Kit skills: add-feature, write-script, call-http, analyze-data, write-algorithm, write-tests, new-package, fix-smell, refactor-split, answer-question, ask-when-unclear, review-code, review-design, readable-layout, read-issue, open-pr, merge-pr, stay-scoped.
+Kit skills: add-feature, write-script, write-cli-app, call-http, analyze-data, write-algorithm, write-tests, new-package, fix-smell, refactor-split, answer-question, ask-when-unclear, review-code, review-design, readable-layout, read-issue, open-pr, merge-pr, stay-scoped.
 
 call-http is urllib.request only. The harness refuses curl, wget, and os.system in implementation drafts (PV003 still blocks curl|sh).
 

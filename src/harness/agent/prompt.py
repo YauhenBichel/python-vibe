@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from harness.act.autofix import apply_mechanical
+from harness.act.autofix import apply_mechanical, apply_package_scaffold
 from harness.agent.options import AgentOptions
 from harness.locate import prelude, signature_line
 from harness.scan.existing import already_covers, existing_files
@@ -78,25 +78,38 @@ def choose_skills(
     return chosen
 
 
+def _append_note(pre_text: str, notes: list[str], extra: str) -> str:
+    if not extra:
+        return pre_text
+    notes.append(extra)
+    return f"{pre_text}\n\n{extra}" if pre_text else extra
+
+
+def _first_look(
+    project: Path, task: str, scope: str, allow_writes: bool
+) -> tuple[str, str, str, str]:
+    """Scaffold, prelude, mechanical bind before the model starts."""
+    scaffold = apply_package_scaffold(project, task, write=allow_writes)
+    pre_text, located_path = prelude(project, task, scope)
+    autofix = apply_mechanical(project, task, located_path, write=allow_writes)
+    if autofix and allow_writes:
+        pre_text, located_path = prelude(project, task, scope)
+    for extra in (autofix, scaffold):
+        if extra:
+            pre_text = f"{pre_text}\n\n{extra}" if pre_text else extra
+    sig = signature_line(pre_text, question_symbol(task)) if pre_text else ""
+    return pre_text, located_path, sig, autofix
+
+
 def build_preamble(options: AgentOptions) -> Preamble:
     project = options.resolved_project()
     task = options.task
+    pre_text, located_path, located_signature, autofix = _first_look(
+        project, task, options.scope, options.allow_writes
+    )
     brief = classify_project(project, options.scope)
     catalog = list_skills(project)
     notes: list[str] = []
-
-    pre_text, located_path = prelude(project, task, options.scope)
-    autofix = apply_mechanical(
-        project, task, located_path, write=options.allow_writes
-    )
-    if autofix and options.allow_writes:
-        pre_text, located_path = prelude(project, task, options.scope)
-        pre_text = f"{pre_text}\n\n{autofix}" if pre_text else autofix
-    elif autofix:
-        pre_text = f"{pre_text}\n\n{autofix}" if pre_text else autofix
-    located_signature = (
-        signature_line(pre_text, question_symbol(task)) if pre_text else ""
-    )
     if pre_text:
         notes.append(pre_text)
 
@@ -105,9 +118,7 @@ def build_preamble(options: AgentOptions) -> Preamble:
     # said so.
     covered = already_covers(project, task, skip=located_path)
     named_existing = existing_files(project, task, skip=located_path)
-    if covered:
-        notes.append(covered)
-        pre_text = f"{pre_text}\n\n{covered}" if pre_text else covered
+    pre_text = _append_note(pre_text, notes, covered)
 
     ticket = issue_number(task)
     if ticket:
@@ -116,8 +127,7 @@ def build_preamble(options: AgentOptions) -> Preamble:
             f"Harness ticket #{ticket}\n"
             f"{read_ticket(project, ticket, prefer=prefer)}"
         )
-        notes.append(block)
-        pre_text = f"{pre_text}\n\n{block}" if pre_text else block
+        pre_text = _append_note(pre_text, notes, block)
 
     skills = choose_skills(project, task, brief, options.skills)
     target = pick_target(project, task, options.scope, located_path)

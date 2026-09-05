@@ -365,7 +365,23 @@ _QUESTION_REEXPLORE = frozenset({"read", "locate", "grep"})
 def refuse_redundant_locate(
     task: str, action: str, prelude_ran: bool, project: Path | None = None
 ) -> str:
-    if action != "locate" or not prelude_ran:
+    if action != "locate":
+        return ""
+    if looks_like_new_package(task):
+        from harness.task import looks_like_app_loop, package_noun
+
+        noun = package_noun(task)
+        if looks_like_app_loop(task):
+            return (
+                f"already located. Action: edit Path: pkg/{noun}.py with "
+                "urllib.request and argparse subcommand list. No curl. "
+                "Do not ask."
+            )
+        return (
+            f"already located. Action: edit Path: pkg/{noun}.py with one "
+            "function. Do not ask."
+        )
+    if not prelude_ran:
         return ""
     if looks_like_question(task):
         return (
@@ -386,6 +402,39 @@ def refuse_redundant_locate(
         return (
             f"already located. Action: patch{where} Append: the new function."
         )
+    return ""
+
+
+def refuse_app_ask(task: str, action: str) -> str:
+    """A greenfield CLI is not a clarifying question. Live 8B asked and stopped."""
+    from harness.task import looks_like_app_loop, package_noun
+
+    if action != "ask" or not looks_like_app_loop(task):
+        return ""
+    noun = package_noun(task)
+    return (
+        f"Do not ask. Action: edit Path: pkg/{noun}.py with urllib.request "
+        "and argparse subcommand list."
+    )
+
+
+def refuse_app_tests_first(task: str, project: Path | None, action: str, path: str) -> str:
+    """Tests come after list/show exist. The live demo patched tests that were not there."""
+    from harness.task import looks_like_app_loop, package_noun
+
+    if not looks_like_app_loop(task) or action not in {"edit", "patch"}:
+        return ""
+    rel = (path or "").replace("\\", "/").lower()
+    if "test" not in rel:
+        return ""
+    if project is None:
+        return ""
+    from harness.scan.app_spec import required_gaps
+
+    keys = {gap.key for gap in required_gaps(project, task)}
+    if keys & {"http", "list", "show"}:
+        noun = package_noun(task)
+        return f"Implementation first. Action: edit Path: pkg/{noun}.py"
     return ""
 
 

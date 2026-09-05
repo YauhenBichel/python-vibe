@@ -25,6 +25,8 @@ from harness.agent.dispatch import SHIP_ACTIONS, WRITE_ACTIONS
 from harness.guard.loop_guard import LoopGuard
 from harness.paths import as_project_rel
 from harness.locate import (
+    refuse_app_ask,
+    refuse_app_tests_first,
     refuse_design_dirty,
     refuse_early_done,
     refuse_invented_review,
@@ -43,6 +45,7 @@ from harness.skillkit.refuse_change import (
     refuse_smell_wrong_file,
 )
 from harness.skillkit.refuse_finish import (
+    refuse_app_done,
     refuse_done_oracle,
     refuse_unwired_addition,
     refuse_write_done,
@@ -61,6 +64,7 @@ from harness.task import (
     looks_like_write_tests,
     covered_symbol,
     looks_like_merge,
+    looks_like_app_loop,
     looks_like_new_package,
     looks_like_question,
     looks_like_ship,
@@ -323,47 +327,41 @@ def refuse_before(state: LoopState, turn) -> str:
             "You have already asked. Choose the most likely reading, say "
             "which you chose, and continue."
         )
-    blocked = refuse_write_tests_ask(state.task, turn.action)
-    if blocked:
-        return blocked
-    blocked = refuse_patch_before_reading(state, turn)
-    if blocked:
-        return blocked
-    blocked = refuse_new_path_before_existing(state, turn)
-    if blocked:
-        return blocked
-    blocked = refuse_wrong_file(
-        state.task, state.project, turn.action, turn.path or state.last_path
-    )
-    if not blocked:
-        blocked = refuse_question_write(state.task, turn.action)
-    if not blocked:
-        blocked = refuse_question_ask(state.task, turn.action, state.located_path)
-    if not blocked:
-        blocked = refuse_redundant_explore(
+    return _tool_refusals(state, turn)
+
+
+def _tool_refusals(state: LoopState, turn) -> str:
+    """The ordered refuse_before checks that are not the write/ask caps."""
+    path = turn.path or state.last_path
+    checks = (
+        lambda: refuse_write_tests_ask(state.task, turn.action),
+        lambda: refuse_app_ask(state.task, turn.action),
+        lambda: refuse_app_tests_first(state.task, state.project, turn.action, path),
+        lambda: refuse_patch_before_reading(state, turn),
+        lambda: refuse_new_path_before_existing(state, turn),
+        lambda: refuse_wrong_file(state.task, state.project, turn.action, path),
+        lambda: refuse_question_write(state.task, turn.action),
+        lambda: refuse_question_ask(state.task, turn.action, state.located_path),
+        lambda: refuse_redundant_explore(
             state.task, turn.action, turn.path, state.located_path
-        )
-    if not blocked:
-        blocked = refuse_redundant_locate(
+        ),
+        lambda: refuse_redundant_locate(
             state.task, turn.action, state.prelude_ran, state.project
-        )
-    if not blocked:
-        blocked = refuse_god_target(
-            state.task, state.project, turn.action, turn.path or state.last_path
-        )
-    if not blocked:
-        blocked = refuse_smell_wrong_file(
-            state.task,
-            turn.action,
-            turn.path,
-            state.located_path,
-            _located_body(state),
-        )
-    if not blocked:
-        blocked = state.guard.check(turn)
-    if not blocked and turn.action in SHIP_ACTIONS:
-        blocked = _refuse_ship(state.task, turn.action)
-    return blocked
+        ),
+        lambda: refuse_god_target(state.task, state.project, turn.action, path),
+        lambda: refuse_smell_wrong_file(
+            state.task, turn.action, turn.path, state.located_path, _located_body(state)
+        ),
+        lambda: state.guard.check(turn),
+        lambda: _refuse_ship(state.task, turn.action)
+        if turn.action in SHIP_ACTIONS
+        else "",
+    )
+    for check in checks:
+        blocked = check()
+        if blocked:
+            return blocked
+    return ""
 
 
 def _located_body(state: LoopState) -> str:
@@ -602,6 +600,8 @@ def refuse_done(state: LoopState, turn) -> str:
         blocked = refuse_done_without_change(state, turn)
     if not blocked:
         blocked = refuse_done_oracle(state.task, state.project, state.last_path)
+    if not blocked:
+        blocked = refuse_app_done(state.task, state.project)
     return blocked
 
 
@@ -626,7 +626,11 @@ def write_needs_a_test(state: LoopState, result: str, path: str) -> bool:
 
 def should_run_suite_after_write(state: LoopState, result: str, path: str) -> bool:
     """Daily write: run the suite when tests already cover the work."""
-    if looks_like_design_loop(state.task) or looks_like_fix_smell(state.task):
+    if (
+        looks_like_design_loop(state.task)
+        or looks_like_fix_smell(state.task)
+        or looks_like_app_loop(state.task)
+    ):
         return False
     if not result.startswith(("patched", "wrote")):
         return False
@@ -685,6 +689,19 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
         leftover = refuse_done_oracle(state.task, state.project, state.last_path)
         if leftover:
             return leftover + "\n"
+        if looks_like_app_loop(state.task):
+            from harness.scan.app_spec import next_app_action, overflow_gaps
+
+            missing = next_app_action(state.project, state.task)
+            if missing:
+                return missing
+            extra = overflow_gaps(state.project, state.task)
+            if extra:
+                return (
+                    "Tests passed for list and show. "
+                    f"A later run can add {extra[0].key}. "
+                    "Action: done Summary: say list and show work.\n"
+                )
         return "Tests passed. Action: done Summary: say what you changed.\n"
     wrote = result.startswith(("patched", "wrote"))
     if wrote:
@@ -696,6 +713,16 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
                 f"Next Action must be patch Path: {rel} Find: {leftover[0]} "
                 "Replace: the name you assigned.\n"
             )
+    if looks_like_app_loop(state.task) and wrote:
+        from harness.scan.app_spec import http_test_nudge, next_app_action
+
+        is_test = "test" in path
+        missing = next_app_action(state.project, state.task)
+        if missing and "mocked_tests" in missing and not is_test:
+            return http_test_nudge(state.task)
+        if missing:
+            return missing
+        return RUN_SUITE
     if looks_like_design_loop(state.task) and wrote:
         from harness.scan.design import design_is_clean, render_design_review
 

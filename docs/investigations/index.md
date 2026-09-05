@@ -57,7 +57,7 @@ What you type:
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids. 1.5B and 1B do not parse Action:. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The harness stays here. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
-| [Skills]({{ '/skills/' | relative_url }}) | The twenty kit skills and when each one loads. |
+| [Skills]({{ '/skills/' | relative_url }}) | The twenty-four kit skills and when each one loads. |
 | [Platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}) | Small files that must work on every OS. |
 | [Everyday skills]({{ '/investigations/everyday-skills/' | relative_url }}) | Skills written as one copy-paste Action for an 8B. |
 | [Harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}) | What transfers from other published harnesses. |
