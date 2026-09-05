@@ -14,6 +14,14 @@ takes a model name.
 Seventy-five runs each — fifteen cases, five passes — same commit, same
 machine, same harness, only the weights changed.
 
+
+> **The per-tier numbers on this page are unsafe.** The benchmark
+> supplied no answer when a run stopped to ask, so a clarifying question
+> ended the run and scored a failure — and `qwen2.5-coder:7b` asks in
+> eleven runs of twenty on tier 3 where `llama3.1:8b` asks in one. With
+> the question answered the two are level, 13 and 14 of 20. See
+> [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}).
+
 ## The same score
 
 | | Worked | Failed |
