@@ -376,8 +376,18 @@ that used that shape is **retired as a model job**. Do not remasure
 
 The live ≥1 KB cell is `clip` in `eval/fixtures/everyday_live`: it
 filters outliers instead of clamping them. The compiler leaves that
-shape alone. Score it only when `#248` turns are non-empty. Not yet
-remasured. Replay:
+shape alone. Score it only when `#248` turns are non-empty.
+
+After #254 (never-autofix clip cell). Same evening, same script, same
+twelve steps.
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **8 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **0 / 3** (`steps` × 2, `done` × 1; writes `[]` × 3; turns non-empty) | **3 / 3** (one-shot) |
+
+The model ran. It did not write `clip`. Parse still beats clean. Clean
+still one-shots the file. **Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed

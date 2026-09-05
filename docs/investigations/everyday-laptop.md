@@ -87,12 +87,14 @@ everyday brain.
   model turns (the harness wrote the sum) while a clean one-shot passed
   **3 / 3**. A whole-line `return 0` on a named sum is compiler-class,
   like `subtotl` and `page=`. That ≥1 KB cell is retired as a model job.
-  Do not remasure it. Everyday-ready is still not met. Replay of the last
-  recorded night:
-  `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`. The next
-  live cell is a ≥1 KB logic bug we commit never to autofix, scored only
-  when turns are non-empty. That cell is `clip` in
-  `eval/fixtures/everyday_live` (filter vs clamp). Not yet remasured.
+  Do not remasure it. The live cell is `clip` in
+  `eval/fixtures/everyday_live` (filter vs clamp), scored only when
+  turns are non-empty. After #254 (same evening): parse **8 / 15** vs
+  **0 / 15**; harness fix **0 / 3** (`steps` × 2, `done` × 1; writes
+  `[]` × 3; turns non-empty) while a clean one-shot passed **3 / 3**.
+  The model ran. It did not write `clip`. Everyday-ready is still not
+  met. Replay:
+  `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 Live `agent.py` + `llama3.1:8b` loops on this machine (29 Aug 2026):
 
