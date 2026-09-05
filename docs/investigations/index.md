@@ -1,71 +1,87 @@
 ---
-title: Research
-description: Laptop measurements and design notes for python-vibe. Dates are the day of the run.
+title: Results
+description: A map of the measurements. Start here, then open one note. Dates are the day of the run.
 date: 2026-09-05
 ---
 
-# Research
+# Results
 
-The scores, with the example and the table, are on
-[Experiments]({{ '/investigations/experiments/' | relative_url }}).
-Dates are the day of the measurement. Public pages do not name other
-editors or chat products.
+Every score on this site comes from one laptop. Open one note. Each
+note is one question, what I typed, and what happened.
+
+**Not ready for daily work.** That bar means beating a plain 8B both at
+picking the next step and at fixing a real bug the helper cannot do
+itself. It does not, yet.
+
+Public pages do not name other editors or chat products.
 
 <div class="stats">
-  <div class="stat"><b>12 / 18</b><span>0.5B four drafts + later loop</span></div>
-  <div class="stat"><b>0 / 54</b><span>greedy 0.5B LoRA</span></div>
-  <div class="stat"><b>8 / 15</b><span>8B live parse</span></div>
-  <div class="stat"><b>8 / 9</b><span>8B daily jobs, 5 Sep 2026</span></div>
+  <div class="stat"><b>9 / 9</b><span>8B daily jobs, evening of 5 Sep</span></div>
+  <div class="stat"><b>7 / 9</b><span>7B coder, same jobs</span></div>
+  <div class="stat"><b>8 / 15</b><span>8B first-step reading</span></div>
+  <div class="stat"><b>0 / 54</b><span>tiny 0.5B LoRA, greedy</span></div>
 </div>
 
-| Experiment | Example | Result |
-| --- | --- | --- |
-| 0.5B as daily work | weekday helper, count-md, `Action:` | 0 / 4 vibe, 0 / 2 parse |
-| 0.5B exact stdout | 18 held-out scripts, 3 repeats, Ollama | **7 / 54** base, **12 / 54** with repair |
-| 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** then **12 / 18** with later loop; 0 hint-repairs; greedy LoRA **0 / 54** |
-| 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9**; same-night remasure **9 / 9** |
-| 7B coder daily | same script, `qwen2.5-coder:7b` | **7 / 9** (add 1 / 3). Clip bar: parse **10 / 15** vs clean **1 / 15**; fix **0 / 3**. Default stays 8B |
-| 8B greenfield CLI | GitHub PR CLI, empty folder, 3 repeats | **3 / 3** after #220 (suite + `done`); overflow comment **3 / 3** after #222; pagination **3 / 3** after #233; config **3 / 3** after #241 |
-| Everyday-ready bar | 15 parse prompts + ≥1 KB logic fix × 3 | after #254: harness parse **8 / 15** vs clean **0 / 15**; harness fix **0 / 3** (writes `[]` × 3; turns non-empty) vs clean **3 / 3**. Clip cell. Not everyday-ready. |
-| Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
-| Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
-| Hub GGUF import | OpenCoder 8B, SWE-agent-LM 7B | `import_hf_ollama.py`; tags `opencoder:8b` and `swe-agent-lm:7b`. Not measured. Default stays 8B |
-| Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
-| Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
-| A real repository | 4,580 files, not a fixture | reading works; writing 1 / 12 |
+## Read these first
 
-What you type:
-[Scenarios]({{ '/scenarios/' | relative_url }}).
+<div class="tracks">
+  <div class="track">
+    <h2>The scores</h2>
+    <p><a href="{{ '/investigations/experiments/' | relative_url }}">Experiments</a> — every measured run, with what I typed.</p>
+    <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep <code>llama3.1:8b</code>. A 7B coder is close, not better.</p>
+    <p><a href="{{ '/investigations/hub-models/' | relative_url }}">Hub models</a> — which Hugging Face weights to run, and how to import two that Ollama does not ship.</p>
+  </div>
+  <div class="track">
+    <h2>How to use the tool</h2>
+    <p><a href="{{ '/scenarios/' | relative_url }}">What you type</a> — the four jobs on <code>demo/orders</code>.</p>
+    <p><a href="{{ '/investigations/first-run-four/' | relative_url }}">First-run four</a> — those jobs failed, then the helper finished them.</p>
+    <p><a href="{{ '/cite/' | relative_url }}">Cite</a> — APA and BibTeX.</p>
+  </div>
+</div>
 
-## Notes
+## Which model
 
-| Note | What it answers |
+| Note | In one sentence |
 | --- | --- |
-| [Experiments]({{ '/investigations/experiments/' | relative_url }}) | Every measured run, with the example and the score. |
-| [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 7 / 54 base, 12 / 54 after one repair. Ollama. 5 Sep 2026. |
-| [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}) | Four drafts 9 / 18. Later loop 12 / 18, 0 hint-repairs. Greedy LoRA 0 / 54. 5 Sep 2026. |
-| [Cite]({{ '/cite/' | relative_url }}) | APA and BibTeX for the software and that measurement. |
-| [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and all six runs behind the numbers. |
-| [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. |
-| [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | 8B vs a 7B coder vs a 30B that timed out. Evening daily jobs: 8B 9/9, 7B 7/9. Keep the 8B. |
+| [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
+| [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
+| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Tiny models miss the first line of the protocol. OpenCoder and SWE-agent-LM import as a file, then a local tag. |
+| [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The helper stays on this machine. |
+| [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B adapter is a demo, not daily work. |
+| [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and the runs behind the numbers. |
+
+## What we measured
+
+| Note | In one sentence |
+| --- | --- |
+| [Experiments]({{ '/investigations/experiments/' | relative_url }}) | The long table: example, score, how to replay. |
+| [0.5B exact stdout]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 18 scripts, three times each. 7 / 54, then 12 / 54 after one repair. |
+| [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}) | Four drafts found 9 / 18. A later loop 12 / 18. The adapter at greedy temperature: 0 / 54. |
+| [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }}) | Held-out short scripts, and a 100-file walk that was not a review. |
+| [First-run four]({{ '/investigations/first-run-four/' | relative_url }}) | 0 / 4 by hand, then 4 / 4 once the helper did the compiler jobs. |
 | [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) | Eleven demo tasks. Laptop 8B vs a hosted IDE agent. |
-| [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | Two 7-8B models score 51 and 50 of 75, and fail in almost opposite ways. |
-| [Where the failures are]({{ '/investigations/failures/' | relative_url }}) | Seventy-five runs classified. Two thirds of failures are wrong code, and nothing claims success having written nothing. |
-| [What the harness cannot fix]({{ '/investigations/limits/' | relative_url }}) | A refusal calibrated 0 for 5, a pointer the model ignored 3 of 3, and an excerpt that cut out the very lines the task named. |
-| [When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}) | Five runs in ten claimed work they had not done. After two fixes, none did. |
-| [Asking a bigger model]({{ '/investigations/asking-a-bigger-model/' | relative_url }}) | A run that stops to ask has failed 3 times out of 3. That makes the question worth a remote call, and a spent step budget not. |
-| [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}) | Splitting one task into a chain of easy ones bought nothing and cost twice the time. The loop was already a chain. |
-| [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}) | Which gaps a harness can close, and which it cannot. |
-| [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) | How an 8B reaches bigger-model outcomes: oracles. |
-| [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) | When to train again. Not on 35 pairs. Not on 30 traces. |
-| [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for questions, writes, structure, ship. |
-| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Three local models on the same eleven jobs. Same-night daily: 8B 9/9, 7B 7/9. |
-| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids. 1.5B and 1B do not parse Action:. OpenCoder and SWE-agent-LM import as GGUF. |
-| [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The harness stays here. |
-| [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
+| [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. |
+
+## Where it fails
+
+| Note | In one sentence |
+| --- | --- |
+| [Where the failures are]({{ '/investigations/failures/' | relative_url }}) | A third of runs fail. Most of those wrote the wrong code. |
+| [When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}) | Five in ten claimed success having written nothing. After two fixes, none did. |
+| [What the helper cannot fix]({{ '/investigations/limits/' | relative_url }}) | Cases where the helper knew the answer and the model still missed. |
+| [Asking a bigger model]({{ '/investigations/asking-a-bigger-model/' | relative_url }}) | A run that stops to ask has already failed, three times in three. |
+| [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}) | Splitting one hard job into easy ones bought nothing. |
+| [What to improve]({{ '/investigations/what-to-improve/' | relative_url }}) | Gaps a helper can close, and gaps it cannot. |
+
+## How it is built
+
+| Note | In one sentence |
+| --- | --- |
+| [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) | Do not train on 35 pairs or 30 seed traces. Later, about 2k clean turns. |
+| [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) | How an 8B finishes careful work: checks, not hope. |
+| [Harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}) | What transfers from other published helpers. No free shell. |
+| [Everyday skills]({{ '/investigations/everyday-skills/' | relative_url }}) | Each skill is one copy-paste step, written for an 8B. |
 | [Skills]({{ '/skills/' | relative_url }}) | The twenty-four kit skills and when each one loads. |
 | [Platform engineering]({{ '/investigations/platform-engineering/' | relative_url }}) | Small files that must work on every OS. |
-| [Everyday skills]({{ '/investigations/everyday-skills/' | relative_url }}) | Skills written as one copy-paste Action for an 8B. |
-| [Harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}) | What transfers from other published harnesses. |
-| [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }}) | Held-out vibe tasks and a 100-file stub walk. |
-| [Architecture]({{ '/architecture/' | relative_url }}) | Bottom-up layers. A cycle fails the merge gate. |
+| [Architecture]({{ '/architecture/' | relative_url }}) | Layers from the bottom up. A cycle fails the merge gate. |

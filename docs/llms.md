@@ -24,9 +24,9 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Cursor]({{ '/cursor/' | absolute_url }}): Three commands. Local MCP. No Override OpenAI Base URL.
 - [Local editor]({{ '/local-editor/' | absolute_url }}): One-command drop-in for Cursor, VS Code tasks, Continue, or Zed. Chat override of localhost is optional.
 - [IDE plugins]({{ '/ide-plugins/' | absolute_url }}): Use the package as-is, or spawn it from an extension. No extra Python deps.
-- [Research index]({{ '/investigations/' | absolute_url }}): Measurements and design notes.
+- [Results]({{ '/investigations/' | absolute_url }}): Map of every measurement. Start here, then open one note.
 
-## Research
+## Results
 
 - [Cite]({{ '/cite/' | absolute_url }}): APA and BibTeX. Software and the 5 Sep 2026 0.5B exact-stdout and sample-and-run evals.
 - [Experiments]({{ '/investigations/experiments/' | absolute_url }}): What I typed, the planted example, and the score. 29–30 Aug and 5 Sep 2026. Not everyday-ready.

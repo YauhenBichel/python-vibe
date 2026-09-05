@@ -7,9 +7,10 @@ date: 2026-09-05
 
 # Which model
 
-**Answer:** keep `llama3.1:8b`. A code-specialised 7B is better at operations
-work and worse at everything this project is actually used for. A 30B does
-not finish a single task on this laptop.
+**Keep `llama3.1:8b`.** A 7B trained on code is a little better at
+operations work and a little worse at the jobs this tool is for: write
+a test, add a small function, fix a bug. A 30B does not finish a single
+task on this laptop.
 
 Related: [model lanes](./model-lanes.md) ·
 [fine-tune or harness](./fine-tune-or-harness.md) ·

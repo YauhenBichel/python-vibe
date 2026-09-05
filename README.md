@@ -52,7 +52,8 @@ Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./do
 Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
 A typed session on `demo/orders` (5 Sep 2026): [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
 What those commands did on one laptop: [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
-Every measured run: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+The map of every score: [Results](https://yauhenbichel.github.io/python-vibe/investigations/).
+The long table: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
 
 ## Live demo
 

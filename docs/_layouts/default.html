@@ -28,8 +28,7 @@
     {% if u != '/' and u != '/index.html' and u != '/start/' and u != '/investigations/' and u != '/404.html' %}
     <nav class="crumbs" aria-label="Breadcrumb">
       {% if u contains '/investigations' or u contains '/research-vibe-review' %}
-      <a href="{{ '/investigations/experiments/' | relative_url }}">Experiments</a>
-      <a href="{{ '/investigations/' | relative_url }}">Research</a>
+      <a href="{{ '/investigations/' | relative_url }}">Results</a>
       {% else %}
       <a href="{{ '/' | relative_url }}">Home</a>
       {% endif %}
