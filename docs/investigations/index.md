@@ -25,7 +25,7 @@ editors or chat products.
 | 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** then **12 / 18** with later loop; 0 hint-repairs; greedy LoRA **0 / 54** |
 | 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9** |
 | 8B greenfield CLI | GitHub PR CLI, empty folder, 3 repeats | **3 / 3** after #220 (suite + `done`); overflow comment **3 / 3** after #222; pagination **3 / 3** after #233 |
-| Everyday-ready bar | 15 parse prompts + ≥1 KB logic fix × 3 | harness parse **11 / 15** vs clean **0 / 15**; harness fix **0 / 3** vs clean **3 / 3** |
+| Everyday-ready bar | 15 parse prompts + ≥1 KB logic fix × 3 | after #229: harness parse **10 / 15** vs clean **0 / 15**; harness fix **0 / 3** (`[]` × 3) vs clean **3 / 3** |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |

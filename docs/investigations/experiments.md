@@ -293,8 +293,17 @@ repeats, twelve steps. Clean 8B is the same model with no
 | Live parse | **11 / 15** | **0 / 15** |
 | ≥1 KB logic fix | **0 / 3** (`steps`; two writes were tests only) | **3 / 3** (one-shot) |
 
-Harness beats clean on parse. Clean beats harness on the real fix.
-**Not everyday-ready.** Replay:
+After #229 (refuse rewriting a covering test). Same evening, same
+script, same twelve steps.
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **10 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **0 / 3** (`steps`; writes `[]` × 3) | **3 / 3** (one-shot) |
+
+#229 stopped the test rewrite. It did not get a patch on
+`compute_total`. Harness still beats clean on parse. Clean still beats
+harness on the real fix. **Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed
