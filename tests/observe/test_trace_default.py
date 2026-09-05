@@ -156,6 +156,39 @@ class EveryTurnSaysWhichRunTest(unittest.TestCase):
                 return []
             return [json.loads(line) for line in trace.read_text().splitlines() if line.strip()]
 
+    def test_the_outcome_row_cannot_be_written_unsigned(self) -> None:
+        """`trace_id` has no default, so a caller cannot forget it.
+
+        It had one. A caller did forget, and closing rows went out
+        signed with an empty string — which matches no run, so the
+        outcome could not filter anything. Three of the first
+        thirty-five turns collected after the change were exactly that.
+        """
+        import inspect
+
+        from harness.agent.loop import _trace_result
+
+        trace_id = inspect.signature(_trace_result).parameters["trace_id"]
+        self.assertIs(trace_id.default, inspect.Parameter.empty)
+
+    def test_both_callers_pass_one(self) -> None:
+        import ast
+
+        source = (
+            Path(__file__).resolve().parents[2]
+            / "src" / "harness" / "agent" / "loop.py"
+        ).read_text(encoding="utf-8")
+        calls = [
+            node
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Call)
+            and getattr(node.func, "id", "") == "_trace_result"
+        ]
+        self.assertTrue(calls, "nothing records an outcome at all")
+        for call in calls:
+            with self.subTest(line=call.lineno):
+                self.assertEqual(len(call.args), 3, "an outcome row with no run id")
+
     def test_every_turn_carries_a_run_id(self) -> None:
         rows = self._run_and_read(
             "Action: read\nPath: src/app.py",
