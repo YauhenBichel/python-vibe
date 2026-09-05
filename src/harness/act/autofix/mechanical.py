@@ -30,7 +30,7 @@ from harness.act.autofix.moves import apply_file_move, apply_function_move
 from harness.act.autofix.conflicts import _resolve_conflict, looks_like_conflict
 from harness.act.autofix.cover import apply_cover_test
 from harness.act.autofix.names import apply_typo_fixes, typo_pairs
-from harness.act.autofix.scaffold import apply_list_page_query
+from harness.act.autofix.scaffold import apply_home_config, apply_list_page_query
 
 
 def _repair_in_place(
@@ -125,6 +125,9 @@ def apply_mechanical(
         paged = apply_list_page_query(project, task, write=write)
         if paged:
             notes.append(paged)
+        home = apply_home_config(project, task, write=write)
+        if home:
+            notes.append(home)
     if not notes:
         return ""
     verb = "applied" if write else "would apply (read-only)"
