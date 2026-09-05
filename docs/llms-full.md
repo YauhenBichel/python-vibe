@@ -40,11 +40,16 @@ ollama pull llama3.1:8b
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
 python3 scripts/run/install.py
-cd /path/to/your/app
+source .venv/bin/activate
+cd demo/orders
 python-vibe brief
 python-vibe ask  "what does compute_total return?"
-python-vibe run  "find a real NameError and fix it"
+python-vibe run  "find the NameError and fix it"
 ```
+
+If the shell says command not found, the venv is not active. Activate
+it in every new terminal. `brief` on this checkout briefs the whole
+tree; the planted demo is `demo/orders`.
 
 Training on Apple Silicon needs MLX, which does not install on Linux or
 Windows: `pip install -e ".[train]"`.
@@ -52,6 +57,7 @@ Windows: `pip install -e ".[train]"`.
 What you type, and what happened on demo/orders: {{ '/scenarios/' | absolute_url }}
 A typed session and asciinema recording: {{ '/live/' | absolute_url }}
 VS Code tasks, same day, same folder: {{ '/vscode/' | absolute_url }}
+Local MCP, same day, same folder: {{ '/cursor/' | absolute_url }}
 
 --tiny is the 0.5B sidecar. Do not use it for daily work. Large trees: pass --scope and start with Action: map.
 
@@ -103,7 +109,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 7B / 14B / 32B listed in everyday.py: not pulled. 30B-class on disk timed out at 180s.
 - python-vibe-8b adapters: missing.
 - Hub comparison: {{ '/investigations/hub-models/' | absolute_url }}
-- OpenCoder 8B and SWE-agent-LM 7B are not `ollama pull` tags. Import Q4_K_M with `scripts/weights/import_hf_ollama.py`, then `--model opencoder:8b` or `--model swe-agent-lm:7b`. No daily score yet. Default stays 8B. Other 7B–8B weights that fit 18 GB (OpenHands-LM, Seed-Coder, Granite, Yi-Coder) wait until that table has scores. Do not pull 14B or 30B.
+- OpenCoder 8B and SWE-agent-LM 7B are not `ollama pull` tags. Import Q4_K_M with `scripts/weights/import_hf_ollama.py`, then `--model opencoder:8b` or `--model swe-agent-lm:7b`. No daily score yet. Default stays 8B.
 
 ## Limits vs a hosted IDE agent
 

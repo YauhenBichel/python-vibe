@@ -13,7 +13,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 ## Docs
 
 - [Home]({{ '/' | absolute_url }}): Four jobs. Ask, test, fix, add.
-- [Start]({{ '/start/' | absolute_url }}): Install, then python-vibe brief / ask / run in your project.
+- [Start]({{ '/start/' | absolute_url }}): Install, activate .venv, then python-vibe brief / ask / run. Demo is demo/orders.
 - [Scenarios]({{ '/scenarios/' | absolute_url }}): What you type, and what happened on demo/orders. Includes misses.
 - [Using]({{ '/api/' | absolute_url }}): Every command and flag, the Python API, and the read-only HTTP routes.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
@@ -21,7 +21,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty-four kit skills and when the harness loads each one.
 - [Architecture]({{ '/architecture/' | absolute_url }}): Bottom-up harness layers. Imports only point downward.
 - [In your editor]({{ '/editor-demos/' | absolute_url }}): Four things it does from Cursor or VS Code, with real answers and times. Two need no model.
-- [Cursor]({{ '/cursor/' | absolute_url }}): Three commands. Local MCP. No Override OpenAI Base URL.
+- [Cursor]({{ '/cursor/' | absolute_url }}): Asciinema recording of local MCP on demo/orders. 5 Sep 2026. Only ask called the 8B.
 - [VS Code]({{ '/vscode/' | absolute_url }}): Asciinema recording of Tasks: Run Task on demo/orders. 5 Sep 2026. Only ask called the 8B.
 - [Local editor]({{ '/local-editor/' | absolute_url }}): One-command drop-in for Cursor, VS Code tasks, Continue, or Zed. Chat override of localhost is optional.
 - [IDE plugins]({{ '/ide-plugins/' | absolute_url }}): Use the package as-is, or spawn it from an extension. No extra Python deps.
@@ -48,7 +48,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | absolute_url }}): When new weights help. Not another 0.5B run. Not 30 seed traces.
 - [Which model to run]({{ '/investigations/which-model/' | absolute_url }}): Three local models, the same eleven jobs, each checked by running the code. Same-night daily: 8B 9/9, 7B coder 7/9. 8B stays.
 - [Model lanes]({{ '/investigations/model-lanes/' | absolute_url }}): Which local weight for which job. Default stays 8B.
-- [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights that fit 18 GB. 1.5B and 1B miss Action:. OpenCoder 8B and SWE-agent-LM 7B import from GGUF (`import_hf_ollama.py`).
+- [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights to run or tune. 1.5B and 1B miss Action:. OpenCoder 8B and SWE-agent-LM 7B import from GGUF (`import_hf_ollama.py`).
 - [Cloud weights]({{ '/investigations/cloud-weights/' | absolute_url }}): Larger models on a rented GPU. Same write limit. No 0.5B retrain.
 - [Platform engineering]({{ '/investigations/platform-engineering/' | absolute_url }}): pathlib, both venv layouts, config files, every OS.
 - [Everyday laptop]({{ '/investigations/everyday-laptop/' | absolute_url }}): Why the 0.5B LoRA is not daily work.

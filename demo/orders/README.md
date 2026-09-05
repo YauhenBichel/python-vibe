@@ -13,3 +13,17 @@ python-vibe does on ordinary daily tasks. Every problem here is planted:
   and a `NameError` in `status` (`stauts`).
 
 The demo copies this directory before each case, so a run never changes it.
+
+From the python-vibe checkout:
+
+```bash
+source .venv/bin/activate
+cd demo/orders
+python-vibe brief
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "find the NameError and fix it"
+```
+
+If the shell says `command not found: python-vibe`, the venv is not
+active. Activate it in every new terminal. Do not run `brief` on the
+checkout root — that briefs the whole tree.

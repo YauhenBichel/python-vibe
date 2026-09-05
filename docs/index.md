@@ -17,10 +17,14 @@ the machine unless you ask it to call a remote model.
   <a href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">Source on GitHub</a>
 </p>
 
-After [Start]({{ '/start/' | relative_url }}), stand in your project and
-type one of these:
+After [Start]({{ '/start/' | relative_url }}), activate `.venv` in every
+new terminal (`source .venv/bin/activate`). If the shell says
+`command not found`, the venv is not active. The planted demo is
+`demo/orders`:
 
 ```bash
+source .venv/bin/activate
+cd demo/orders
 python-vibe brief
 python-vibe ask  "what does compute_total return?"
 python-vibe run  "write tests for apply_discount"
@@ -30,7 +34,7 @@ python-vibe run  "add a function total_lines and a test"
 
 `brief` needs no model. `ask` never writes. `run` writes, then runs the
 tests. The NameError and `total_lines` jobs on `demo/orders` are done
-by the helper, not the model. `run` keeps a `.bak` of anything it
+by the helper, not the model. Do not run `brief` on this checkout. `run` keeps a `.bak` of anything it
 edits. Point at another folder by putting it first:
 `python-vibe ask ~/app "what does compute_total return?"`.
 
@@ -57,6 +61,7 @@ edits. Point at another folder by putting it first:
     <p><a href="{{ '/investigations/' | relative_url }}">Results</a> — the map of every score.</p>
     <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep the 8B.</p>
     <p><a href="{{ '/vscode/' | relative_url }}">VS Code</a> — Tasks: Run Task. Recorded walkthrough.</p>
+    <p><a href="{{ '/cursor/' | relative_url }}">Cursor</a> — local MCP. Recorded walkthrough.</p>
     <p><a href="{{ '/architecture/' | relative_url }}">Architecture</a> — how the helper is stacked.</p>
   </div>
 </div>

@@ -24,9 +24,14 @@ Vulnerabilities: open a **public** GitHub issue. Do not paste live keys.
 
 ## Use it
 
-From your project folder, after `python3 scripts/run/install.py` and `ollama pull llama3.1:8b`:
+After `python3 scripts/run/install.py`, activate the venv in **every
+new terminal**. If the shell says `command not found: python-vibe`,
+the venv is not active. The planted demo is `demo/orders`:
 
 ```bash
+source .venv/bin/activate
+ollama pull llama3.1:8b
+cd demo/orders
 python-vibe brief
 python-vibe ask  "what does compute_total return?"
 python-vibe run  "write tests for apply_discount"
@@ -52,6 +57,7 @@ Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./do
 Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
 A typed session on `demo/orders` (5 Sep 2026): [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
 The same jobs from VS Code Tasks: [VS Code](https://yauhenbichel.github.io/python-vibe/vscode/).
+From Cursor chat or Tasks: [Cursor](https://yauhenbichel.github.io/python-vibe/cursor/).
 What those commands did on one laptop: [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
 The map of every score: [Results](https://yauhenbichel.github.io/python-vibe/investigations/).
 The long table: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
@@ -111,6 +117,34 @@ bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passe
 Replay: `asciinema play docs/media/vscode-demo.cast`.
 Re-record: `PYTHONPATH=src python scripts/measure/record_vscode.py`.
 Full page: [VS Code](https://yauhenbichel.github.io/python-vibe/vscode/).
+
+## In Cursor
+
+5 September 2026. Fresh copy of `demo/orders`. Install the local MCP,
+then chat or **Tasks: Run Task**. Only `ask` called `llama3.1:8b`. The
+NameError repair is a harness demo (no model). Same commands the tools
+run, not a screenshot of the editor window.
+
+![python-vibe Cursor MCP on demo/orders](docs/media/cursor-demo.gif)
+
+```
+$ python-vibe editors cursor --allow-writes
+python-vibe is set up for this folder (read-write).
+Open Customize → MCP → enable python-vibe
+
+$ python-vibe brief
+10 Python and Markdown files, 2.9 KB in total.
+
+$ python-vibe ask "what does compute_total return?"
+The compute_total function computes the sum of the line prices of one order.
+
+$ python-vibe run "find the NameError and fix it"
+bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
+```
+
+Replay: `asciinema play docs/media/cursor-demo.cast`.
+Re-record: `PYTHONPATH=src python scripts/measure/record_cursor.py`.
+Full page: [Cursor](https://yauhenbichel.github.io/python-vibe/cursor/).
 
 ## Experiments
 
