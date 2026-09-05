@@ -628,12 +628,10 @@ def write_needs_a_test(state: LoopState, result: str, path: str) -> bool:
 
 def should_run_suite_after_write(state: LoopState, result: str, path: str) -> bool:
     """Daily write: run the suite when tests already cover the work."""
-    if (
-        looks_like_design_loop(state.task)
-        or looks_like_fix_smell(state.task)
-        or looks_like_app_loop(state.task)
-    ):
+    if looks_like_design_loop(state.task) or looks_like_fix_smell(state.task):
         return False
+    if looks_like_app_loop(state.task):
+        return _app_ready_to_run(state, result)
     if not result.startswith(("patched", "wrote")):
         return False
     if not (state.project / "tests").is_dir():
@@ -644,6 +642,17 @@ def should_run_suite_after_write(state: LoopState, result: str, path: str) -> bo
         if leftover:
             return False
     return not write_needs_a_test(state, result, path)
+
+
+def _app_ready_to_run(state: LoopState, result: str) -> bool:
+    """Once list/show/mocks exist, run the suite so done can fire."""
+    if not result.startswith(("patched", "wrote")):
+        return False
+    if not (state.project / "tests").is_dir():
+        return False
+    from harness.scan.app_spec import required_gaps
+
+    return not required_gaps(state.project, state.task)
 
 
 def repair_after_failed_run(state: LoopState, result: str) -> str:

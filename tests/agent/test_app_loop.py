@@ -5,7 +5,13 @@ import unittest
 from pathlib import Path
 
 from harness.act.autofix.scaffold import apply_package_scaffold
-from harness.agent.policy import LoopState, next_prompt, refuse_before, refuse_done
+from harness.agent.policy import (
+    LoopState,
+    next_prompt,
+    refuse_before,
+    refuse_done,
+    should_run_suite_after_write,
+)
 from harness.locate import refuse_app_ask, refuse_app_wrong_path, refuse_redundant_locate
 from harness.scan.project_brief import classify_project, start_hint
 from harness.task import looks_like_app_loop
@@ -162,8 +168,52 @@ class AppLoopTest(unittest.TestCase):
                 _Turn("edit", path="tests/test_pr_review.py"),
                 "wrote tests/test_pr_review.py",
             )
+            self.assertTrue(
+                should_run_suite_after_write(
+                    state, "wrote tests/test_pr_review.py", "tests/test_pr_review.py"
+                )
+            )
         self.assertEqual(got, RUN_SUITE)
 
+    def test_an_incomplete_app_write_does_not_run_the_suite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            state = LoopState(task=CLI, project=root, last_path="pkg/__init__.py")
+            self.assertFalse(
+                should_run_suite_after_write(
+                    state, "wrote pkg/__init__.py", "pkg/__init__.py"
+                )
+            )
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_a_green_suite_asks_for_done(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            tests = root / "tests"
+            pkg.mkdir()
+            tests.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "    return []\n"
+                "def show_pull(owner, repository, number):\n"
+                "    return {}\n",
+                encoding="utf-8",
+            )
+            (tests / "test_pr_review.py").write_text(
+                "from unittest.mock import patch\n"
+                "from pkg.pr_review import list_pulls\n"
+                "def test_list_pulls_returns_titles():\n"
+                "    with patch('urllib.request.urlopen'):\n"
+                "        list_pulls('o', 'r')\n",
+                encoding="utf-8",
+            )
+            state = LoopState(task=CLI, project=root, wrote_something=True)
+            got = next_prompt(state, _Turn("run"), "exit 0\n.")
+        self.assertIn("done", got.lower())
+        self.assertIn("list and show", got.lower())

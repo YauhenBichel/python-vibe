@@ -1,5 +1,6 @@
 """Checklist for a greenfield GitHub PR CLI. No model."""
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -64,6 +65,54 @@ class AppSpecTest(unittest.TestCase):
         self.assertIn("comment", extra)
         self.assertIn("pagination", extra)
         self.assertIn("config", extra)
+
+    def test_get_prs_and_main_count_as_mocked_tests(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            tests = root / "tests"
+            pkg.mkdir()
+            tests.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def get_prs(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "    return []\n"
+                "def show_pull(number):\n"
+                "    return {}\n"
+                "parser.add_parser('list')\n"
+                "parser.add_parser('show')\n",
+                encoding="utf-8",
+            )
+            (tests / "test_pr_review.py").write_text(
+                "from unittest.mock import patch\n"
+                "from pkg.pr_review import get_prs, main\n"
+                "def test_main_list():\n"
+                "    with patch('urllib.request.urlopen'):\n"
+                "        get_prs('o', 'r')\n"
+                "        main()\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(required_gaps(root, CLI), [])
+
+    def test_gold_fixture_noun_and_keys(self) -> None:
+        from harness.scan.app_spec import OVERFLOW_KEYS, REQUIRED_KEYS
+
+        gold = Path(__file__).resolve().parents[2] / (
+            "eval/fixtures/daily_cli_app/gold.json"
+        )
+        data = json.loads(gold.read_text(encoding="utf-8"))
+        self.assertEqual(package_noun(data["task"]), data["package_noun"])
+        self.assertEqual(REQUIRED_KEYS, tuple(data["required"]))
+        self.assertEqual(OVERFLOW_KEYS, tuple(data["overflow"]))
+        fixture = gold.parent
+        self.assertEqual(
+            [gap.key for gap in required_gaps(fixture, data["task"])],
+            ["http", "list", "show", "mocked_tests"],
+        )
 
     def test_next_action_names_the_module(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
