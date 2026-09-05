@@ -63,6 +63,7 @@ Three repeats. Twelve steps.
 | `codellama:7b-python` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
 | `opencoder:8b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
 | `swe-agent-lm:7b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
+| `swe-agent-lm:7b` (empty VRAM) | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
 
 The 7B coder stopped twice to ask where `clamp` should go. The logic-bug
 3 / 3 on the 8B and 7B coder is a compiler `return 0` bind, not the
@@ -82,9 +83,10 @@ and OpenCoder hit 180s. The same four then finished the daily clamp
 about 1,700 tokens and finished in 12–39 s on those four. A clean
 cold first turn (unload, then that chat) was 17 s on the 8B, 54 s
 on DeepSeek, and 38 s on SWE-agent-LM. `keep_alive` 0 did not evict
-the 7B coder. `ollama stop` did: first clamp **passed** (`steps`),
-second clamp hit 180s. A reply is not a daily score.
-**Do not switch.**
+the 7B coder. `ollama stop` did: DeepSeek first clamp **passed**
+(`steps`), second hit 180s. SWE-agent-LM from empty VRAM still hit
+180s on the first clamp generate (the tag was loaded after). A reply
+is not a daily score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score
