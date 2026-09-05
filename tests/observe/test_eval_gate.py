@@ -24,6 +24,15 @@ class EvalGateTest(unittest.TestCase):
         ready, reason = bugfix_fixture_ready()
         self.assertTrue(ready, reason)
 
+    def test_everyday_fix_fixture_is_1kb_logic_bug(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        broken = root / "eval" / "fixtures" / "everyday_fix" / "pkg" / "util_stats.py"
+        body = broken.read_text(encoding="utf-8")
+        self.assertGreaterEqual(broken.stat().st_size, 1000)
+        self.assertIn("return 0.0", body)
+        self.assertNotIn("return tota", body)
+        self.assertNotIn("subtotl", body)
+
     def test_tiny_detection(self) -> None:
         self.assertTrue(is_tiny_model("qwen2.5-coder:0.5b"))
         self.assertFalse(is_tiny_model("llama3.1:8b"))
