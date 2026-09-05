@@ -585,6 +585,38 @@ builds its own memory, so every step started from nothing.
 
 Write-up: [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}).
 
+## Where the failures are
+
+Seven harness changes measured, six moved nothing. So rather than
+measure an eighth, seventy-five runs were classified by what they left
+behind, and eight hundred and thirty-six model turns by what the model
+was sent.
+
+**Result**
+
+| Of the 24 failures in 75 runs | Share |
+| --- | --- |
+| wrote something, but not the thing asked for | **42%** |
+| wrote nothing at all | 33% |
+| wrote something, it did not do the job | 25% |
+| **claimed success having written nothing** | **0%** |
+
+Two thirds of what fails is plausible, wrong code, and nothing
+deterministic separates that from plausible, right code — only running
+it does, and the suite already runs. The harness has taken the failures
+it can take.
+
+The last row is the week's one measured gain: that shape was two of
+nine failures a week ago and is nought of twenty-four now. Not a higher
+pass rate — no lies about it.
+
+A quarter of every run is the harness saying no: 23% of turns are a
+refusal or a nudge, most often "run the tests before finishing" (58),
+"read the file before patching it" (36) and "that is the wrong file"
+(32).
+
+Write-up: [Where the failures are]({{ '/investigations/failures/' | relative_url }}).
+
 ## What the harness cannot fix
 
 Most gaps here close when the harness stops guessing and starts
