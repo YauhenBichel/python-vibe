@@ -103,3 +103,7 @@ these runs fail.
 - Do not pull the 30B expecting the numbers to improve. It times out.
 - Do not train on synthetic traces to fix reasoning errors. Record real
   ones first and look at what they actually contain.
+- Do not switch to `opencoder:8b` or `swe-agent-lm:7b` until a daily
+  table exists. They are not `ollama pull` tags; import them with
+  `scripts/weights/import_hf_ollama.py`. See
+  [Hub models](./hub-models.md).

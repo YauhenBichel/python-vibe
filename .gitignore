@@ -8,6 +8,8 @@ data/_card_test/
 data/agent-loop/extra.jsonl
 adapters/
 fused/
+gguf/
+*.gguf
 *.safetensors
 .mlx_cache/
 wandb/

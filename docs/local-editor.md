@@ -106,6 +106,20 @@ Kit skills for everyday laptop Python (stdlib, AAA tests):
 
 Each write is followed by `write-tests` (`test_<unit>_<result>`, Act into `got`).
 
+## Optional: a Hub GGUF that Ollama does not ship
+
+OpenCoder 8B and SWE-agent-LM 7B are on Hugging Face, not in the Ollama
+library. Import the Q4_K_M file, then pass `--model`:
+
+```bash
+python3 scripts/weights/import_hf_ollama.py --name opencoder
+python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
+python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+```
+
+Default stays `llama3.1:8b`. Detail:
+[Hub models]({{ '/investigations/hub-models/' | relative_url }}).
+
 ## Optional: your LoRA as GGUF / Ollama
 
 Stand-in (this week): `export_ollama.py --create` is `FROM llama3.1:8b` plus the
