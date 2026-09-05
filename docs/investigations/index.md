@@ -28,6 +28,7 @@ editors or chat products.
 | Everyday-ready bar | 15 parse prompts + ≥1 KB logic fix × 3 | after #254: harness parse **8 / 15** vs clean **0 / 15**; harness fix **0 / 3** (writes `[]` × 3; turns non-empty) vs clean **3 / 3**. Clip cell. Not everyday-ready. |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
+| Hub GGUF import | OpenCoder 8B, SWE-agent-LM 7B | `import_hf_ollama.py`; tags `opencoder:8b` and `swe-agent-lm:7b`. Not measured. Default stays 8B |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
 | Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
 | A real repository | 4,580 files, not a fixture | reading works; writing 1 / 12 |
@@ -57,7 +58,7 @@ What you type:
 | [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) | When to train again. Not on 35 pairs. Not on 30 traces. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for questions, writes, structure, ship. |
 | [Which model]({{ '/investigations/which-model/' | relative_url }}) | Three local models on the same eleven jobs. |
-| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids. 1.5B and 1B do not parse Action:. |
+| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids. 1.5B and 1B do not parse Action:. OpenCoder and SWE-agent-LM import as GGUF. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The harness stays here. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
 | [Skills]({{ '/skills/' | relative_url }}) | The twenty-four kit skills and when each one loads. |

@@ -102,6 +102,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 7B / 14B / 32B listed in everyday.py: not pulled. 30B-class on disk timed out at 180s.
 - python-vibe-8b adapters: missing.
 - Hub comparison: {{ '/investigations/hub-models/' | absolute_url }}
+- OpenCoder 8B and SWE-agent-LM 7B are not `ollama pull` tags. Import Q4_K_M with `scripts/weights/import_hf_ollama.py`, then `--model opencoder:8b` or `--model swe-agent-lm:7b`. No daily score yet. Default stays 8B.
 
 ## Limits vs a hosted IDE agent
 
@@ -115,7 +116,7 @@ A free bash tool does not transfer to an 8B on a laptop working tree.
 2. Auto-pick review-design, refactor-split, readable-layout. refuse_thin_review is in the done handler.
 3. Refuse done on add / rename until a passing unittest (new-package already does).
 4. Quote more of a small file so answers include nearby constants.
-5. Measure qwen2.5-coder:7b against the 8B demo log before changing the default. 1.5B and 1B already failed Action: parse. 30B-class timed out.
+5. Measure qwen2.5-coder:7b, then the imported OpenCoder 8B and SWE-agent-LM 7B tags, against the 8B demo log before changing the default. 1.5B and 1B already failed Action: parse. 30B-class timed out.
 6. Expand live parse prompts. Then record ~2k redacted --record traces before train.py --everyday. Decision: investigations/fine-tune-or-harness.
 
 ## Do not

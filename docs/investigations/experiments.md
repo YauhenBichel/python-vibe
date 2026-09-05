@@ -43,6 +43,7 @@ GitHub thread:
   <li><a href="#everyday-ready-bar">Everyday-ready bar</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
   <li><a href="#which-small-open-model">Which small open model</a></li>
+  <li><a href="#hub-ggufs-that-ollama-does-not-ship">Hub GGUFs that Ollama does not ship</a></li>
   <li><a href="#train-more-or-not">Train more, or not</a></li>
   <li><a href="#a-larger-open-model">A larger open model</a></li>
 </ol>
@@ -476,6 +477,30 @@ tree.
 
 Write-up: [Which model]({{ '/investigations/which-model/' | relative_url }})
 · [Same jobs]({{ '/investigations/same-jobs/' | relative_url }}).
+
+## Hub GGUFs that Ollama does not ship
+
+**Example.** 5 September 2026. Two small code models on Hugging Face
+that this laptop can hold and that `ollama pull` cannot see.
+`scripts/weights/import_hf_ollama.py` downloads the Q4_K_M GGUF (~4.7 GB)
+and runs `ollama create`.
+
+| Local tag | Source | What it is |
+| --- | --- | --- |
+| `opencoder:8b` | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | Code-instruct 8B |
+| `swe-agent-lm:7b` | [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | Qwen2.5-Coder-7B plus 5k traces from their agent |
+
+```bash
+python3 scripts/weights/import_hf_ollama.py --name opencoder
+python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
+python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+```
+
+**Result.** The import path is in-tree. No daily score yet. Neither
+weight was trained on this `Action:` / `Find:` loop. Default stays
+`llama3.1:8b`.
+
+Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 ## Train more, or not
 

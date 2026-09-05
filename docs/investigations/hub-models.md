@@ -1,8 +1,8 @@
 ---
 title: Hub models for python-vibe
-description: Hugging Face weights this laptop can run, plus first-Action probes on the 1.5B and 1B already on disk. Default stays 8B.
+description: Hugging Face weights this laptop can run, including GGUFs that are not in the Ollama library. Default stays 8B.
 permalink: /investigations/hub-models/
-date: 2026-08-29
+date: 2026-09-05
 type: article
 ---
 
@@ -13,7 +13,9 @@ weights are worth a later LoRA?
 
 **Answer.** Keep `llama3.1:8b` for daily work. Keep the 0.5B sidecar for
 demos only. Do not train more 0.5B. The 1.5B and 1B already on this
-laptop **do not parse `Action:`**. The only later LoRA base in-tree is
+laptop **do not parse `Action:`**. OpenCoder 8B and SWE-agent-LM 7B are
+not `ollama pull` tags; import the Q4_K_M GGUF, then measure. The only
+later LoRA base in-tree is
 `mlx-community/Qwen2.5-Coder-7B-Instruct-4bit`, after ~2k clean traces.
 Pull `qwen2.5-coder:7b` only to measure it against the 8B log.
 
@@ -25,6 +27,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 <p>On this page</p>
 <ol>
   <li><a href="#on-this-laptop-today">On this laptop today</a></li>
+  <li><a href="#hub-weights-that-are-not-an-ollama-tag">Hub weights that are not an Ollama tag</a></li>
   <li><a href="#first-action-probes-29-aug-2026">First Action probes, 29 Aug 2026</a></li>
   <li><a href="#hub-ids-that-fit-this-repo">Hub ids that fit this repo</a></li>
   <li><a href="#later-lora-bases">Later LoRA bases</a></li>
@@ -42,7 +45,40 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `qwen2.5-coder:1.5b` → [Qwen/Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | 986 MB | On disk. **No `Action:` parse** in the probes below. |
 | `llama3.2:1b` → [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 1.3 GB | On disk. **No `Action:` parse.** |
 | `qwen3coder` 30B-class | 18 GB | Already timed out at the 180s Ollama cap. |
-| `qwen2.5-coder:7b` | — | **Not pulled.** Optional write specialist after a live compare. |
+| `qwen2.5-coder:7b` | — | Optional write specialist after a live compare. `ollama pull`. |
+| `opencoder:8b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
+| `swe-agent-lm:7b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
+
+## Hub weights that are not an Ollama tag
+
+**Example.** 5 September 2026. Two small code models this laptop can
+hold, that `ollama pull` cannot see. Q4_K_M is about 4.7 GB each, inside
+the 11–12 GB this machine leaves for a model.
+
+| Local tag | Source | GGUF | Licence |
+| --- | --- | --- | --- |
+| `opencoder:8b` | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | [bartowski/OpenCoder-8B-Instruct-GGUF](https://huggingface.co/bartowski/OpenCoder-8B-Instruct-GGUF) `Q4_K_M` | INF |
+| `swe-agent-lm:7b` | [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | [mradermacher/SWE-agent-LM-7B-GGUF](https://huggingface.co/mradermacher/SWE-agent-LM-7B-GGUF) `Q4_K_M` | Apache-2.0 |
+
+OpenCoder is a code-instruct 8B. SWE-agent-LM is Qwen2.5-Coder-7B-Instruct
+plus about 5k traces from **their** agent. Neither weight speaks
+python-vibe `Action:` / `Find:`. Importing them does not make them the
+default. It makes `--model` work so a later daily table can score them.
+
+```bash
+python3 scripts/weights/import_hf_ollama.py --list
+python3 scripts/weights/import_hf_ollama.py --name opencoder
+python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
+python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+```
+
+`--all` downloads both. `--no-create` stops after the GGUF. The script
+writes `FROM` the file and calls `ollama create`. The harness still
+sends the agent system prompt on each turn; the Modelfile does not
+repeat it.
+
+**Result.** The catalog and the Modelfile are in-tree. No daily score
+yet. Do not switch the default on a missing table.
 
 Hub lifetime downloads (overview, 29 Aug 2026) are not a quality score for
 this harness. Qwen2.5-Coder-0.5B-Instruct has 14.2M downloads and still
@@ -74,6 +110,8 @@ seed rows is the wrong next spend: the small models fail the first line.
 | Measure next | [Qwen/Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) (21.4M downloads, Apache-2.0) | `ollama pull qwen2.5-coder:7b` then `scripts/run/demo.py --model qwen2.5-coder:7b` | Keep only if independent file checks beat the 8B log |
 | On disk, unusable as default | [Qwen/Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | already pulled | Do not switch the default |
 | Optional later probe | [microsoft/Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct) (3.84B, MIT, 8.8M downloads) | not pulled | Different tokenizer. Measure before any LoRA |
+| Measure, Hub GGUF | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | `import_hf_ollama.py --name opencoder` then `--model opencoder:8b` | Import. Do not switch until a daily table beats 8B |
+| Measure, Hub GGUF | [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | `import_hf_ollama.py --name swe-agent-lm` then `--model swe-agent-lm:7b` | Import. Their agent traces, not this loop |
 
 ## Later LoRA bases
 
@@ -96,8 +134,11 @@ official python-vibe weight without following the Llama 3.1 licence.
 - Pull the 30B for daily writes. It already lost on latency.
 - Use [bigcode/starcoder2-3b](https://huggingface.co/bigcode/starcoder2-3b)
   as a kit LoRA base (completion model, OpenRAIL).
+- Make `opencoder:8b` or `swe-agent-lm:7b` the default before a daily
+  table. Import is not a score.
 - Name other editors or chat products in public notes.
 
-Order of work: oracles on the 8B this week; optional 7B compare when you
-want a download; a 14B–70B only through [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }});
+Order of work: oracles on the 8B this week; import the two Hub GGUFs when
+you want a download that `ollama pull` cannot see; optional 7B compare;
+a 14B–70B only through [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }});
 7B LoRA only after clean traces.

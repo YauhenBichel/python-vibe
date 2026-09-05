@@ -37,7 +37,7 @@ permalink: /sitemap.xml
   <url><loc>{{ '/investigations/platform-engineering/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/fine-tune-or-harness/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/model-lanes/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>{{ '/investigations/hub-models/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>{{ '/investigations/hub-models/' | absolute_url }}</loc><lastmod>2026-09-05</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/cloud-weights/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/everyday-laptop/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>{{ '/investigations/everyday-skills/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>

@@ -118,6 +118,21 @@ sending.
 
 See [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}).
 
+### Hub GGUFs that Ollama does not ship
+
+OpenCoder 8B and SWE-agent-LM 7B are on Hugging Face, not in the Ollama
+library. From a clone of this repo:
+
+```bash
+python3 scripts/weights/import_hf_ollama.py --name opencoder
+python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
+python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+```
+
+That downloads the Q4_K_M GGUF (~4.7 GB each) and runs `ollama create`.
+Default stays `llama3.1:8b`. See
+[Hub models]({{ '/investigations/hub-models/' | relative_url }}).
+
 Paths are always written with forward slashes, on every platform, because
 the model is shown them and copies them back.
 

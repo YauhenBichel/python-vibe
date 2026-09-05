@@ -24,13 +24,14 @@ Live paths (optional):
 ```bash
 PYTHONPATH=src python scripts/measure/smoke.py --live
 PYTHONPATH=src python scripts/measure/smoke.py --mlx
+PYTHONPATH=src python scripts/weights/import_hf_ollama.py --list
 ```
 
 ## Non-negotiable
 
 - The harness stays **deterministic**. Do not add a prompt-side router that
   skips `PythonVibeGuard`.
-- Do not commit `.safetensors`, `.env`, tokens, hostnames, or adapter folders.
+- Do not commit `.safetensors`, `.gguf`, `.env`, tokens, hostnames, or adapter folders.
 - Do not teach the model to discuss moles or lesions (PV004). This is a
   coding model.
 - Do not add `curl | sh` examples (PV003).
