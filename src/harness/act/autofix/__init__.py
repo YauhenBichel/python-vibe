@@ -66,6 +66,7 @@ from harness.act.autofix.moves import (
 from harness.act.autofix.mechanical import (
     apply_mechanical,
 )
+from harness.act.autofix.scaffold import apply_package_scaffold
 
 __all__ = [
     "apply_file_move",
@@ -84,6 +85,7 @@ __all__ = [
     "apply_cover_test",
     "apply_function_rename",
     "apply_mechanical",
+    "apply_package_scaffold",
     "apply_missing_imports",
     "apply_person_bind",
     "apply_typo_fixes",

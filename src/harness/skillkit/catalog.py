@@ -18,6 +18,7 @@ from harness.task import (
     looks_like_design_loop,
     looks_like_fix_smell,
     looks_like_http_client,
+    looks_like_app_loop,
     looks_like_new_package,
     looks_like_ops,
     looks_like_platform,
@@ -127,6 +128,8 @@ def pick_skills(task: str, catalog: list[Skill]) -> list[Skill]:
             return picked
     if looks_like_new_package(task):
         picked.extend(s for s in catalog if s.name == "new-package")
+        if looks_like_app_loop(task):
+            picked.extend(s for s in catalog if s.name == "write-cli-app")
         if mentions_http(task):
             picked.extend(s for s in catalog if s.name == "call-http")
         elif mentions_cli(task):

@@ -242,9 +242,10 @@ def start_hint(brief: ProjectBrief, task: str, *, located: bool = False) -> str:
             else ""
         )
         return (
-            "This is a new-package task. First Action: edit Path: pkg/__init__.py "
-            f"(exports only). Then edit pkg/{noun}.py with {shape}.{http} "
-            f"Then tests/test_{noun}.py. Do not put logic in scripts/."
+            "This is a new-package task. First Action: edit Path: "
+            f"pkg/{noun}.py with {shape}.{http} "
+            f"Then tests/test_{noun}.py. Do not put logic in scripts/. "
+            "pkg/__init__.py is already exports-only. Do not locate. Do not ask."
         )
     if looks_like_fix_smell(task):
         return (

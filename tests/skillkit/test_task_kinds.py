@@ -11,6 +11,7 @@ from harness.task import (
     looks_like_add_feature,
     looks_like_bugfix,
     looks_like_design_loop,
+    looks_like_app_loop,
     looks_like_new_package,
     looks_like_question,
     looks_like_review_code,
@@ -129,6 +130,8 @@ class GreenfieldCliTest(unittest.TestCase):
         self.assertFalse(looks_like_design_loop(CLI_APP))
         self.assertFalse(looks_like_ship(CLI_APP))
         self.assertFalse(looks_like_script(CLI_APP))
+        self.assertTrue(looks_like_app_loop(CLI_APP))
+        self.assertFalse(looks_like_app_loop("create a package for total_price"))
 
     def test_github_pr_cli_names_pr_review_and_http(self) -> None:
         self.assertEqual(package_noun(CLI_APP), "pr_review")
@@ -140,7 +143,9 @@ class GreenfieldCliTest(unittest.TestCase):
     def test_pick_scaffolds_then_http_then_tests(self) -> None:
         catalog = list_skills()
         names = [item.name for item in pick_skills(CLI_APP, catalog)]
-        self.assertEqual(names, ["new-package", "call-http", "write-tests"])
+        self.assertEqual(
+            names, ["new-package", "write-cli-app", "call-http", "write-tests"]
+        )
         self.assertNotIn("write-script", names)
         self.assertNotIn("review-design", names)
         self.assertNotIn("open-pr", names)

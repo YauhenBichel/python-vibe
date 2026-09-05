@@ -175,6 +175,11 @@ def looks_like_new_package(task: str) -> bool:
     return bool(_PACKAGE.search(task.strip().lower()))
 
 
+def looks_like_app_loop(task: str) -> bool:
+    """A greenfield CLI that talks to GitHub: list / show / comment, not a weekday copy."""
+    return looks_like_new_package(task) and mentions_cli(task) and mentions_http(task)
+
+
 def mentions_cli(task: str) -> bool:
     """True when the task names a CLI, even if it is also a new package."""
     return bool(_SCRIPT.search(_without_paths(task)))
