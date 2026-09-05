@@ -103,6 +103,8 @@ class LoopState:
         instructions: skill lines the model was given, used to detect a
             reply that repeats an instruction instead of answering.
         guard: record of read-only actions already performed.
+        files_seen: files whose text this run has in front of it, either
+            because it read them or because the harness located them.
     """
 
     task: str
@@ -122,6 +124,37 @@ class LoopState:
     thin_done_refused: int = 0
     instructions: tuple[str, ...] = ()
     guard: LoopGuard = field(default_factory=LoopGuard)
+    files_seen: set[str] = field(default_factory=set)
+
+
+def refuse_patch_before_reading(state: LoopState, turn) -> str:
+    """Reject a Find: for a file this run has never looked at.
+
+    A `Find:` string has to match the file exactly. One written without
+    reading the file is written from memory, and memory is where
+    `result = run_case(case, model, steps)` came from — a line that is
+    not in the file at all, refused, and then sent again. Across every
+    failing run of one task the model went from `grep` straight to
+    `patch`, and spent the budget guessing at a line it could have read.
+
+    An append needs no Find, so it is not refused. Nor is a file the
+    harness located, because its text is already in the opening turn.
+    """
+    if turn.action != "patch" or not turn.find.strip():
+        return ""
+    rel = as_project_rel(turn.path or state.last_path)
+    if not rel:
+        return ""
+    seen = {as_project_rel(item) for item in state.files_seen}
+    if state.located_path:
+        seen.add(as_project_rel(state.located_path))
+    if rel in seen:
+        return ""
+    return (
+        f"Nothing has read {rel} in this run, so Find: is being written "
+        f"from memory. Action: read Path: {rel} first, then copy a whole "
+        "line from it."
+    )
 
 
 def refuse_wrong_file(task: str, project: Path, action: str, path: str) -> str:
@@ -257,6 +290,9 @@ def refuse_before(state: LoopState, turn) -> str:
             "which you chose, and continue."
         )
     blocked = refuse_write_tests_ask(state.task, turn.action)
+    if blocked:
+        return blocked
+    blocked = refuse_patch_before_reading(state, turn)
     if blocked:
         return blocked
     blocked = refuse_wrong_file(

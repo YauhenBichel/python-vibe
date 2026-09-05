@@ -114,9 +114,11 @@ def map_py(project: Path, scope: str = "") -> str:
     return f"{render_map(project, scope)}\n\n{render_outline(project, scope)}"
 
 
-def read_py(project: Path, rel: str) -> str:
+def read_py(project: Path, rel: str, about: str = "") -> str:
+    """The file. `about` names what the read is for, so that a file too
+    long to send whole keeps the part being asked about."""
     path = resolve_project_file(project, rel)
-    return read_project_file(path)
+    return read_project_file(path, about=about)
 
 
 def patch_py(

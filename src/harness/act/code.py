@@ -16,6 +16,8 @@ _SKIP_PARTS = {".git", ".venv", "node_modules", "adapters", "fused", "__pycache_
 MAX_FILE_CHARS = 3500
 # Small files are read whole so nearby constants (env, argv) stay in the quote.
 WHOLE_FILE_CHARS = 12_000
+# How much of the middle to keep when the task points at it.
+MIDDLE_WINDOW_CHARS = 1200
 
 
 def extract_python(text: str) -> str | None:
@@ -75,7 +77,34 @@ def resolve_project_file(project: Path, rel: str) -> Path:
     return path
 
 
-def read_project_file(path: Path, *, limit: int = MAX_FILE_CHARS) -> str:
+def _window_around(text: str, about: str, width: int) -> tuple[int, int] | None:
+    """Character range covering the first mention of `about`, or None."""
+    if not about:
+        return None
+    at = text.find(about)
+    if at < 0:
+        return None
+    half = width // 2
+    start = max(0, at - half)
+    return start, min(len(text), start + width)
+
+
+def read_project_file(
+    path: Path, *, limit: int = MAX_FILE_CHARS, about: str = ""
+) -> str:
+    """The file, or as much of it as fits, keeping the part that matters.
+
+    A file too long to send whole used to be sent as its head and its
+    tail, with the middle dropped. Asked to add a field to a dict two
+    thirds of the way down a 13,476-character file, the model was handed
+    3,500 characters from the top and 800 from the bottom — and the dict
+    was in neither. It then invented a `Find:` line that was not in the
+    file, was refused, and sent it again.
+
+    `about` names what the task is for. When the text contains it, a
+    window around it is kept as well, so the part being changed is one
+    of the parts that arrives.
+    """
     text = path.read_text(encoding="utf-8")
     cap = WHOLE_FILE_CHARS if limit == MAX_FILE_CHARS else limit
     if len(text) <= cap:
@@ -84,12 +113,24 @@ def read_project_file(path: Path, *, limit: int = MAX_FILE_CHARS) -> str:
     omitted = len(text) - limit - tail
     if omitted <= 0:
         return text
+    window = _window_around(text, about, MIDDLE_WINDOW_CHARS)
+    if window is None or window[0] < limit:
+        # Either nothing to centre on, or it is inside the head already.
+        return (
+            text[:limit]
+            + f"\n# … truncated {omitted} chars …\n"
+            + text[-tail:]
+        )
+    start, end = window
+    before = start - limit
+    after = max(0, len(text) - tail - end)
     return (
         text[:limit]
-        + f"\n# … truncated {omitted} chars …\n"
+        + f"\n# … truncated {before} chars …\n"
+        + text[start:end]
+        + f"\n# … truncated {after} chars …\n"
         + text[-tail:]
     )
-
 
 def apply_source(path: Path, source: str, *, original: str) -> None:
     if not source.strip():
