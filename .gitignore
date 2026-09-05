@@ -20,3 +20,6 @@ hf_token
 
 # Turns recorded by a run, for measuring it later.
 .python-vibe/
+
+# Turns gathered by scripts/weights/collect_traces.py.
+data/agent-loop/collected.jsonl
