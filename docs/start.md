@@ -70,6 +70,7 @@ Every measured run:
 
 ## Later
 
+- Last recorded turns: `python-vibe last`
 - [Add to Cursor]({{ '/cursor/' | relative_url }}) — `python-vibe editors cursor --allow-writes`
 - [Skills]({{ '/skills/' | relative_url }}) — picked from the wording of your task
 - Tests for this repo: `python -m unittest discover -s tests -q`

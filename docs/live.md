@@ -1,6 +1,6 @@
 ---
 title: Live demo
-description: A real asciinema recording of python-vibe on demo/orders. Five commands, one laptop, 5 September 2026. Only ask called the model.
+description: A real asciinema recording of python-vibe on demo/orders, plus a same-day 8B daily run on a logic bug. 5 September 2026.
 permalink: /live/
 date: 2026-09-05
 ---
@@ -40,6 +40,22 @@ python-vibe run  "find the NameError and fix it"
 python-vibe run  "add a function total_lines and a test"
 ```
 
+A second recording, same day, is a **daily** `run`: an 8B write on a
+logic bug, then the suite. That is not a harness demo.
+
+![python-vibe daily run — fix compute_total]({{ '/media/daily-run.gif' | relative_url }})
+
+```
+$ python-vibe run "fix compute_total in src/app.py so it sums the rows"
+Action: patch Path: src/app.py Find: return 0 Replace: return sum(rows)
+Action: done
+I fixed the compute_total function in src/app.py to return the sum of
+the rows instead of always returning 0.
+```
+
+Replay: `asciinema play docs/media/daily-run.cast`.
+Re-record: `PYTHONPATH=src python scripts/measure/record_daily.py`.
+
 The eleven-case table, including misses, is still on
 [Demo]({{ '/demo/' | relative_url }}).
 
@@ -51,6 +67,7 @@ The eleven-case table, including misses, is still on
   <li><a href="#ask-a-question">Ask a question</a></li>
   <li><a href="#fix-the-nameerror">Fix the NameError</a></li>
   <li><a href="#add-a-function">Add a function</a></li>
+  <li><a href="#daily-run">Daily run</a></li>
 </ol>
 </nav>
 
@@ -171,3 +188,28 @@ The suite stayed green. `ask` is the slow step because it is the one
 that talks to weights. The two writes are harness demos, which is why
 they look instant on [Start]({{ '/start/' | relative_url }}). Daily
 `run` is write, then the suite, then one repair.
+
+## Daily run
+
+5 September 2026. Ollama `llama3.1:8b`. A fresh copy of
+`eval/fixtures/daily_logic`: `compute_total` returned `0`, the test
+wanted the sum. Not a unique typo.
+
+```
+$ python-vibe run "fix compute_total in src/app.py so it sums the rows"
+ollama:llama3.1:8b  project /tmp/daily  mode small
+
+--- step 1 ---
+Action: patch
+Path: src/app.py
+Find: return 0
+Replace: return sum(rows)
+
+--- step 2 ---
+Action: done
+Summary: I fixed the compute_total function in src/app.py to return the
+sum of the rows instead of always returning 0.
+```
+
+The harness ran the suite after the write. The suite was green, so the
+next turn was `done`. That is the daily loop.

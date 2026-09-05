@@ -1,7 +1,7 @@
 ---
 title: Research
 description: Laptop measurements and design notes for python-vibe. Dates are the day of the run.
-date: 2026-08-29
+date: 2026-09-05
 ---
 
 # Research
@@ -12,16 +12,18 @@ Dates are the day of the measurement. Public pages do not name other
 editors or chat products.
 
 <div class="stats">
-  <div class="stat"><b>7 / 54</b><span>0.5B exact stdout</span></div>
-  <div class="stat"><b>12 / 54</b><span>0.5B after one repair</span></div>
+  <div class="stat"><b>9 / 18</b><span>0.5B four drafts + repair</span></div>
+  <div class="stat"><b>0 / 54</b><span>greedy 0.5B LoRA</span></div>
   <div class="stat"><b>8 / 15</b><span>8B live parse</span></div>
-  <div class="stat"><b>6–9 / 9</b><span>8B when code must run, six runs</span></div>
+  <div class="stat"><b>8 / 9</b><span>8B daily jobs, 5 Sep 2026</span></div>
 </div>
 
 | Experiment | Example | Result |
 | --- | --- | --- |
 | 0.5B as daily work | weekday helper, count-md, `Action:` | 0 / 4 vibe, 0 / 2 parse |
-| 0.5B exact stdout | 18 held-out scripts, 3 repeats | **7 / 54** base, **12 / 54** with repair |
+| 0.5B exact stdout | 18 held-out scripts, 3 repeats, Ollama | **7 / 54** base, **12 / 54** with repair |
+| 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** best cell; greedy LoRA **0 / 54** |
+| 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9** |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
@@ -36,7 +38,8 @@ What you type:
 | Note | What it answers |
 | --- | --- |
 | [Experiments]({{ '/investigations/experiments/' | relative_url }}) | Every measured run, with the example and the score. |
-| [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 7 / 54 base, 12 / 54 after one repair. 5 Sep 2026. |
+| [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 7 / 54 base, 12 / 54 after one repair. Ollama. 5 Sep 2026. |
+| [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}) | Four drafts 6 / 18 then 9 / 18. Greedy LoRA 0 / 54. 5 Sep 2026. |
 | [Cite]({{ '/cite/' | relative_url }}) | APA and BibTeX for the software and that measurement. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and all six runs behind the numbers. |
 | [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. |

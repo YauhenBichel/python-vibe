@@ -60,6 +60,20 @@ def _a_test_uses(body: str, symbol: str) -> bool:
     return False
 
 
+def tests_call(project: Path, symbol: str) -> bool:
+    """True when some test in tests/ actually calls symbol."""
+    tests = Path(project) / "tests"
+    if not tests.is_dir() or not symbol:
+        return False
+    body = ""
+    for path in sorted(tests.glob("test_*.py")):
+        try:
+            body += "\n" + path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+    return _a_test_uses(body, symbol)
+
+
 def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
     """Refuse done when the named file or last write still has an unbound name."""
     from harness.scan.names import undefined_in_file

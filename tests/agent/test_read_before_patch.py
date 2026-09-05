@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from harness.agent.policy import (  # noqa: E402
     LoopState,
+    refuse_new_path_before_existing,
     refuse_patch_before_reading,
 )
 
@@ -171,6 +172,27 @@ class TheGateActuallyAsksTest(unittest.TestCase):
             any("tests/test_other.py" in item for item in seen),
             f"the read was never recorded: {seen}",
         )
+
+
+class ExistingPointerMustBeReadTest(unittest.TestCase):
+    """A new file is refused until the prelude-named one has been read."""
+
+    def test_a_new_path_is_refused_while_the_named_file_is_unread(self) -> None:
+        state = _state(existing_paths=("src/keys.py",))
+        turn = _Turn(path="src/copy.py", find="", append="def check():\n    pass\n")
+        refused = refuse_new_path_before_existing(state, turn)
+        self.assertIn("src/keys.py", refused)
+        self.assertIn("Action: read Path: src/keys.py", refused)
+
+    def test_reading_the_named_file_lifts_the_refuse(self) -> None:
+        state = _state(existing_paths=("src/keys.py",), files_seen={"src/keys.py"})
+        turn = _Turn(path="src/copy.py", find="", append="def check():\n    pass\n")
+        self.assertEqual(refuse_new_path_before_existing(state, turn), "")
+
+    def test_writing_the_named_file_is_not_this_rule(self) -> None:
+        state = _state(existing_paths=("src/keys.py",))
+        turn = _Turn(path="src/keys.py", find="", append="x = 1\n")
+        self.assertEqual(refuse_new_path_before_existing(state, turn), "")
 
 
 if __name__ == "__main__":

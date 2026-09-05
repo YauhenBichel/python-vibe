@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import SimpleNamespace
 
 from harness.act.autofix import apply_cover_test, apply_person_bind, unbound_typo
 from harness.act.parse import parse_turn_smart
@@ -27,6 +28,7 @@ from harness.agent.policy import (
     next_prompt,
     refuse_before,
     refuse_done,
+    should_run_suite_after_write,
 )
 from harness.agent.prompt import Preamble, build_preamble
 from harness.locate import named_file_review_summary
@@ -439,11 +441,13 @@ class Agent:
                 continue
 
             result = self._carry_out(turn, state, run)
+            result, nudge = _nudge_after_action(
+                self.project, state, turn, result, pre.target
+            )
             options.emit("result", result)
             steps.append(
                 Step(number, turn.action, state.last_path, result=result, draft=draft)
             )
-            nudge = next_prompt(state, turn, result, pre.target)
             prompt = (
                 f"Tool result:\n{result}\n\n{nudge}"
                 if nudge
@@ -476,6 +480,7 @@ class Agent:
             # before the model starts, and leaving that out let the model
             # say `done` over a suite nobody had run.
             wrote_something=bool(pre.autofix or run.writes),
+            existing_paths=pre.existing_paths,
             design_report=(
                 render_design_review(self.project, options.scope)
                 if looks_like_design_loop(options.task)
@@ -519,6 +524,22 @@ class Agent:
         if handler is None:
             return None
         return handler(question)
+
+
+def _nudge_after_action(project, state: LoopState, turn, result: str, target):
+    """After a write, run the suite when tests already cover the work."""
+    if not should_run_suite_after_write(state, result, state.last_path):
+        return result, next_prompt(state, turn, result, target)
+    suite = run_python(
+        project, ("-m", "unittest", "discover", "-s", "tests", "-q")
+    )
+    if suite.startswith("exit 0"):
+        state.ran_tests = True
+    run_turn = SimpleNamespace(action="run", path=getattr(turn, "path", "") or "")
+    return (
+        f"{result}\n{suite}",
+        next_prompt(state, run_turn, suite, target),
+    )
 
 
 def _cover_after_add(project, task: str, path: str) -> str:

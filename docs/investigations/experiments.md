@@ -1,24 +1,24 @@
 ---
 title: Experiments
-description: Small open models for daily Python. What I typed, what the file looked like, and the score. One laptop, 29–30 August 2026.
+description: Small open models for daily Python. What I typed, what the file looked like, and the score. One laptop, 29–30 August and 5 September 2026.
 permalink: /investigations/experiments/
-date: 2026-08-29
+date: 2026-09-05
 type: article
 ---
 
 # Experiments
 
 I tried to use a small open LLM for daily Python: ask, write a test, fix
-a bug, add one function. One laptop. 29–30 August 2026.
+a bug, add one function. One laptop. 29–30 August and 5 September 2026.
 
 **Not everyday-ready.** Everyday-ready still means beating an untuned
 `llama3.1:8b` on live parse **and** a real ≥1 KB fix.
 
 <div class="stats">
-  <div class="stat"><b>7 / 54</b><span>0.5B exact stdout</span></div>
-  <div class="stat"><b>12 / 54</b><span>0.5B after one repair</span></div>
+  <div class="stat"><b>9 / 18</b><span>0.5B four drafts + repair</span></div>
+  <div class="stat"><b>0 / 54</b><span>greedy 0.5B LoRA</span></div>
   <div class="stat"><b>8 / 15</b><span>8B live first Action</span></div>
-  <div class="stat"><b>6–9 / 9</b><span>8B when the code must run, six runs</span></div>
+  <div class="stat"><b>8 / 9</b><span>8B daily jobs, 5 Sep 2026</span></div>
 </div>
 
 The four commands as typed:
@@ -35,6 +35,8 @@ GitHub thread:
 <ol>
   <li><a href="#the-05b-as-daily-work">The 0.5B as daily work</a></li>
   <li><a href="#exact-stdout-on-the-05b">Exact stdout on the 0.5B</a></li>
+  <li><a href="#sample-four-drafts-then-greedy">Sample four drafts, then greedy</a></li>
+  <li><a href="#8b-daily-jobs">8B daily jobs</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
   <li><a href="#which-small-open-model">Which small open model</a></li>
   <li><a href="#train-more-or-not">Train more, or not</a></li>
@@ -84,6 +86,48 @@ Unit tests for the checkers passed.
 
 Write-up: [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}).
 Cite: [Cite]({{ '/cite/' | relative_url }}).
+
+## Sample four drafts, then greedy
+
+**Example.** Same 18 scripts on MLX Qwen2.5-Coder-0.5B-Instruct-4bit.
+First, up to four independent drafts at temperature 0.7. Then one
+greedy draft, three repeats, with and without the step-100 LoRA.
+
+**Result, 5 September 2026**
+
+| Variant | Four drafts / 18 | Greedy unique / 18 | Greedy runs / 54 |
+| --- | --- | --- | --- |
+| base | **6** | **2** | 6 |
+| one traceback repair | **9** | **3** | 9 |
+| LoRA | **2** | **0** | 0 |
+| LoRA + repair | **6** | **0** | 0 |
+
+Sampling found a different set, not a superset. Only one of the +3
+from 6 to 9 is a traceback fix; the rest is a new draw. Greedy LoRA
+printed style notes, not scripts. Next measured hour is an 8B
+one-line hint on extra words / ISO / argv, not more 0.5B pairs.
+
+Write-up: [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}).
+
+## 8B daily jobs
+
+**Example.** 5 September 2026. Ollama `llama3.1:8b`. Three jobs that
+are not planted NameErrors, each three times, after the harness started
+running the suite following a write.
+
+| Job | What I asked | Passed |
+| --- | --- | --- |
+| Write tests | `write tests for apply_discount in src/app.py` | **3 / 3** (harness wrote the AAA test) |
+| Add a function | `add a function clamp(value, lo, hi) … and a unit test` | **3 / 3** (8B) |
+| Logic bug | `fix compute_total in src/app.py so it sums the rows` | **2 / 3** (one hit the step budget) |
+
+**8 / 9.** The miss was a logic-bug run that spent twelve steps without
+a green suite. Replay one of the wins:
+[Live demo]({{ '/live/' | relative_url }}) (daily recording).
+
+Everyday-ready is still the older bar: beat a clean 8B on parse **and**
+a real ≥1 KB fix. This table is the daily loop on small fixtures, not
+that bar.
 
 ## Four jobs, as typed
 

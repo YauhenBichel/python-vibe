@@ -47,6 +47,29 @@ def default_trace_path(project: Path) -> Path:
     return Path(project) / TRACE_DIR / TRACE_FILE
 
 
+def render_last(project: Path, *, limit: int = 8) -> str:
+    """The most recent recorded turns, or a line saying there are none."""
+    path = default_trace_path(project)
+    if not path.is_file():
+        return f"no traces at {path}"
+    rows = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if not rows:
+        return f"no traces at {path}"
+    lines = [f"{len(rows)} turns in {path}", ""]
+    for row in rows[-limit:]:
+        action = (row.get("action") or "-").strip() or "-"
+        text = (row.get("assistant") or row.get("user") or "").strip()
+        text = " ".join(text.split())
+        if len(text) > 80:
+            text = text[:77] + "..."
+        lines.append(f"{action}: {text}" if text else action)
+    return "\n".join(lines)
+
+
 def append_turn(path: Path, row: dict[str, str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     clean = {key: redact(str(value)) for key, value in row.items()}

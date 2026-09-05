@@ -79,6 +79,21 @@ class ProjectBriefTest(unittest.TestCase):
             self.assertIn("done", located)
             self.assertNotIn("First Action: grep", located)
 
+    def test_cli_app_hint_names_the_module_not_a_placeholder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "ok.py").write_text("print(1)\n", encoding="utf-8")
+            hint = start_hint(
+                classify_project(root),
+                "design and develop a small cli app for reviewing github PRs",
+            )
+        self.assertIn("pkg/__init__.py", hint)
+        self.assertIn("pkg/pr_review.py", hint)
+        self.assertIn("argparse", hint)
+        self.assertIn("urllib", hint)
+        self.assertNotIn("weekday_name", hint)
+        self.assertNotIn("pkg/<noun>.py", hint)
+
 
 if __name__ == "__main__":
     unittest.main()

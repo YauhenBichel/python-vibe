@@ -24,7 +24,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness.task import looks_like_ops, question_symbol
+from harness.task import looks_like_new_package, looks_like_ops, package_noun, question_symbol
 from harness.paths import rel_posix
 from harness.scan.project_brief import iter_text_files
 
@@ -86,6 +86,8 @@ def pick_module(project: Path, located_path: str = "", task: str = "") -> str:
     """
     if looks_like_ops(task):
         return pick_workflow(project)
+    if looks_like_new_package(task):
+        return f"pkg/{package_noun(task)}.py"
     if located_path:
         rel = located_path.replace("\\", "/").lstrip("./")
         if rel.endswith(".py") and not _is_test(rel):
@@ -170,11 +172,16 @@ def pick_target(
     project: Path, task: str = "", scope: str = "", located_path: str = ""
 ) -> Target:
     module = pick_module(project, located_path, task)
+    symbol = (
+        package_noun(task)
+        if looks_like_new_package(task)
+        else question_symbol(task) or _SYMBOL_TOKEN
+    )
     return Target(
         module=module,
         test=pick_test(project, module),
         scope=pick_scope(scope, module),
-        symbol=question_symbol(task) or _SYMBOL_TOKEN,
+        symbol=symbol,
     )
 
 

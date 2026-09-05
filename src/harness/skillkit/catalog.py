@@ -23,6 +23,8 @@ from harness.task import (
     looks_like_platform,
     looks_like_question,
     looks_like_script,
+    mentions_cli,
+    mentions_http,
 )
 
 _FRONT = re.compile(r"^---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
@@ -125,6 +127,12 @@ def pick_skills(task: str, catalog: list[Skill]) -> list[Skill]:
             return picked
     if looks_like_new_package(task):
         picked.extend(s for s in catalog if s.name == "new-package")
+        if mentions_http(task):
+            picked.extend(s for s in catalog if s.name == "call-http")
+        elif mentions_cli(task):
+            picked.extend(s for s in catalog if s.name == "write-script")
+        if mentions_cli(task) or mentions_http(task):
+            picked.extend(s for s in catalog if s.name == "write-tests")
         return picked
     if looks_like_fix_smell(task):
         picked.extend(s for s in catalog if s.name == "fix-smell")

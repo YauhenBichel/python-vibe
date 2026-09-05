@@ -81,7 +81,41 @@ _SMELL = re.compile(
 )
 _PACKAGE = re.compile(
     r"\b(scaffold|new package|new project|"
-    r"create a package|create a project|create a pkg)\b"
+    r"create a package|create a project|create a pkg|"
+    r"design and develop|"
+    r"(?:design|develop|build|create) an? (?:small )?"
+    r"(?:cli(?:\s+app|\s+tool|\s+application)?|"
+    r"command[ -]line(?:\s+app|\s+tool)?|"
+    r"app(?:lication)?|tool))\b",
+    re.I,
+)
+_GITHUB_PR_APP = re.compile(
+    r"\b(github|gh)\b.*\b(pr|prs|pull requests?)\b|"
+    r"\b(pr|prs|pull requests?)\b.*\b(github|gh)\b",
+    re.I,
+)
+_SNAKE_NAME = re.compile(r"\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b")
+_PACKAGE_NOUN_SKIP = _SYMBOL_SKIP | frozenset(
+    {
+        "app",
+        "application",
+        "cli",
+        "command",
+        "design",
+        "develop",
+        "github",
+        "line",
+        "package",
+        "project",
+        "pull",
+        "request",
+        "requests",
+        "reviewing",
+        "scaffold",
+        "script",
+        "small",
+        "tool",
+    }
 )
 _REVIEW = re.compile(
     r"\b(review|system design|architecture|project structure|design review)\b"
@@ -139,6 +173,52 @@ def looks_like_new_package(task: str) -> bool:
     if looks_like_question(task):
         return False
     return bool(_PACKAGE.search(task.strip().lower()))
+
+
+def mentions_cli(task: str) -> bool:
+    """True when the task names a CLI, even if it is also a new package."""
+    return bool(_SCRIPT.search(_without_paths(task)))
+
+
+def mentions_http(task: str) -> bool:
+    """True when the work talks to an HTTP API, including GitHub PRs."""
+    if _HTTP.search(task):
+        return True
+    lowered = task.lower()
+    if "url" in lowered and "json" in lowered:
+        return True
+    return bool(_GITHUB_PR_APP.search(task))
+
+
+def package_noun(task: str) -> str:
+    """The module name for a new-package task: pkg/<noun>.py.
+
+    `question_symbol` takes the first five-letter word, so
+    "design and develop a CLI" would become `pkg/design.py`. A snake_case
+    name in the task wins; a GitHub-PR app is `pr_review`; otherwise the
+    last content word after "for", then a leftover symbol, then `service`.
+    """
+    text = task.strip().lower()
+    for name in _SNAKE_NAME.findall(text):
+        if name not in _PACKAGE_NOUN_SKIP:
+            return name
+    if _GITHUB_PR_APP.search(text):
+        return "pr_review"
+    purpose = re.search(r"\bfor\s+(.+)$", text)
+    if purpose:
+        words = [
+            word
+            for word in re.findall(r"[a-z][a-z0-9]{2,}", purpose.group(1))
+            if word not in _PACKAGE_NOUN_SKIP
+        ]
+        if len(words) == 1:
+            return words[0]
+        if len(words) >= 2:
+            return f"{words[0]}_{words[1]}"
+    symbol = question_symbol(task)
+    if symbol and symbol not in _PACKAGE_NOUN_SKIP:
+        return symbol
+    return "service"
 
 
 def looks_like_fix_smell(task: str) -> bool:
@@ -296,10 +376,7 @@ def looks_like_script(task: str) -> bool:
 def looks_like_http_client(task: str) -> bool:
     if looks_like_question(task) or looks_like_new_package(task) or looks_like_ship(task):
         return False
-    if _HTTP.search(task):
-        return True
-    lowered = task.lower()
-    return "url" in lowered and "json" in lowered
+    return mentions_http(task)
 
 
 def looks_like_analytics(task: str) -> bool:

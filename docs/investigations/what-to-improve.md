@@ -2,7 +2,7 @@
 title: What to improve
 description: Harness work that can close a gap with a hosted agent, and work that cannot. Do not train more 0.5B for agency.
 permalink: /investigations/what-to-improve/
-date: 2026-08-29
+date: 2026-09-05
 type: article
 ---
 
@@ -20,6 +20,7 @@ Related: [local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | re
   <li><a href="#what-to-copy-what-to-refuse">What to copy, what to refuse</a></li>
   <li><a href="#closest-score-on-the-same-jobs">Closest score on the same jobs</a></li>
   <li><a href="#work-already-in-the-tree">Work already in the tree</a></li>
+  <li><a href="#05b-stdout-estimated">0.5B stdout, estimated</a></li>
   <li><a href="#what-not-to-spend-a-week-on">What not to spend a week on</a></li>
   <li><a href="#two-success-bars">Two success bars</a></li>
 </ol>
@@ -73,9 +74,27 @@ Ship these before training another model.
 13. **Named-file review quotes the compiler.** Wired. `review src/orders.py` no longer asks for a patch, then refuses it. Undefined names finish the run with no generate. Measured: [same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}).
 14. **New functions stay with related names.** Wired. `pick_module` no longer prefers the largest file (that was the controller). Prelude pins `Path:`. After the def exists the harness writes the AAA test. `done` is refused until `def <symbol>` exists. A second `orders.py` is refused.
 
+## 0.5B stdout, estimated
+
+The 18-script MLX pair is
+[0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}).
+Four drafts plus one repair is **9 / 18**. Greedy LoRA is **0 / 54**.
+Hours and expected unique-task lift on those 18:
+
+| Next | Hours | Expected lift |
+| --- | --- | --- |
+| Keep base, four drafts, one repair as the 0.5B stdout default | 0 | Holds 9 / 18 |
+| Prepend `sys` / `re` on that NameError; reject a traceback-as-source | already in the later loop | 0 on the greedy MLX grid (those NameErrors did not appear) |
+| Prepend `datetime` the same way | shipped | 0 unique (weekday already a repair pass) |
+| 8B one-line hint from stderr, then one 0.5B rewrite | next measured cell | +3 to +6 if the leftover class is extra words / ISO `T` / argv |
+| Eight drafts instead of four | one measured run | +0 to +2 |
+| Train the 18 prompts into the 0.5B | days, and it leaks the eval | Not a capability |
+
+Daily `run` stays an 8B. Do not spend the week on more 0.5B pairs.
+
 ## What not to spend a week on
 
-- More 0.5B train steps. The adapter is a style prior. Held-out vibe tasks failed. It misses `Action:` lines.
+- More 0.5B train steps. The adapter is a style prior. Held-out vibe tasks failed. It misses `Action:` lines. Greedy LoRA scored 0 / 54 on the 18-script exec eval.
 - Training `python-vibe-8b` on the thirty seed rows and calling it everyday-ready.
 - A bash tool, a browser Action, or extra-tool bridges. Those make the laptop write limit weaker and do not move the measured jobs.
 - Raising `--steps` as a substitute for a review → one-split → review loop.

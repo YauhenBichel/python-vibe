@@ -232,10 +232,19 @@ def start_hint(brief: ProjectBrief, task: str, *, located: bool = False) -> str:
             "Action: pr Title: + Body: Closes #N. No force. Not main/master."
         )
     if looks_like_new_package(task):
+        from harness.task import mentions_cli, mentions_http, package_noun
+
+        noun = package_noun(task)
+        shape = "argparse and one snake_case function" if mentions_cli(task) else "one snake_case function"
+        http = (
+            " urllib only — no curl. Token from the environment."
+            if mentions_http(task)
+            else ""
+        )
         return (
             "This is a new-package task. First Action: edit Path: pkg/__init__.py "
-            "(exports only). Then edit pkg/<noun>.py with one snake_case function. "
-            "Then tests/test_<noun>.py. Do not put logic in scripts/."
+            f"(exports only). Then edit pkg/{noun}.py with {shape}.{http} "
+            f"Then tests/test_{noun}.py. Do not put logic in scripts/."
         )
     if looks_like_fix_smell(task):
         return (

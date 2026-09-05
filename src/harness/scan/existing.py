@@ -69,15 +69,13 @@ def _searchable(project: Path) -> list[Path]:
     ]
 
 
-def already_covers(project: Path, task: str, *, skip: str = "") -> str:
-    """One line naming where the task's subject already appears. "" if nowhere.
-
-    `skip` is the file the task already names, because finding the words
-    in the file being changed is not news.
-    """
+def _ranked_hits(
+    project: Path, task: str, *, skip: str = ""
+) -> list[tuple[str, list[tuple[str, int]]]]:
+    """Rare phrases from the task, each with the files they already appear in."""
     wanted = phrases(task)
     if not wanted:
-        return ""
+        return []
     root = Path(project)
     hits: dict[str, list[tuple[str, int]]] = {phrase: [] for phrase in wanted}
     for path in _searchable(root):
@@ -99,14 +97,31 @@ def already_covers(project: Path, task: str, *, skip: str = "") -> str:
         for phrase, found in hits.items()
         if FEWEST_FILES <= len({rel for rel, _ in found}) <= MOST_FILES
     ]
+    ranked.sort(key=lambda item: (len({rel for rel, _ in item[1]}), item[0]))
+    return ranked[:2]
+
+
+def existing_files(project: Path, task: str, *, skip: str = "") -> tuple[str, ...]:
+    """Paths already_covers would name, without the prose."""
+    found: list[str] = []
+    for _phrase, hits in _ranked_hits(project, task, skip=skip):
+        for rel, _number in hits:
+            if rel not in found:
+                found.append(rel)
+    return tuple(found)
+
+
+def already_covers(project: Path, task: str, *, skip: str = "") -> str:
+    """One line naming where the task's subject already appears. "" if nowhere.
+
+    `skip` is the file the task already names, because finding the words
+    in the file being changed is not news.
+    """
+    ranked = _ranked_hits(project, task, skip=skip)
     if not ranked:
         return ""
-    # Rarest first, and say up to two. Choosing one of two equally rare
-    # phrases needs a tie-break that would be invented rather than
-    # reasoned, and both are usually worth reading anyway.
-    ranked.sort(key=lambda item: (len({rel for rel, _ in item[1]}), item[0]))
     lines = []
-    for phrase, found in ranked[:2]:
+    for phrase, found in ranked:
         where = ", ".join(f"{rel}:{number}" for rel, number in found[:2])
         lines.append(f'  "{phrase}" is already in {where}')
     return (

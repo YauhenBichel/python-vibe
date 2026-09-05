@@ -438,17 +438,69 @@ class TestsPassedTest(unittest.TestCase):
                 next_prompt(state, self._run_turn(), "no tests/ directory"), ""
             )
 
+    def test_a_bugfix_write_asks_to_run_when_tests_exist(self) -> None:
+        from types import SimpleNamespace
+
+        from harness.agent.policy import next_prompt
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _project(tmp)
+            (project / "tests" / "test_app.py").write_text(
+                "import unittest\nfrom src.app import compute_total\n\n"
+                "class AppTest(unittest.TestCase):\n"
+                "    def test_total(self) -> None:\n"
+                "        self.assertEqual(compute_total([1]), 1)\n",
+                encoding="utf-8",
+            )
+            state = self._state(
+                "fix compute_total in src/app.py so it sums the rows", project
+            )
+            state.wrote_something = True
+            state.last_path = "src/app.py"
+            turn = SimpleNamespace(action="patch", path="src/app.py")
+            got = next_prompt(state, turn, "patched src/app.py")
+        self.assertIn("must be run", got)
+        self.assertNotIn("write-tests", got)
+
+    def test_an_add_without_a_test_still_asks_for_tests(self) -> None:
+        from types import SimpleNamespace
+
+        from harness.agent.policy import next_prompt
+
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state("add multiply(a, b) and a test", _project(tmp))
+            state.wrote_something = True
+            state.last_path = "src/app.py"
+            turn = SimpleNamespace(action="patch", path="src/app.py")
+            got = next_prompt(state, turn, "patched src/app.py")
+        self.assertIn("write-tests", got)
+
+    def test_a_cli_app_write_names_pr_review_not_weekday(self) -> None:
+        from types import SimpleNamespace
+
+        from harness.agent.policy import next_prompt
+
+        task = "design and develop a small cli app for reviewing github PRs"
+        with tempfile.TemporaryDirectory() as tmp:
+            state = self._state(task, Path(tmp))
+            state.wrote_something = True
+            state.last_path = "pkg/__init__.py"
+            turn = SimpleNamespace(action="edit", path="pkg/__init__.py")
+            got = next_prompt(state, turn, "wrote pkg/__init__.py")
+        self.assertIn("pkg/pr_review.py", got)
+        self.assertIn("argparse", got)
+        self.assertIn("urllib", got)
+        self.assertNotIn("weekday_name", got)
+
     def test_a_failed_run_is_repaired_once(self) -> None:
-        """Write a bad body, run, see the traceback, patch, run, done."""
+        """Write a bad body; the harness runs the suite and sends the traceback."""
         prompts: list[str] = []
         remaining = [
             "Action: read\nPath: src/app.py",
             "Action: patch\nPath: src/app.py\nFind:     return 0\n"
             "Replace:     return 1\n",
-            "Action: run\nArgv: -m unittest discover -s tests -q",
             "Action: patch\nPath: src/app.py\nFind:     return 1\n"
             "Replace:     return sum(rows)\n",
-            "Action: run\nArgv: -m unittest discover -s tests -q",
             "Action: done\nSummary: compute_total now sums the rows",
         ]
 
@@ -519,7 +571,11 @@ class LateQuestionTest(unittest.TestCase):
                 result = Agent(options).run()
         self.assertEqual(asked, [], "the question should not reach the user")
         self.assertTrue(
-            any("too late to ask" in item for item in result.refusals), result.refusals
+            any(
+                "too late to ask" in item or "Tests already passed" in item
+                for item in result.refusals
+            ),
+            result.refusals,
         )
 
     def test_asking_before_any_write_still_reaches_the_user(self) -> None:

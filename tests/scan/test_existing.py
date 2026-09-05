@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from harness.scan.existing import already_covers, phrases  # noqa: E402
+from harness.scan.existing import already_covers, existing_files, phrases  # noqa: E402
 
 
 def _project(tmp: str) -> Path:
@@ -45,6 +45,10 @@ class SayingWhereItIsTest(unittest.TestCase):
             found = already_covers(root, "refuse an access key in the prompt")
             self.assertIn("access key", found)
             self.assertIn("src/keys.py:2", found)
+            self.assertEqual(
+                existing_files(root, "refuse an access key in the prompt"),
+                ("src/keys.py",),
+            )
 
     def test_a_phrase_in_no_file_says_nothing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
