@@ -27,6 +27,20 @@ from harness.task import (
 _DEF = re.compile(r"\b(?:def|class)\s+([A-Za-z_][A-Za-z0-9_]*)")
 
 
+def subject_of(task: str) -> str:
+    """The longest dotted name in the task, or "".
+
+    A name like `result.stopped` is the strongest hint a task gives
+    about *where* in a file the work is, and it is what an excerpt
+    should be centred on. Without it the model was shown the first
+    3,500 characters and the last 800 of a 13,476-character file, and
+    the dict it had been asked to change was in neither.
+    """
+    words = re.findall(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+", task)
+    dotted = [word for word in words if not word.endswith((".py", ".md", ".txt"))]
+    return max(dotted, key=len) if dotted else ""
+
+
 def signature_line(text: str, symbol: str) -> str:
     if not symbol:
         return ""
@@ -223,7 +237,7 @@ def _opening_for_a_named_file(
     named = named_project_file(task, project)
     if named:
         try:
-            body = read_py(project, named)
+            body = read_py(project, named, about=subject_of(task))
         except (OSError, ValueError):
             body = ""
         if body:
@@ -489,7 +503,7 @@ def named_file_review_summary(project: Path, task: str) -> str:
     if not named:
         return ""
     try:
-        body = read_py(project, named)
+        body = read_py(project, named, about=subject_of(task))
     except (OSError, ValueError):
         return ""
     leftover = undefined_names(body)

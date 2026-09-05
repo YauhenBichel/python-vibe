@@ -496,6 +496,8 @@ class Agent:
             )
         except (ValueError, OSError) as exc:
             return str(exc)
+        if turn.action == "read" and state.last_path:
+            state.files_seen.add(state.last_path)
         if turn.action == "run" and result.startswith("exit 0"):
             state.ran_tests = True
         if result.startswith(("patched", "wrote")):
