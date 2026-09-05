@@ -105,6 +105,9 @@ covered. For anything the model has to reason about, read
 [Experiments]({{ '/investigations/experiments/' | relative_url }}) first
 — on a real repository, writing scored one in twelve.
 
-Set-up detail for each editor: [Cursor]({{ '/cursor/' | relative_url }})
+A recorded VS Code session is on [VS Code]({{ '/vscode/' | relative_url }}).
+
+Set-up detail for each editor: [VS Code]({{ '/vscode/' | relative_url }})
+· [Cursor]({{ '/cursor/' | relative_url }})
 · [local editor]({{ '/local-editor/' | relative_url }})
 · [IDE plugins]({{ '/ide-plugins/' | relative_url }}).

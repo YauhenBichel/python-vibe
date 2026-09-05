@@ -29,6 +29,10 @@ Re-record it (needs Ollama `llama3.1:8b`):
 PYTHONPATH=src python scripts/measure/record_live.py
 ```
 
+The same jobs from **Tasks: Run Task** are on
+[VS Code]({{ '/vscode/' | relative_url }})
+(`docs/media/vscode-demo.gif`).
+
 Type the same thing after [Start]({{ '/start/' | relative_url }}):
 
 ```bash

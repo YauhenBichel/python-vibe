@@ -15,6 +15,12 @@ _END = "<!-- readme: contributors,bots/- -end -->"
 
 
 class ReadmeContributorsTest(unittest.TestCase):
+    def test_readme_shows_the_vscode_recording(self) -> None:
+        text = README.read_text(encoding="utf-8")
+        self.assertIn("docs/media/vscode-demo.gif", text)
+        self.assertIn("asciinema play docs/media/vscode-demo.cast", text)
+        self.assertIn("python-vibe editors vscode", text)
+
     def test_markers_not_hardcoded_table(self) -> None:
         text = README.read_text(encoding="utf-8")
         self.assertIn(_START, text)

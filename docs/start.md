@@ -89,6 +89,7 @@ The map of every score:
 ## Later
 
 - Last recorded turns: `python-vibe last`
+- [Add to VS Code]({{ '/vscode/' | relative_url }}) — `python-vibe editors vscode`, plus a recorded session
 - [Add to Cursor]({{ '/cursor/' | relative_url }}) — `python-vibe editors cursor --allow-writes`
 - [Skills]({{ '/skills/' | relative_url }}) — picked from the wording of your task
 - Tests for this repo: `python -m unittest discover -s tests -q`

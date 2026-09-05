@@ -28,7 +28,7 @@ Cursor: [use python-vibe in Cursor]({{ '/cursor/' | relative_url }}).
 | You want | Command | Package to install |
 | --- | --- | --- |
 | Cursor chat + tasks | `editors cursor` | none. Writes `.cursor/mcp.json` and `.vscode/tasks.json` |
-| Tasks only | `editors vscode` | none (uses `.vscode/tasks.json`) |
+| Tasks only | `editors vscode` | none (uses `.vscode/tasks.json`). Walkthrough: [VS Code]({{ '/vscode/' | relative_url }}) |
 | Chat that hits Ollama | `editors continue` | the Continue extension, already on the marketplace |
 | Zed | `editors zed` | none. Merges `context_servers` |
 | HTTP OpenAI shape | `python-vibe serve --project ~/app` | any OpenAI-compatible client |
