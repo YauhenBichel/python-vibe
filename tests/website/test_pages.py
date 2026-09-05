@@ -24,6 +24,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "scenarios.md",
             "api.md",
             "architecture.md",
+            "tree.md",
             "skills.md",
             "demo.md",
             "live.md",
@@ -166,6 +167,14 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("python-vibe brief", body)
         self.assertIn("subtotl", body)
         self.assertIn("total_lines", body)
+
+    def test_checkout_map_names_the_demo_and_the_helper(self) -> None:
+        text = (DOCS / "tree.md").read_text(encoding="utf-8")
+        self.assertIn("permalink: /tree/", text)
+        self.assertIn("demo/orders", text)
+        self.assertIn("src/harness/", text)
+        self.assertIn("Do not run `brief` on the", text)
+        self.assertIn("source .venv/bin/activate", text)
 
     def test_vscode_page_is_a_real_session(self) -> None:
         text = (DOCS / "vscode.md").read_text(encoding="utf-8")

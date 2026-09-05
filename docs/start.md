@@ -100,5 +100,6 @@ The map of every score:
 - [Add to VS Code]({{ '/vscode/' | relative_url }}) — `python-vibe editors vscode`, plus a recorded session
 - [Add to Cursor]({{ '/cursor/' | relative_url }}) — `python-vibe editors cursor --allow-writes`, plus a recorded session
 - [Skills]({{ '/skills/' | relative_url }}) — picked from the wording of your task
+- [This checkout]({{ '/tree/' | relative_url }}) — three folders to open first
 - Tests for this repo: `python -m unittest discover -s tests -q`
 - Tiny 0.5B sidecar (not daily work): see [research]({{ '/research-vibe-review/' | relative_url }})

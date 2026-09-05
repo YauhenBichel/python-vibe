@@ -62,6 +62,7 @@ edits. Point at another folder by putting it first:
     <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep the 8B.</p>
     <p><a href="{{ '/vscode/' | relative_url }}">VS Code</a> — Tasks: Run Task. Recorded walkthrough.</p>
     <p><a href="{{ '/cursor/' | relative_url }}">Cursor</a> — local MCP. Recorded walkthrough.</p>
+    <p><a href="{{ '/tree/' | relative_url }}">This checkout</a> — three folders to open first.</p>
     <p><a href="{{ '/architecture/' | relative_url }}">Architecture</a> — how the helper is stacked.</p>
   </div>
 </div>
