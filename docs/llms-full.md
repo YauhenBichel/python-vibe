@@ -141,6 +141,7 @@ Start {{ '/start/' | absolute_url }}
 Live demo {{ '/live/' | absolute_url }}
 VS Code {{ '/vscode/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
+This checkout {{ '/tree/' | absolute_url }}
 Cite {{ '/cite/' | absolute_url }}
 Experiments {{ '/investigations/experiments/' | absolute_url }}
 0.5B exact-stdout eval {{ '/investigations/held-out-exec-eval/' | absolute_url }}

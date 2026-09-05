@@ -80,6 +80,7 @@ Which tags timed out: [Hub models](https://yauhenbichel.github.io/python-vibe/in
 
 | If you want | Go here |
 | --- | --- |
+| What each folder is | [This checkout](https://yauhenbichel.github.io/python-vibe/tree/) |
 | Tests | `PYTHONPATH=src python -m unittest discover -s tests -q` |
 | 0.5B style prior | [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b) |
 | Train / serve / API | [Using](https://yauhenbichel.github.io/python-vibe/api/) |

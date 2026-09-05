@@ -20,6 +20,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Live demo]({{ '/live/' | absolute_url }}): Asciinema recording on demo/orders. 5 Sep 2026. Only ask called the 8B.
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty-four kit skills and when the harness loads each one.
 - [Architecture]({{ '/architecture/' | absolute_url }}): Bottom-up harness layers. Imports only point downward.
+- [This checkout]({{ '/tree/' | absolute_url }}): Three folders to open first. Demo is demo/orders. Do not brief the checkout root.
 - [In your editor]({{ '/editor-demos/' | absolute_url }}): Four things it does from Cursor or VS Code, with real answers and times. Two need no model.
 - [Cursor]({{ '/cursor/' | absolute_url }}): Asciinema recording of local MCP on demo/orders. 5 Sep 2026. Only ask called the 8B.
 - [VS Code]({{ '/vscode/' | absolute_url }}): Asciinema recording of Tasks: Run Task on demo/orders. 5 Sep 2026. Only ask called the 8B.

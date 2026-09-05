@@ -42,6 +42,9 @@ PYTHONPATH=src python scripts/weights/import_hf_ollama.py --list
 
 ## Layout
 
+The checkout as a whole is [docs/tree.md](docs/tree.md): open
+`demo/orders` first; do not brief the root. This table is the helper.
+
 | Path | Role |
 | --- | --- |
 | `src/harness/task.py` | What the user asked for (leaf; every layer reads it) |

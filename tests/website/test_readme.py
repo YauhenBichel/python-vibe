@@ -34,6 +34,7 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertLess(len(body.splitlines()), 120, len(body.splitlines()))
         self.assertIn("source .venv/bin/activate", body)
         self.assertIn("cd demo/orders", body)
+        self.assertIn("python-vibe/tree/", body)
 
     def test_markers_not_hardcoded_table(self) -> None:
         text = README.read_text(encoding="utf-8")
