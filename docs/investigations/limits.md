@@ -1,13 +1,13 @@
 ---
 title: What the harness cannot fix
-description: Six measurements from one week. A refusal calibrated 0 for 5, a pointer the model ignored 3 times out of 3, platform work at three of four on stock weights, a fine-tune that scored 0 of 4, a week of real work that produced no training data at all, and an excerpt that cut out the very lines the task named.
+description: Seven measurements from one week. A refusal calibrated 0 for 5, a pointer the model ignored 3 times out of 3, platform work at three of four on stock weights, a fine-tune that scored 0 of 4, a week of real work that produced no training data at all, and an excerpt that cut out the very lines the task named.
 permalink: /investigations/limits/
 date: 2026-09-04
 type: article
 ---
 
 Most of the work on this harness has been finding gaps a refusal or an
-oracle can close, and most of them can be closed. These six could not,
+oracle can close, and most of them can be closed. These seven could not,
 and each says something different about where the line is.
 
 ## A refusal that was right and useless
@@ -40,7 +40,28 @@ against it: all present, all arguments accepted, both modules importing,
 the whole suite passing. Safe, and demonstrably so rather than
 hopefully.
 
-A refusal should cost something to earn.
+A refusal should cost something to earn, and this one now does.
+
+What a pull request's own runs prove is that the workflows they ran
+still work. So a major bump is answered with that evidence: if every
+workflow using the bumped action ran green on this very pull request,
+the thing that would break has already been exercised. Where it has not
+— `Pages` is skipped on a pull request, `Celebrate merge` only runs on
+merge — the refusal stays and names the workflow nobody ran, which is a
+reason someone can act on.
+
+Judged again on the same six bumps, two are allowed and four refused,
+each saying what was not proved. Not a clean sweep, and the four are
+honest: those workflows genuinely were not run.
+
+The trap in writing it is the one worth remembering. An empty list of
+unexercised workflows means every workflow using the action passed. No
+workflow using it at all is a different thing entirely, and the first
+version returned the same empty list for both — so it waved a Python
+dependency going from 0 to 1 straight through, on the grounds that
+nothing it touches failed, when nothing it touches had been looked at.
+**A rule that silently approves whatever it cannot see is worse than
+one that refuses everything.**
 
 ## Telling the model does not make it act
 
@@ -174,6 +195,24 @@ It asked for a field an earlier change had already added, so the check
 was true before any run and both sides scored four out of four. Eight
 runs measuring nothing, caught only because a task recorded as failing
 had suddenly become perfect.
+
+
+## A rule the model could not see
+
+The architecture test here refuses a function over eighty lines, so the
+rule existed. It existed only as a merge gate: the design review the
+model reads while working never mentioned length, so nothing told it
+until the merge was refused.
+
+The review reports it now, at forty lines rather than eighty — the point
+where a function stops being one thing rather than the point where it
+cannot be read at all. A warning that fires where the refusal fires is
+not a warning. Forty is measured: it flags seven per cent of the
+functions here, against sixteen per cent at twenty-five.
+
+Two passes each side of the benchmark: twenty-one of thirty before and
+twenty-one of thirty after. **No regression and no gain**, which by now
+is the expected shape.
 
 ## What these have in common
 

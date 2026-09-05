@@ -367,12 +367,13 @@ did.
 
 | Measurement | Outcome |
 | --- | --- |
-| Refusing a bot's major version bump | **0 of 5** — five merged safely, nothing caught |
+| Refusing a bot's major version bump | **0 of 5** — five merged safely, nothing caught. Since fixed: **2 of 6 now allowed**, the rest name the workflow nobody ran |
 | Telling the model what the project already has | Pointer correct, **ignored 3 of 3** |
 | Platform work on stock `llama3.1:8b` | **6 of 8** over two passes, no new weights |
 | This project's own fine-tune | **0 of 4** held-out, worse than its base model |
 | Training data collected in a week of real work | **0 rows** — recording was behind a flag |
 | Centring a long file's excerpt on the task's subject | Defect real and fixed; **0 of 5 either side** |
+| Showing the model how long its functions are | Rule existed as a merge gate only; **21 of 30 either side** |
 
 Five of the six are cases where the harness knew something and it made
 no difference. The one that worked, worked by running something: a
