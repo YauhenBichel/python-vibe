@@ -129,6 +129,68 @@ class MechanicalFinishTest(unittest.TestCase):
         self.assertIn("subtotl", body)
         self.assertIn("Read-only", result.summary)
 
+    def test_pagination_overflow_ends_before_the_engine_loads(self) -> None:
+        """0/3 after #228: the 8B wrote nothing. page= is a compiler job."""
+        overflow = "add pagination to the GitHub PR CLI"
+        impl = (
+            "import json\n"
+            "import os\n"
+            "import urllib.request\n"
+            "\n"
+            "def list_pulls(owner, repository):\n"
+            "    token = os.environ['GITHUB_TOKEN']\n"
+            "    req = urllib.request.Request(\n"
+            "        f'https://api.github.com/repos/{owner}/{repository}/pulls'\n"
+            "    )\n"
+            "    with urllib.request.urlopen(req) as response:\n"
+            "        return json.loads(response.read().decode())\n"
+            "\n"
+            "def show_pull(owner, repository, number):\n"
+            "    return {}\n"
+            "\n"
+            "def comment_on(owner, repository, number, body):\n"
+            "    return None\n"
+        )
+        test = (
+            "import json\n"
+            "import os\n"
+            "import unittest\n"
+            "from unittest.mock import patch\n"
+            "\n"
+            "from pkg.pr_review import list_pulls\n"
+            "\n"
+            "class TestListPulls(unittest.TestCase):\n"
+            "    def test_list_pulls_returns_titles(self) -> None:\n"
+            "        payload = [{'title': 'Fix login', 'number': 1}]\n"
+            "        with patch.dict(os.environ, {'GITHUB_TOKEN': 'test-token'}):\n"
+            "            with patch('urllib.request.urlopen') as fake:\n"
+            "                fake.return_value.__enter__.return_value.read"
+            ".return_value = json.dumps(payload).encode()\n"
+            "                got = list_pulls('owner', 'repo')\n"
+            "        self.assertEqual(got, payload)\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            tests = root / "tests"
+            pkg.mkdir()
+            tests.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(impl, encoding="utf-8")
+            (tests / "test_pr_review.py").write_text(test, encoding="utf-8")
+            options = AgentOptions(project=root, task=overflow)
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError("model must not load after a page= pass"),
+            ):
+                result = Agent(options).run()
+            body = (pkg / "pr_review.py").read_text(encoding="utf-8")
+        self.assertTrue(result.ok)
+        self.assertEqual(result.stopped, "done")
+        self.assertIn("pkg/pr_review.py", result.writes)
+        self.assertIn("/pulls?page=1'", body)
+        self.assertIn("Tests passed", result.summary)
+
 
 class MechanicalFastPathTest(unittest.TestCase):
     """A fix the harness can make itself should not need the model at all.

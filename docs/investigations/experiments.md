@@ -258,7 +258,19 @@ steps × 3. Seeded list+show+comment tree.
 **0 / 3** closed pagination. Config stayed leftover. An earlier
 twenty-step try on a leftover comment tree wrote `pkg/pagination.py`
 and a module-level `?page=`, then drifted. The timed cell wrote
-nothing. Replay:
+nothing.
+
+Same prompt, after the harness put `page=` on the list URL (#233).
+No model. Seeded list+show+comment tree.
+
+| Repeat | Pagination gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | closed | `done` | `pkg/pr_review.py` |
+| 2 | closed | `done` | `pkg/pr_review.py` |
+| 3 | closed | `done` | `pkg/pr_review.py` |
+
+**3 / 3** closed pagination. Config stayed leftover — a later typed
+`run`, not `--steps`. Replay:
 `PYTHONPATH=src python scripts/measure/eval_cli_overflow_page.py`.
 
 ```bash
