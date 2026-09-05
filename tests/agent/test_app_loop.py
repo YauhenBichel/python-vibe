@@ -113,6 +113,35 @@ class AppLoopTest(unittest.TestCase):
             "",
         )
 
+    def test_overflow_refuses_extra_modules_and_weekday(self) -> None:
+        overflow = "add pagination to the GitHub PR CLI"
+        from harness.skillkit.refuse_change import refuse_app_overflow_noise
+        from harness.act.gate import first_refusal
+
+        self.assertIn(
+            "pkg/pr_review.py",
+            refuse_app_wrong_path(overflow, "edit", "pkg/pagination.py"),
+        )
+        self.assertIn(
+            "pkg/pr_review.py",
+            refuse_app_wrong_path(overflow, "edit", "pkg/date.py"),
+        )
+        blocked = refuse_app_overflow_noise(
+            overflow, "pkg/pr_review.py", "def weekday(day_index):\n    return 'Monday'\n"
+        )
+        self.assertIn("weekday", blocked)
+        self.assertIn("page=", blocked)
+        self.assertIn(
+            "weekday",
+            first_refusal(
+                overflow,
+                "pkg/pr_review.py",
+                "def list_pulls(owner, repository):\n    return []\n",
+                "def list_pulls(owner, repository):\n    return []\n\n"
+                "def weekday(day_index):\n    return 'Monday'\n",
+            ),
+        )
+
     def test_tests_before_impl_are_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

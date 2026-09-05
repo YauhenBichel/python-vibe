@@ -18,6 +18,7 @@ from pathlib import Path
 from harness.paths import rel_posix
 from harness.skillkit.refuse_change import (
     refuse_add_opens_file,
+    refuse_app_overflow_noise,
     refuse_layout,
     refuse_opaque_module,
     refuse_opaque_names,
@@ -174,6 +175,7 @@ CHANGE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
     ("stdlib shadow", lambda c: refuse_stdlib_shadow(c.rel, c.original)),
     ("layout", lambda c: refuse_layout(c.rel, c.original, c.draft)),
     ("opens a file", lambda c: refuse_add_opens_file(c.task, c.rel, c.draft)),
+    ("overflow noise", lambda c: refuse_app_overflow_noise(c.task, c.rel, c.draft)),
     ("shell fetch", lambda c: refuse_shell_fetch(c.rel, c.draft)),
     ("platform draft", lambda c: refuse_platform_draft(c.rel, c.draft)),
     ("operations draft", lambda c: refuse_ops_draft(c.rel, c.draft)),

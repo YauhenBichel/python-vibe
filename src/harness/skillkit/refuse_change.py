@@ -16,6 +16,7 @@ from pathlib import Path
 from harness.scan.names import new_undefined, undefined_names
 from harness.task import (
     looks_like_add_feature,
+    looks_like_app_overflow,
     looks_like_bugfix,
     looks_like_design_loop,
     looks_like_everyday_code,
@@ -24,6 +25,8 @@ from harness.task import (
     rename_pair,
     smell_symbol,
 )
+
+_OVERFLOW_NOISE = re.compile(r"\bdef (weekday|weekday_name|multiply)\b")
 
 
 _DEF = re.compile(r"^def\s+([A-Za-z_]\w*)\s*\(", re.MULTILINE)
@@ -102,6 +105,21 @@ def task_names_arguments(task: str) -> str:
         return ""
     found = re.search(rf"\b{re.escape(symbol)}\s*\(\s*([^)]*?)\s*\)", task)
     return found.group(1).strip() if found else ""
+
+
+def refuse_app_overflow_noise(task: str, rel: str, draft: str) -> str:
+    """Overflow is page= or Path.home(), not a weekday copy.
+
+    Live 8B on pagination appended ``def weekday`` and tried pkg/date.py
+    after the path refuse sent it back to pr_review.py.
+    """
+    if not looks_like_app_overflow(task):
+        return ""
+    if not _OVERFLOW_NOISE.search(draft or ""):
+        return ""
+    from harness.scan.app_spec import overflow_edit_line
+
+    return f"Do not add weekday or multiply. {overflow_edit_line(task)}"
 
 
 def refuse_add_opens_file(task: str, rel: str, draft: str) -> str:

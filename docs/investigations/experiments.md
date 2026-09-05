@@ -38,6 +38,7 @@ GitHub thread:
   <li><a href="#sample-four-drafts-then-greedy">Sample four drafts, then greedy</a></li>
   <li><a href="#8b-daily-jobs">8B daily jobs</a></li>
   <li><a href="#8b-greenfield-cli">8B greenfield CLI</a></li>
+  <li><a href="#everyday-ready-bar">Everyday-ready bar</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
   <li><a href="#which-small-open-model">Which small open model</a></li>
   <li><a href="#train-more-or-not">Train more, or not</a></li>
@@ -243,7 +244,46 @@ typed runs, not `--steps`. Replay:
 python-vibe run "add the comment subcommand and a mocked test"
 ```
 
+Same evening, pagination from a list+show+comment tree. Typed:
+`add pagination to the GitHub PR CLI`. After #228 (indented `page=`
+counts; a module-level `pulls?page=` NameErrors on import). Twelve
+steps × 3. Seeded list+show+comment tree.
+
+| Repeat | Pagination gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | open | steps | none |
+| 2 | open | steps | none |
+| 3 | open | steps | none |
+
+**0 / 3** closed pagination. Config stayed leftover. An earlier
+twenty-step try on a leftover comment tree wrote `pkg/pagination.py`
+and a module-level `?page=`, then drifted. The timed cell wrote
+nothing. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_overflow_page.py`.
+
+```bash
+python-vibe run "add pagination to the GitHub PR CLI"
+```
+
 Everyday-ready is still the older bar.
+
+## Everyday-ready bar
+
+**Example.** Same evening, 5 September 2026. Ollama `llama3.1:8b`.
+Fifteen `action_prompts.jsonl` rows for first Action. Then
+`fix compute_total in pkg/util_stats.py so it sums the rows` on a
+2.8 KB file that returns `0.0` — not `tota`, not `subtotl`. Three
+repeats, twelve steps. Clean 8B is the same model with no
+`AGENT_SYSTEM` and no agent loop (one-shot draft).
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **11 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **0 / 3** (`steps`; two writes were tests only) | **3 / 3** (one-shot) |
+
+Harness beats clean on parse. Clean beats harness on the real fix.
+**Not everyday-ready.** Replay:
+`PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed
 
