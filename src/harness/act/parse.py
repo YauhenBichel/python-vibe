@@ -30,6 +30,32 @@ _STOP = re.compile(
 )
 
 
+# A model that answers in chat wraps code in a fence. Local weights
+# happen not to; every hosted one does, so this only bites the moment
+# the harness is pointed at a model it does not run itself.
+_FENCED = re.compile(
+    r"^[^\S\n]*```[\w+-]*[^\S\n]*\n(.*?)\n[^\S\n]*```",
+    re.DOTALL,
+)
+
+
+def unfenced(body: str) -> str:
+    """The code inside a markdown fence, or the text unchanged.
+
+    An `Append:` body arriving as ```python … ``` used to reach the file
+    with the backticks still on it. What landed was a SyntaxError, and
+    by its third turn a hosted 32B was reporting an unterminated string
+    literal in a file it had broken itself. Nine of ten runs then spent
+    the whole budget writing nothing that would load.
+
+    Anything after the closing fence goes too. A model that signs off
+    with "That should do it." puts that sentence inside the fence's
+    file otherwise, which fails exactly the same way the backticks do.
+    """
+    found = _FENCED.match(body)
+    return found.group(1) if found else body
+
+
 def _block(text: str, key: str) -> str:
     match = re.search(rf"^{key}:\s*(.*)$", text, re.MULTILINE | re.IGNORECASE)
     if not match:
@@ -134,11 +160,13 @@ def parse_turn(text: str) -> AgentTurn | None:
         argv=argv,
         summary=fields.get("summary", ""),
         source=source,
-        find=_block(text, "Find"),
-        replace=_block(text, "Replace"),
+        find=unfenced(_block(text, "Find")),
+        replace=unfenced(_block(text, "Replace")),
         scope=fields.get("scope", ""),
         name=fields.get("name", ""),
-        append=_block(text, "Append") or _block(text, "Add") or body_as_append,
+        append=unfenced(
+            _block(text, "Append") or _block(text, "Add") or body_as_append
+        ),
         number=fields.get("number", ""),
         title=fields.get("title", ""),
         body=_block(text, "Body"),
