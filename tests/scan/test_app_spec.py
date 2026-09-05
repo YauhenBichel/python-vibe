@@ -281,6 +281,44 @@ class AppSpecTest(unittest.TestCase):
         self.assertNotIn("comment", extra)
         self.assertEqual(leftover, "")
 
+    def test_query_page_closes_the_pagination_gap(self) -> None:
+        overflow = "add pagination to the GitHub PR CLI"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            tests = root / "tests"
+            pkg.mkdir()
+            tests.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen(\n"
+                "        f'https://api.github.com/repos/{owner}/{repository}"
+                "/pulls?page='\n"
+                "    )\n"
+                "def show_pull(o, r, n):\n"
+                "    return {}\n"
+                "def comment_on(o, r, n):\n"
+                "    return None\n"
+                "parser.add_parser('list')\n"
+                "parser.add_parser('show')\n",
+                encoding="utf-8",
+            )
+            (tests / "test_pr_review.py").write_text(
+                "from unittest.mock import patch\n"
+                "from pkg.pr_review import list_pulls\n"
+                "with patch('urllib.request.urlopen'):\n"
+                "    list_pulls('o', 'r')\n",
+                encoding="utf-8",
+            )
+            extra = [gap.key for gap in overflow_gaps(root, overflow)]
+            leftover = next_overflow_action(root, overflow)
+        self.assertNotIn("pagination", extra)
+        self.assertEqual(leftover, "")
+
 
 if __name__ == "__main__":
     unittest.main()
