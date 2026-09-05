@@ -205,8 +205,20 @@ clamp generate. CodeLlama's warmup returned, then clamp still hit
 as the cold pass. So this is not only a cold start. Write-tests
 stayed 3 / 3 (compiler). Not a score.
 
-That is not a nine-cell table. **Do not switch.** Default stays
-`llama3.1:8b`.
+**One-word generate, same evening.** Prompt: `Reply with the single
+word ok.` Cap 180s. No daily job.
+
+| Model | Reply | Wall |
+| --- | --- | --- |
+| `llama3.1:8b` (already loaded) | `Ok` | **3.9 s** |
+| `qwen2.5-coder:7b` (swap from 8B) | `Ok.` | **11.5 s** |
+| `codellama:7b-python` | timeout | 180 s |
+| `opencoder:8b` | timeout | 180 s |
+
+The 8B and the 7B coder answer. CodeLlama and OpenCoder do not finish
+even this prompt inside the cap that daily `run` uses. That is why
+those daily tables stay incomplete. That is not a nine-cell table.
+**Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
@@ -580,11 +592,11 @@ python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
 python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
-**Result.** Both tags are on disk. Clamp timed out at the 180s Ollama
-cap on the first pass and again after a warm load (write-tests 3 / 3
-is the compiler bind, no model). That is not a score. Default stays
-`llama3.1:8b`. Other 7B–8B weights that fit this laptop, and the ones
-that do not, are listed on
+**Result.** Both tags are on disk. A one-word generate hit 180s on
+OpenCoder (the loaded 8B replied in 3.9 s). Clamp timed out the same
+way (write-tests 3 / 3 is the compiler bind, no model). That is not
+a score. Default stays `llama3.1:8b`. Other 7B–8B weights that fit
+this laptop, and the ones that do not, are listed on
 [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
