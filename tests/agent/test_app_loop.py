@@ -1,5 +1,6 @@
 """Greenfield GitHub CLI loop: scaffold, refuse locate/ask, next gap."""
 
+import os
 import tempfile
 import unittest
 from pathlib import Path
