@@ -69,7 +69,7 @@ One laptop. 29 Aug–5 Sep 2026. **Not everyday-ready.**
 | Four Start commands on `demo/orders` | **0 / 4**, then **4 / 4** after the harness |
 | Same bench, code must run | 8B **6–9 / 9**; 7B coder 7 / 9; 30B timeout |
 | Same-night daily (write tests, clamp, sum × 3) | 8B **9 / 9**, 7B coder **7 / 9**. Keep the 8B |
-| Extra 7B–8B on disk | Write-tests 3 / 3 is the compiler. Clamp hit the 180s cap. Not a score |
+| Extra 7B–8B on disk | Write-tests 3 / 3 is the compiler. Clamp hit 180s after a warm load too. Not a score |
 | A real repository (4,580 files) | reading works; writing **1 / 12** |
 
 The long table: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
