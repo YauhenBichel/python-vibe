@@ -116,5 +116,71 @@ class NobodyCommitsTheirTracesTest(unittest.TestCase):
         self.assertIn(".python-vibe/", ignored)
 
 
+
+class EveryTurnSaysWhichRunTest(unittest.TestCase):
+    """A turn with no run id cannot be told from a turn of a failed run.
+
+    Both mutations below survived until this existed: dropping the id
+    from each turn, and never recording how a run ended. Neither is
+    visible from anything smaller than a whole run.
+    """
+
+    def _run_and_read(self, *drafts: str) -> list[dict]:
+        import json
+        from unittest import mock
+
+        from harness import Agent, AgentOptions
+
+        def scripted(*bodies: str):
+            left = list(bodies)
+
+            def generate(_prompt: str) -> str:
+                return left.pop(0) if left else "Action: done\nSummary: out"
+
+            return lambda *a, **k: ("scripted", generate)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src" / "app.py").write_text(
+                "def total(rows):\n    return sum(rows)\n", encoding="utf-8"
+            )
+            (root / "tests" / "test_app.py").write_text("x = 1\n", encoding="utf-8")
+            with mock.patch("harness.agent.loop.make_generate", scripted(*drafts)):
+                Agent(
+                    AgentOptions(project=root, task="add multiply to src/app.py")
+                ).run()
+            trace = root / ".python-vibe" / "traces.jsonl"
+            if not trace.is_file():
+                return []
+            return [json.loads(line) for line in trace.read_text().splitlines() if line.strip()]
+
+    def test_every_turn_carries_a_run_id(self) -> None:
+        rows = self._run_and_read(
+            "Action: read\nPath: src/app.py",
+            "Action: done\nSummary: read it",
+        )
+        self.assertTrue(rows, "nothing was recorded at all")
+        missing = [r for r in rows if not r.get("run")]
+        self.assertEqual(missing, [], f"turns with no run id: {missing}")
+
+    def test_all_the_turns_of_one_run_share_the_id(self) -> None:
+        rows = self._run_and_read(
+            "Action: read\nPath: src/app.py",
+            "Action: done\nSummary: read it",
+        )
+        self.assertEqual(len({r.get("run") for r in rows}), 1)
+
+    def test_the_run_records_how_it_ended(self) -> None:
+        rows = self._run_and_read(
+            "Action: read\nPath: src/app.py",
+            "Action: done\nSummary: read it",
+        )
+        closing = [r for r in rows if "ok" in r]
+        self.assertEqual(len(closing), 1, f"expected one closing row, got {closing}")
+        self.assertIn("stopped", closing[0])
+
+
 if __name__ == "__main__":
     unittest.main()

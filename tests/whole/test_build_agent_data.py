@@ -132,5 +132,72 @@ class TheSameTurnCountsOnceTest(unittest.TestCase):
                              ["first", "second"])
 
 
+
+class TurnsFromRunsThatFailedTest(unittest.TestCase):
+    """About a third of runs fail, and their turns look like the rest.
+
+    Without a run id and an outcome on the record, a turn from a run
+    that spent twenty steps and wrote nothing is indistinguishable from
+    a turn from a run that did the job — so the training set teaches
+    both.
+    """
+
+    WORKED = [
+        {"run": "aaa", "user": "Action: read", "assistant": "Action: patch"},
+        {"run": "aaa", "user": "Action: patch", "assistant": "Action: done"},
+        {"run": "aaa", "user": "t", "assistant": "s", "stopped": "done", "ok": True},
+    ]
+    FAILED = [
+        {"run": "bbb", "user": "Action: grep", "assistant": "Action: patch"},
+        {"run": "bbb", "user": "t", "assistant": "s", "stopped": "steps", "ok": False},
+    ]
+
+    def _file(self, tmp: str, rows: list[dict]) -> Path:
+        path = Path(tmp) / "turns.jsonl"
+        path.write_text(
+            "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+        )
+        return path
+
+    def test_a_failed_run_is_named_by_its_closing_row(self) -> None:
+        build = _script()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._file(tmp, self.WORKED + self.FAILED)
+            self.assertEqual(build.failed_runs(path), {"bbb"})
+
+    def test_its_turns_are_left_out(self) -> None:
+        build = _script()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._file(tmp, self.WORKED + self.FAILED)
+            kept = build.load_turns(path)
+        self.assertEqual(kept, [("Action: read", "Action: patch"),
+                                ("Action: patch", "Action: done")])
+
+    def test_keep_failed_puts_them_back(self) -> None:
+        build = _script()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._file(tmp, self.WORKED + self.FAILED)
+            self.assertEqual(len(build.load_turns(path, keep_failed=True)), 3)
+
+    def test_the_closing_row_is_never_a_training_pair(self) -> None:
+        """It says how a run ended. Nobody should learn to imitate it."""
+        build = _script()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._file(tmp, self.WORKED)
+            kept = build.load_turns(path)
+        self.assertEqual(len(kept), 2)
+        self.assertNotIn(("t", "s"), kept)
+
+    def test_a_file_recorded_before_run_ids_is_unchanged(self) -> None:
+        """Turns already collected have no id and no outcome row."""
+        build = _script()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._file(
+                tmp, [{"user": "Action: read", "assistant": "Action: done"}]
+            )
+            self.assertEqual(build.failed_runs(path), set())
+            self.assertEqual(len(build.load_turns(path)), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
