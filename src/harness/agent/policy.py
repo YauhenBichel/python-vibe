@@ -29,6 +29,7 @@ from harness.locate import (
     refuse_app_overflow_explore,
     refuse_app_tests_first,
     refuse_app_wrong_path,
+    refuse_bugfix_tests_first,
     refuse_design_dirty,
     refuse_early_done,
     refuse_invented_review,
@@ -341,6 +342,7 @@ def _tool_refusals(state: LoopState, turn) -> str:
         lambda: refuse_app_overflow_explore(state.task, turn.action),
         lambda: refuse_app_ask(state.task, turn.action),
         lambda: refuse_app_tests_first(state.task, state.project, turn.action, path),
+        lambda: refuse_bugfix_tests_first(state.task, state.project, turn.action, path),
         lambda: refuse_app_wrong_path(state.task, turn.action, path),
         lambda: refuse_patch_before_reading(state, turn),
         lambda: refuse_new_path_before_existing(state, turn),
@@ -660,12 +662,30 @@ def _app_ready_to_run(state: LoopState, result: str) -> bool:
     return not required_gaps(state.project, state.task)
 
 
+def _named_bugfix_patch(state: LoopState) -> str:
+    """Point a named-file bugfix back at the impl, not at a rewritten test."""
+    if not looks_like_bugfix(state.task):
+        return ""
+    named = named_project_file(state.task, state.project)
+    if not named:
+        return ""
+    return (
+        f"Next Action must be patch Path: {named} with a Find: line "
+        "copied whole from the file. Do not edit tests.\n"
+    )
+
+
 def repair_after_failed_run(state: LoopState, result: str) -> str:
     """Send the traceback back once. A second failure is for the model to stop on."""
     err = result.strip()
     if len(err) > 1200:
         err = err[-1200:]
     rel = state.last_path or "the file you changed"
+    named = ""
+    if looks_like_bugfix(state.task):
+        named = named_project_file(state.task, state.project)
+    if named:
+        rel = named
     if state.repairs >= MAX_REPAIRS:
         return (
             "The repair still fails. Action: done Summary: quote the "
@@ -695,7 +715,7 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
             return ""
         if state.wrote_something:
             return repair_after_failed_run(state, result)
-        return ""
+        return _named_bugfix_patch(state)
     if (
         turn.action == "run"
         and result.startswith("exit 0")
@@ -766,8 +786,12 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
             "Next Action must be run Argv: -m unittest discover -s tests -q\n"
         )
     if not wrote:
-        return ""
+        return _named_bugfix_patch(state)
     is_test = "test" in path
+    if looks_like_bugfix(state.task) and is_test:
+        leftover = _named_bugfix_patch(state)
+        if leftover:
+            return leftover
     if (
         looks_like_add_feature(state.task)
         and turn.action in {"patch", "edit"}
