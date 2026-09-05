@@ -68,6 +68,7 @@ from harness.act.autofix.mechanical import (
 )
 from harness.act.autofix.scaffold import (
     apply_cli_mock_test,
+    apply_home_config,
     apply_list_page_query,
     apply_package_scaffold,
 )
@@ -89,6 +90,7 @@ __all__ = [
     "apply_cover_test",
     "apply_function_rename",
     "apply_cli_mock_test",
+    "apply_home_config",
     "apply_list_page_query",
     "apply_mechanical",
     "apply_package_scaffold",

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from harness.act.autofix.scaffold import (
     apply_cli_mock_test,
+    apply_home_config,
     apply_list_page_query,
     apply_package_scaffold,
 )
@@ -517,6 +518,42 @@ class AppLoopTest(unittest.TestCase):
             self.assertEqual(apply_list_page_query(root, comment), "")
             body = (root / "pkg" / "pr_review.py").read_text(encoding="utf-8")
         self.assertNotIn("page=", body)
+
+    def test_mechanical_home_config_closes_config(self) -> None:
+        overflow = "add a config file via Path.home"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "def show_pull(o, r, n):\n"
+                "    return {}\n"
+                "def comment_on(o, r, n):\n"
+                "    return None\n",
+                encoding="utf-8",
+            )
+            from harness.scan.app_spec import overflow_gaps
+
+            note = apply_home_config(root, overflow)
+            body = (root / "pkg" / "config.py").read_text(encoding="utf-8")
+            extra = [gap.key for gap in overflow_gaps(root, overflow)]
+            again = apply_home_config(root, overflow)
+        self.assertIn("pkg/config.py", note)
+        self.assertIn("Path.home()", body)
+        self.assertNotIn("config", extra)
+        self.assertEqual(again, "")
+
+    def test_mechanical_home_config_skips_pagination(self) -> None:
+        overflow = "add pagination to the GitHub PR CLI"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            self.assertEqual(apply_home_config(root, overflow), "")
+            self.assertFalse((root / "pkg" / "config.py").is_file())
 
 
 if __name__ == "__main__":
