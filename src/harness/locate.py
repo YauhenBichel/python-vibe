@@ -506,6 +506,31 @@ def refuse_bugfix_tests_first(
     )
 
 
+def refuse_bugfix_explore(
+    task: str, project: Path | None, action: str, located_path: str = ""
+) -> str:
+    """The named impl is already open. Live 8B explored 12 steps and wrote nothing."""
+    if not looks_like_bugfix(task) or action not in {
+        "grep",
+        "locate",
+        "map",
+        "ask",
+        "read",
+    }:
+        return ""
+    if project is None:
+        return ""
+    named = named_project_file(task, project)
+    if not named:
+        return ""
+    if action == "read" and not located_path:
+        return ""
+    return (
+        f"Do not {action}. Action: patch Path: {named} with a Find: line "
+        "copied whole from the file."
+    )
+
+
 def refuse_app_wrong_path(task: str, action: str, path: str) -> str:
     """Live 8B wrote pkg/pull_viewer.py and pkg.py after the hint named pr_review."""
     from harness.task import looks_like_app_loop, looks_like_app_overflow, package_noun

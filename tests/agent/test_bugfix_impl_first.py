@@ -16,7 +16,7 @@ from harness.agent.policy import (
     refuse_before,
     repair_after_failed_run,
 )
-from harness.locate import refuse_bugfix_tests_first
+from harness.locate import refuse_bugfix_explore, refuse_bugfix_tests_first
 
 ROOT = Path(__file__).resolve().parents[2]
 EVERYDAY = ROOT / "eval" / "fixtures" / "everyday_fix"
@@ -103,6 +103,40 @@ class BugfixImplFirstTest(unittest.TestCase):
         )
         self.assertIn("pkg/util_stats.py", got)
         self.assertIn("patch", got)
+
+    def test_explore_is_refused_once_the_named_file_is_open(self) -> None:
+        blocked = refuse_bugfix_explore(
+            TASK, EVERYDAY, "grep", located_path="pkg/util_stats.py"
+        )
+        self.assertIn("pkg/util_stats.py", blocked)
+        self.assertIn("patch", blocked)
+        self.assertEqual(
+            refuse_bugfix_explore(TASK, EVERYDAY, "read", located_path=""),
+            "",
+        )
+        self.assertIn(
+            "patch",
+            refuse_bugfix_explore(
+                TASK, EVERYDAY, "read", located_path="pkg/util_stats.py"
+            ),
+        )
+        self.assertEqual(
+            refuse_bugfix_explore(
+                "add multiply(a, b) and a test",
+                EVERYDAY,
+                "grep",
+                located_path="pkg/util_stats.py",
+            ),
+            "",
+        )
+
+    def test_refuse_before_blocks_grep_after_prelude(self) -> None:
+        state = LoopState(
+            task=TASK, project=EVERYDAY, located_path="pkg/util_stats.py"
+        )
+        blocked = refuse_before(state, _Turn("grep"))
+        self.assertIn("pkg/util_stats.py", blocked)
+        self.assertIn("patch", blocked)
 
 
 if __name__ == "__main__":

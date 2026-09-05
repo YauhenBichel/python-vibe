@@ -29,6 +29,7 @@ from harness.locate import (
     refuse_app_overflow_explore,
     refuse_app_tests_first,
     refuse_app_wrong_path,
+    refuse_bugfix_explore,
     refuse_bugfix_tests_first,
     refuse_design_dirty,
     refuse_early_done,
@@ -340,6 +341,9 @@ def _tool_refusals(state: LoopState, turn) -> str:
     checks = (
         lambda: refuse_write_tests_ask(state.task, turn.action),
         lambda: refuse_app_overflow_explore(state.task, turn.action),
+        lambda: refuse_bugfix_explore(
+            state.task, state.project, turn.action, state.located_path
+        ),
         lambda: refuse_app_ask(state.task, turn.action),
         lambda: refuse_app_tests_first(state.task, state.project, turn.action, path),
         lambda: refuse_bugfix_tests_first(state.task, state.project, turn.action, path),
