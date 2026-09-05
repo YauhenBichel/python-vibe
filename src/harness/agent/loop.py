@@ -12,6 +12,7 @@ an allowed action out.
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
@@ -88,18 +89,34 @@ def trace_path(options: AgentOptions) -> Path | None:
     return default_trace_path(options.resolved_project())
 
 
-def _trace_result(options: AgentOptions, result: AgentResult) -> None:
-    """Keep a row for a run that never reached the model."""
+def new_trace_id() -> str:
+    """A short name for one run, so its turns can be found together.
+
+    A recorded turn carried no sign of which run it came from, so a turn
+    from a run that finished the job looked exactly like a turn from one
+    that spent twenty steps and wrote nothing. About a third of runs
+    fail, and training on both without being able to tell them apart
+    teaches the failure alongside the work.
+    """
+    return uuid.uuid4().hex[:12]
+
+
+def _trace_result(
+    options: AgentOptions, result: AgentResult, trace_id: str = ""
+) -> None:
+    """Keep a row saying how the run ended, and under which id."""
     dest = trace_path(options)
     if dest is None:
         return
     append_turn(
         dest,
         {
+            "run": trace_id,
             "user": options.task,
             "assistant": result.summary,
             "action": result.stopped,
             "stopped": result.stopped,
+            "ok": result.ok,
         },
     )
 
@@ -126,6 +143,9 @@ class RunState:
     Fields:
         options: the request, replaced when the user answers a question.
         preamble: what the harness found before any model turn.
+        trace_id: a short name for this run, stamped on every turn it
+            records, so the turns of a run that worked can be told from
+            the turns of one that did not.
         writes: project-relative paths this run has changed.
         test_note: what the suite said after a mechanical fix, when that
             fix was not the end of the job. It is put to the model so it
@@ -134,6 +154,7 @@ class RunState:
 
     options: AgentOptions
     preamble: object
+    trace_id: str = field(default_factory=new_trace_id)
     writes: list[str] = field(default_factory=list)
     test_note: str = ""
 
@@ -206,7 +227,12 @@ class Agent:
                 _trace_result(run.options, finished)
                 return finished
 
-        return self._work_with_the_model(run)
+        # Every run ends with a row saying how it ended. Without one,
+        # the turns of a run that spent its whole budget look exactly
+        # like the turns of a run that did the job.
+        result = self._work_with_the_model(run)
+        _trace_result(run.options, result, run.trace_id)
+        return result
 
     # -- the four questions asked before the model is loaded ------------
 
@@ -387,6 +413,7 @@ class Agent:
                 append_turn(
                     trace,
                     {
+                        "run": run.trace_id,
                         "user": prompt,
                         "assistant": draft,
                         "action": turn.action if turn else "",

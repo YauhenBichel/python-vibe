@@ -70,7 +70,7 @@ def render_last(project: Path, *, limit: int = 8) -> str:
     return "\n".join(lines)
 
 
-def append_turn(path: Path, row: dict[str, str]) -> None:
+def append_turn(path: Path, row: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     clean = {key: redact(str(value)) for key, value in row.items()}
     if any(v == "[redacted]" for v in clean.values()):

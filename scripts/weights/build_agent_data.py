@@ -29,15 +29,45 @@ from finetune.splits import write_splits  # noqa: E402
 from harness.observe.trace_record import default_trace_path  # noqa: E402
 
 
-def load_turns(path: Path) -> list[tuple[str, str]]:
+def failed_runs(path: Path) -> set[str]:
+    """Ids of runs that ended badly, from the row each run writes last.
+
+    About a third of runs fail. Their turns look exactly like the turns
+    of a run that did the job, so without this the training set teaches
+    spending twenty steps and writing nothing alongside the work.
+    """
+    if not path.is_file():
+        return set()
+    bad: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if "ok" in row and str(row.get("ok")).lower() != "true":
+            bad.add(str(row.get("run") or ""))
+    bad.discard("")
+    return bad
+
+
+def load_turns(path: Path, *, keep_failed: bool = False) -> list[tuple[str, str]]:
     """(prompt, reply) pairs from one recorded file. Empty when absent."""
     if not path.is_file():
         return []
+    skip = set() if keep_failed else failed_runs(path)
     pairs: list[tuple[str, str]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         row = json.loads(line)
+        if str(row.get("run") or "") in skip and row.get("run"):
+            continue
+        if "ok" in row:
+            # The closing row of a run says how it ended; it is not a
+            # turn anybody should learn to imitate.
+            continue
         user = row.get("user") or row.get("prompt")
         assistant = row.get("assistant") or row.get("draft")
         if user and assistant:
@@ -56,7 +86,7 @@ def recorded_files(extra_roots: list[Path]) -> list[Path]:
     return found
 
 
-def gather(paths: list[Path]) -> list[tuple[str, str]]:
+def gather(paths: list[Path], *, keep_failed: bool = False) -> list[tuple[str, str]]:
     """Every recorded pair, in order, each one once.
 
     The same turn appears twice when somebody points `--record` at a
@@ -66,7 +96,7 @@ def gather(paths: list[Path]) -> list[tuple[str, str]]:
     seen: set[tuple[str, str]] = set()
     found: list[tuple[str, str]] = []
     for path in paths:
-        turns = load_turns(path)
+        turns = load_turns(path, keep_failed=keep_failed)
         print(f"  {path}: {len(turns)} turn(s)")
         for pair in turns:
             if pair not in seen:
@@ -77,6 +107,11 @@ def gather(paths: list[Path]) -> list[tuple[str, str]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--keep-failed",
+        action="store_true",
+        help="include turns from runs that ended badly",
+    )
     parser.add_argument(
         "--from",
         dest="roots",
@@ -89,7 +124,7 @@ def main() -> None:
     args = parser.parse_args()
 
     dest = ROOT / "data" / "agent-loop"
-    recorded = gather(recorded_files(args.roots))
+    recorded = gather(recorded_files(args.roots), keep_failed=args.keep_failed)
     pairs = all_pairs() + recorded
     counts = write_splits(pairs, system_prompt(), dest)
     print(dest, counts, "recorded", len(recorded))
