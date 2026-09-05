@@ -529,7 +529,11 @@ class TestsPassedTest(unittest.TestCase):
             )
             options = AgentOptions(
                 project=root,
-                task="fix compute_total in src/app.py so it sums the rows",
+                # Deliberately not the word "sum": a task that says sum
+                # over a literal `return 0` is repaired mechanically,
+                # without the model, and this test is about what happens
+                # when the model's own patch fails the suite.
+                task="fix compute_total in src/app.py so it adds the rows up",
                 keep_no_record=True,
             )
             with mock.patch(

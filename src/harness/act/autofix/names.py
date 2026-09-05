@@ -318,5 +318,22 @@ def apply_zero_return_sum(source: str, task: str) -> str:
     if last is None:
         return source
     indent = re.match(r"^(\s*)", lines[last]).group(1)
-    lines[last] = f"{indent}return float(sum({series}))\n"
+    lines[last] = f"{indent}return {_summed(lines[start], series)}\n"
     return "".join(lines)
+
+
+def _summed(signature: str, series: str) -> str:
+    """`sum(rows)` or `float(sum(rows))`, whichever the signature says.
+
+    The repair used to write a float every time. On the fixture it was
+    written for that is right — `-> float`, over a cleaned series. On a
+    function annotated `-> int` it contradicts the signature the person
+    wrote, and this project has one: `compute_total(rows: list[int]) ->
+    int`. A repair that argues with the declared type is a repair
+    somebody has to undo.
+    """
+    returns = re.search(r"\)\s*->\s*([A-Za-z_][\w.\[\] |]*)\s*:", signature)
+    declared = (returns.group(1) if returns else "").strip()
+    if declared == "int":
+        return f"sum({series})"
+    return f"float(sum({series}))"
