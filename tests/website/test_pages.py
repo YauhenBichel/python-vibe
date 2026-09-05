@@ -171,10 +171,28 @@ class PagesInvestigationsTest(unittest.TestCase):
     def test_checkout_map_names_the_demo_and_the_helper(self) -> None:
         text = (DOCS / "tree.md").read_text(encoding="utf-8")
         self.assertIn("permalink: /tree/", text)
+        self.assertIn("title: Folders", text)
         self.assertIn("demo/orders", text)
         self.assertIn("src/harness/", text)
         self.assertIn("Do not run `brief` on the", text)
         self.assertIn("source .venv/bin/activate", text)
+
+    def test_home_is_a_short_map_in_plain_words(self) -> None:
+        home = (DOCS / "index.md").read_text(encoding="utf-8")
+        self.assertIn("| Command | What it does |", home)
+        self.assertIn("| Page | What is on it |", home)
+        self.assertIn("{{ '/api/' | relative_url }}", home)
+        self.assertIn("{{ '/tree/' | relative_url }}", home)
+        for name in ("index.md", "start.md", "tree.md"):
+            text = (DOCS / name).read_text(encoding="utf-8").lower()
+            self.assertNotIn("planted", text, name)
+            self.assertNotIn("this checkout", text, name)
+            self.assertNotIn("sidecar", text, name)
+            self.assertNotIn("hosted ide", text, name)
+        nav = (DOCS / "_includes" / "nav.html").read_text(encoding="utf-8")
+        self.assertIn(">Commands<", nav)
+        self.assertNotIn(">Using<", nav)
+        self.assertNotIn(">Cite<", nav)
 
     def test_vscode_page_is_a_real_session(self) -> None:
         text = (DOCS / "vscode.md").read_text(encoding="utf-8")

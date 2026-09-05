@@ -12,7 +12,7 @@ dependency to call it. The harness is the standard library. An editor
 starts `python-vibe mcp` or `python-vibe serve` as a child process.
 
 Related: [local editor]({{ '/local-editor/' | relative_url }}) ·
-[Using python-vibe]({{ '/api/' | relative_url }}).
+[Commands]({{ '/api/' | relative_url }}).
 
 ## Use it (no plugin to write)
 

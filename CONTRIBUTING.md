@@ -15,8 +15,8 @@ the rules below.
 
 ## Getting set up
 
-The checkout as a whole is mapped in [docs/tree.md](./docs/tree.md).
-Daily work is `demo/orders`, not the repo root.
+The folders are listed in [docs/tree.md](./docs/tree.md).
+Daily work is `demo/orders`, not the repository root.
 
 ```bash
 git clone https://github.com/YauhenBichel/python-vibe.git

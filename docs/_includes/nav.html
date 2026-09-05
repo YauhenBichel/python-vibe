@@ -2,10 +2,9 @@
   {% assign u = page.url %}
   <a href="{{ '/' | relative_url }}"{% if u == '/' or u == '/index.html' %} aria-current="page"{% endif %}>Home</a>
   <a href="{{ '/start/' | relative_url }}"{% if u contains '/start' %} aria-current="page"{% endif %}>Start</a>
+  <a href="{{ '/api/' | relative_url }}"{% if u contains '/api' %} aria-current="page"{% endif %}>Commands</a>
   <a href="{{ '/demo/' | relative_url }}"{% if u contains '/demo' %} aria-current="page"{% endif %}>Demo</a>
   <a href="{{ '/live/' | relative_url }}"{% if u contains '/live' %} aria-current="page"{% endif %}>Live</a>
-  <a href="{{ '/api/' | relative_url }}"{% if u contains '/api' %} aria-current="page"{% endif %}>Using</a>
   <a href="{{ '/editor-demos/' | relative_url }}"{% if u contains '/editor-demos' or u contains '/cursor' or u contains '/vscode' or u contains '/ide-plugins' or u contains '/local-editor' %} aria-current="page"{% endif %}>Editors</a>
   <a href="{{ '/investigations/' | relative_url }}"{% if u contains '/investigations' or u contains '/research-vibe-review' %} aria-current="page"{% endif %}>Results</a>
-  <a href="{{ '/cite/' | relative_url }}"{% if u contains '/cite' %} aria-current="page"{% endif %}>Cite</a>
 </nav>
