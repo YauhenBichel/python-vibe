@@ -6,7 +6,7 @@ from pathlib import Path
 
 from harness.act.autofix.scaffold import apply_package_scaffold
 from harness.agent.policy import LoopState, next_prompt, refuse_before, refuse_done
-from harness.locate import refuse_app_ask, refuse_redundant_locate
+from harness.locate import refuse_app_ask, refuse_app_wrong_path, refuse_redundant_locate
 from harness.scan.project_brief import classify_project, start_hint
 from harness.task import looks_like_app_loop
 
@@ -51,6 +51,20 @@ class AppLoopTest(unittest.TestCase):
         self.assertIn("pkg/pr_review.py", hint)
         self.assertNotIn("weekday_name", hint)
         self.assertIn("Do not locate", hint)
+
+    def test_a_second_module_is_refused(self) -> None:
+        self.assertIn(
+            "pkg/pr_review.py",
+            refuse_app_wrong_path(CLI, "edit", "pkg/pull_viewer.py"),
+        )
+        self.assertIn(
+            "pkg/pr_review.py",
+            refuse_app_wrong_path(CLI, "edit", "pkg.py"),
+        )
+        self.assertEqual(
+            refuse_app_wrong_path(CLI, "edit", "pkg/pr_review.py"),
+            "",
+        )
 
     def test_tests_before_impl_are_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
