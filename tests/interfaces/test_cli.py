@@ -1,5 +1,6 @@
 import io
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -101,6 +102,18 @@ class CommandTableTest(unittest.TestCase):
         for name, handler in COMMANDS.items():
             with self.subTest(command=name):
                 self.assertTrue(callable(handler))
+
+    def test_last_with_no_traces_is_not_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            buf = io.StringIO()
+            old = sys.stdout
+            sys.stdout = buf
+            try:
+                code = main(["last", tmp])
+            finally:
+                sys.stdout = old
+        self.assertEqual(code, 0)
+        self.assertIn("no traces", buf.getvalue())
 
     def test_the_missing_task_hint_names_a_command_that_exists(self) -> None:
         """The hint used to say `python-vibe`, installed or not."""

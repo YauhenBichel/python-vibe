@@ -48,6 +48,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "investigations/first-run-four.md",
             "investigations/experiments.md",
             "investigations/held-out-exec-eval.md",
+            "investigations/sample-and-run.md",
             "cite.md",
             "investigations/bench-record.md",
             "investigations/cloud-weights.md",
@@ -164,6 +165,18 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("python-vibe brief", body)
         self.assertIn("subtotl", body)
         self.assertIn("total_lines", body)
+
+    def test_daily_recording_is_checked_in(self) -> None:
+        gif = DOCS / "media" / "daily-run.gif"
+        cast = DOCS / "media" / "daily-run.cast"
+        self.assertTrue(gif.is_file(), gif)
+        self.assertTrue(cast.is_file(), cast)
+        self.assertLess(gif.stat().st_size, 800_000, "keep the GIF small enough to ship")
+        body = cast.read_text(encoding="utf-8")
+        self.assertNotIn("/Users/", body)
+        self.assertNotIn("DevBox/", body)
+        self.assertIn("compute_total", body)
+        self.assertIn("return sum(rows)", body)
 
 
 def _front_matter(path: Path) -> dict[str, str]:

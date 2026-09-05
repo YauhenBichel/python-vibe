@@ -39,7 +39,8 @@ reloads the window gets the same tools.
 2. Open **Customize → MCP** and enable `python-vibe`
 3. In chat, say what you want. Name the tool if you like:
    - “ask python-vibe what `compute_total` returns”
-   - “run python-vibe: find the NameError and fix it”
+   - “run python-vibe: write tests for apply_discount”
+   - “run python-vibe: fix compute_total so it sums the rows”
 
 `ask` never writes. `run` writes only when you passed `--allow-writes`.
 

@@ -59,6 +59,7 @@ That last sentence is a harness job.
 | Measurement | Result | What a new LoRA would change |
 | --- | --- | --- |
 | 0.5B held-out vibe (weekday, count-md, jsonl, docstring) | 0 / 4 | Already tried. Base 0.5B failed the same class |
+| 0.5B sample-and-run (18 scripts, MLX, 5 Sep 2026) | four drafts 6 / 18 base, 9 / 18 with repair; greedy LoRA 0 / 54 | The adapter lost to the untuned base on the same sampler. Freeze step 100 |
 | 0.5B parsed `Action:` that day | 0 / 2 | Misses the protocol. More 0.5B steps overfit |
 | 8B first Action on three scoped tasks | 3 / 3 | Start is often right without a LoRA |
 | 8B live Action parse | 2 / 3 early; 7 / 10 later the same day | The prompt and the file opened first, not the weights |

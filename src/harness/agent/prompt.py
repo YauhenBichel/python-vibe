@@ -18,7 +18,7 @@ from pathlib import Path
 from harness.act.autofix import apply_mechanical
 from harness.agent.options import AgentOptions
 from harness.locate import prelude, signature_line
-from harness.scan.existing import already_covers
+from harness.scan.existing import already_covers, existing_files
 from harness.scan.project_brief import (
     ProjectBrief,
     classify_project,
@@ -54,6 +54,7 @@ class Preamble:
     pre_text: str = ""
     autofix: str = ""
     notes: tuple[str, ...] = field(default_factory=tuple)
+    existing_paths: tuple[str, ...] = ()
 
 
 def choose_skills(
@@ -103,6 +104,7 @@ def build_preamble(options: AgentOptions) -> Preamble:
     # worse copy of a check that was three files away, because nothing
     # said so.
     covered = already_covers(project, task, skip=located_path)
+    named_existing = existing_files(project, task, skip=located_path)
     if covered:
         notes.append(covered)
         pre_text = f"{pre_text}\n\n{covered}" if pre_text else covered
@@ -154,4 +156,5 @@ def build_preamble(options: AgentOptions) -> Preamble:
         pre_text=pre_text,
         autofix=autofix,
         notes=tuple(notes),
+        existing_paths=named_existing,
     )

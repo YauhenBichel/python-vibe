@@ -11,10 +11,16 @@ from harness.task import (
     looks_like_add_feature,
     looks_like_bugfix,
     looks_like_design_loop,
+    looks_like_new_package,
     looks_like_question,
     looks_like_review_code,
+    looks_like_script,
+    looks_like_ship,
     looks_unclear,
+    mentions_cli,
+    mentions_http,
     names_something_concrete,
+    package_noun,
 )
 
 
@@ -101,6 +107,43 @@ class SkillChoiceTest(unittest.TestCase):
         self.assertNotIn(
             "ask-when-unclear", self._names("add multiply(a, b) and a test")
         )
+
+
+CLI_APP = "design and develop a small cli app for reviewing github PRs"
+
+
+class GreenfieldCliTest(unittest.TestCase):
+    """A typed 'build a CLI' prompt is a new package, not a weekday copy."""
+
+    def test_design_a_cli_app_is_a_new_package(self) -> None:
+        self.assertTrue(looks_like_new_package(CLI_APP))
+        self.assertTrue(looks_like_new_package("develop a small cli app for tallying csv"))
+        self.assertTrue(looks_like_new_package("build a small CLI for reviewing GitHub pull requests"))
+        self.assertTrue(looks_like_new_package("design a develop a small cli app for reviewing github PRs"))
+        self.assertFalse(looks_like_new_package("write a weekday script from argv"))
+        self.assertFalse(looks_like_new_package("review the project structure"))
+        self.assertFalse(looks_like_new_package("create a pr for #50"))
+        self.assertFalse(looks_like_new_package("add a function multiply"))
+
+    def test_it_is_not_a_design_loop_or_a_ship(self) -> None:
+        self.assertFalse(looks_like_design_loop(CLI_APP))
+        self.assertFalse(looks_like_ship(CLI_APP))
+        self.assertFalse(looks_like_script(CLI_APP))
+
+    def test_github_pr_cli_names_pr_review_and_http(self) -> None:
+        self.assertEqual(package_noun(CLI_APP), "pr_review")
+        self.assertEqual(package_noun("create a package for total_price"), "total_price")
+        self.assertEqual(package_noun("create a package"), "service")
+        self.assertTrue(mentions_cli(CLI_APP))
+        self.assertTrue(mentions_http(CLI_APP))
+
+    def test_pick_scaffolds_then_http_then_tests(self) -> None:
+        catalog = list_skills()
+        names = [item.name for item in pick_skills(CLI_APP, catalog)]
+        self.assertEqual(names, ["new-package", "call-http", "write-tests"])
+        self.assertNotIn("write-script", names)
+        self.assertNotIn("review-design", names)
+        self.assertNotIn("open-pr", names)
 
 
 if __name__ == "__main__":

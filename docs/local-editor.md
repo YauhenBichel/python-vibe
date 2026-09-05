@@ -87,7 +87,7 @@ This is the editor calling python-vibe. It is **not** an Action the 8B may emit.
 ## 5. CLI (same write limit, no editor)
 
 ```bash
-python-vibe run /path/to/your/app "find a real NameError and fix it"
+python-vibe run /path/to/your/app "write tests for apply_discount"
 python-vibe run /path/to/your/app --scope src "what does apply_source refuse?"
 ```
 

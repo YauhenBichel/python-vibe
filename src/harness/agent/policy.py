@@ -46,6 +46,7 @@ from harness.skillkit.refuse_finish import (
     refuse_done_oracle,
     refuse_unwired_addition,
     refuse_write_done,
+    tests_call,
 )
 
 from harness.task import (
@@ -111,6 +112,9 @@ class LoopState:
         repairs: how many failed runs have already been sent back with
             the traceback. Daily work gets one; a second failure stops
             the nudge so the model reports rather than looping.
+        existing_paths: files the prelude already named as holding what
+            the task is about. A write to a different path is refused
+            until one of these has been read.
     """
 
     task: str
@@ -132,6 +136,7 @@ class LoopState:
     guard: LoopGuard = field(default_factory=LoopGuard)
     files_seen: set[str] = field(default_factory=set)
     repairs: int = 0
+    existing_paths: tuple[str, ...] = ()
 
 
 def refuse_patch_before_reading(state: LoopState, turn) -> str:
@@ -161,6 +166,28 @@ def refuse_patch_before_reading(state: LoopState, turn) -> str:
         f"Nothing has read {rel} in this run, so Find: is being written "
         f"from memory. Action: read Path: {rel} first, then copy a whole "
         "line from it."
+    )
+
+
+def refuse_new_path_before_existing(state: LoopState, turn) -> str:
+    """Refuse a write to a new file while a prelude-named file is unread."""
+    if turn.action not in WRITE_ACTIONS or turn.action == "run":
+        return ""
+    wanted = tuple(as_project_rel(item) for item in state.existing_paths if item)
+    if not wanted:
+        return ""
+    seen = {as_project_rel(item) for item in state.files_seen}
+    if state.located_path:
+        seen.add(as_project_rel(state.located_path))
+    unread = [item for item in wanted if item not in seen]
+    if not unread:
+        return ""
+    dest = as_project_rel(turn.path or state.last_path)
+    if dest in wanted:
+        return ""
+    return (
+        f"This project already has {unread[0]} for this task. "
+        f"Action: read Path: {unread[0]} first. Do not write {dest or 'a new file'}."
     )
 
 
@@ -300,6 +327,9 @@ def refuse_before(state: LoopState, turn) -> str:
     if blocked:
         return blocked
     blocked = refuse_patch_before_reading(state, turn)
+    if blocked:
+        return blocked
+    blocked = refuse_new_path_before_existing(state, turn)
     if blocked:
         return blocked
     blocked = refuse_wrong_file(
@@ -575,6 +605,41 @@ def refuse_done(state: LoopState, turn) -> str:
     return blocked
 
 
+RUN_SUITE = "Next Action must be run Argv: -m unittest discover -s tests -q\n"
+
+
+def write_needs_a_test(state: LoopState, result: str, path: str) -> bool:
+    """True when the next step is still to write a test, not to run."""
+    if not (state.project / "tests").is_dir():
+        return False
+    if "AAA test" in result:
+        return False
+    if "test" in (path or "").replace("\\", "/").lower():
+        return False
+    symbol = covered_symbol(state.task) or question_symbol(state.task)
+    if looks_like_add_feature(state.task) or looks_like_write_tests(state.task):
+        return bool(symbol) and not tests_call(state.project, symbol)
+    if looks_like_bugfix(state.task) and symbol:
+        return not tests_call(state.project, symbol)
+    return False
+
+
+def should_run_suite_after_write(state: LoopState, result: str, path: str) -> bool:
+    """Daily write: run the suite when tests already cover the work."""
+    if looks_like_design_loop(state.task) or looks_like_fix_smell(state.task):
+        return False
+    if not result.startswith(("patched", "wrote")):
+        return False
+    if not (state.project / "tests").is_dir():
+        return False
+    rel = path or state.last_path
+    if rel and looks_like_bugfix(state.task):
+        leftover = undefined_in_file(state.project / rel)
+        if leftover:
+            return False
+    return not write_needs_a_test(state, result, path)
+
+
 def repair_after_failed_run(state: LoopState, result: str) -> str:
     """Send the traceback back once. A second failure is for the model to stop on."""
     err = result.strip()
@@ -654,12 +719,14 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
         and not is_test
         and "AAA test" in result
     ):
-        return "Next Action must be run Argv: -m unittest discover -s tests -q\n"
+        return RUN_SUITE
     if (
         (looks_like_add_feature(state.task) or looks_like_bugfix(state.task))
         and turn.action in {"patch", "edit"}
         and not is_test
     ):
+        if not write_needs_a_test(state, result, path):
+            return RUN_SUITE
         loaded = get_skill("write-tests", state.project)
         if loaded is not None:
             return (
@@ -668,11 +735,18 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
                 "Do not Append after if __name__.\n"
             )
     if looks_like_new_package(state.task) and turn.action in {"edit", "patch"}:
-        noun = question_symbol(state.task) or "service"
+        from harness.task import mentions_cli, mentions_http, package_noun
+
+        noun = package_noun(state.task)
+        extra = ""
+        if mentions_cli(state.task):
+            extra += " argparse."
+        if mentions_http(state.task):
+            extra += " urllib. Token from the environment. No curl."
         if "__init__" in path:
             return (
                 f"Next Action must be edit Path: pkg/{noun}.py with one "
-                f"function def {noun}(...). snake_case. Not in __init__.py.\n"
+                f"function def {noun}(...).{extra} snake_case. Not in __init__.py.\n"
             )
         if not is_test:
             return (
@@ -680,7 +754,7 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
                 f"unittest.TestCase. Name test_{noun}_<result>. "
                 f"AAA: got = {noun}(...); assert got. Then Action: run.\n"
             )
-        return "Next Action must be run Argv: -m unittest discover -s tests -q\n"
+        return RUN_SUITE
     if looks_like_fix_smell(state.task) and turn.action == "patch" and not is_test:
         old, new = smell_symbol(state.task), rename_target(state.task)
         if old and new:

@@ -29,5 +29,6 @@ preferred-citation:
   url: https://github.com/YauhenBichel/python-vibe
   notes: >-
     Measurements, including the 5 Sep 2026 0.5B exact-stdout eval
-    (7/54 base, 12/54 with one repair), are at
-    https://yauhenbichel.github.io/python-vibe/cite/
+    (Ollama 7/54 base, 12/54 with one repair) and the same-day MLX
+    sample-and-run (four drafts 9/18 best cell; greedy LoRA 0/54),
+    are at https://yauhenbichel.github.io/python-vibe/cite/

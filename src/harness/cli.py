@@ -197,6 +197,11 @@ def build_parser() -> argparse.ArgumentParser:
     mcp.add_argument("--allow-writes", action="store_true")
     mcp.add_argument("--model", default=AgentOptions(project=Path(".")).model)
 
+    last = subs.add_parser(
+        "last", help="show the latest recorded turns. Needs no AI model."
+    )
+    last.add_argument("project", nargs="?", default=".", type=Path)
+
     commit = subs.add_parser(
         "commit",
         help="record current changes. You stay the author; python-vibe is co-author.",
@@ -280,6 +285,13 @@ def _run_mcp(args) -> int:
     )
 
 
+def _run_last(args) -> int:
+    from harness.observe.trace_record import render_last
+
+    print(render_last(args.project.expanduser().resolve()))
+    return 0
+
+
 def _run_commit(args) -> int:
     from harness.ship.git_ship import commit_changes
 
@@ -327,6 +339,11 @@ def _run_agent(args) -> int:
         print(json.dumps(result.as_dict(), indent=2))
     else:
         print(result.summary)
+        if args.command == "run" and not getattr(args, "no_record", False):
+            from harness.observe.trace_record import default_trace_path
+
+            dest = getattr(args, "record", None) or default_trace_path(args.project)
+            print(f"recorded {len(result.steps)} turns in {dest}", file=sys.stderr)
     return 0 if result.ok else 1
 
 
@@ -339,6 +356,7 @@ COMMANDS = {
     "route": _run_route,
     "serve": _run_serve,
     "mcp": _run_mcp,
+    "last": _run_last,
     "commit": _run_commit,
     "editors": _run_editors,
     "ask": _run_agent,

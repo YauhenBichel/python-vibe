@@ -52,6 +52,16 @@ class PickTargetTest(unittest.TestCase):
         self.assertEqual(target.module, "src/main.py")
         self.assertNotIn("path/to/", target.module)
 
+    def test_a_cli_app_task_names_pkg_not_weekday(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = pick_target(
+                Path(tmp),
+                "design and develop a small cli app for reviewing github PRs",
+            )
+        self.assertEqual(target.module, "pkg/pr_review.py")
+        self.assertEqual(target.test, "tests/test_pr_review.py")
+        self.assertEqual(target.symbol, "pr_review")
+
 
 class RetargetTest(unittest.TestCase):
     def test_fixture_path_is_repointed(self) -> None:

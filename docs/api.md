@@ -137,7 +137,7 @@ python-vibe                  # the four jobs
 python-vibe brief            # no model
 python-vibe ask  "what does compute_total return?"
 python-vibe run  "write tests for apply_discount"
-python-vibe run  "find the NameError and fix it" --dry-run --scope src
+python-vibe run  "write tests for apply_discount" --dry-run --scope src
 python-vibe serve --project .
 python-vibe editors cursor --allow-writes
 ```

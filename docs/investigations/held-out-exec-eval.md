@@ -17,7 +17,8 @@ not daily work. Repair is worth keeping. More style pairs are not.
 Cite this note:
 [Cite]({{ '/cite/' | relative_url }}).
 Related:
-[0.5B vibe review]({{ '/research-vibe-review/' | relative_url }})
+[0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }})
+· [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }})
 · [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }})
 · [Experiments]({{ '/investigations/experiments/' | relative_url }}).
 
@@ -43,7 +44,10 @@ The unit tests for the checkers all passed: every reference script scores,
 junk output fails. The failures below are the **model**, not the harness
 tests.
 
-LoRA variants were not run. `mlx-lm` was not installed.
+LoRA variants were not run on Ollama. The same-day MLX pair
+(four drafts, then greedy, with and without the step-100 LoRA) is
+[0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}).
+Engines differ, so the rates are directional, not a paired A/B.
 
 ## The score
 
@@ -108,4 +112,5 @@ Eleven of eighteen tasks never passed, even with a repair.
 
 Freeze the 0.5B adapters. Keep generate → run → one repair in the loop.
 Daily work stays an 8B. Do not add more handwritten style pairs to chase
-these eighteen scripts.
+these eighteen scripts. The MLX follow-up put a number on that: greedy
+LoRA scored 0 / 54. Four untuned drafts plus one repair scored 9 / 18.

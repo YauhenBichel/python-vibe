@@ -78,6 +78,9 @@ added def total_lines(prices) in src/orders.py. Tests passed.
 ```
 
 Replay: `asciinema play docs/media/live-demo.cast`.
+A same-day **daily** `run` (8B, logic bug, suite after the write):
+`docs/media/daily-run.gif`. Replay:
+`asciinema play docs/media/daily-run.cast`.
 Full page: [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
 
 ## Experiments

@@ -10,4 +10,5 @@ Path: pkg/__init__.py
 ```
 
 New code goes in `pkg/<noun>.py`, not `__init__.py` and not
-`scripts/`. One noun per module.
+`scripts/`. One noun per module. A CLI uses argparse. HTTP uses
+urllib. Token from the environment. No curl.

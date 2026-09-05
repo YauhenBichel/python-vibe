@@ -20,6 +20,7 @@ Code: [github.com/YauhenBichel/python-vibe](https://github.com/YauhenBichel/pyth
 <ol>
   <li><a href="#software">Software</a></li>
   <li><a href="#this-measurement">This measurement</a></li>
+  <li><a href="#sample-and-run">Sample-and-run</a></li>
   <li><a href="#bibtex">BibTeX</a></li>
 </ol>
 </nav>
@@ -41,6 +42,18 @@ Eighteen held-out scripts, three repeats, Ollama `qwen2.5-coder:0.5b`:
 The full table of laptop runs:
 [Experiments]({{ '/investigations/experiments/' | relative_url }}).
 
+## Sample-and-run
+
+Bichel, Y. (2026, September 5). 0.5B sample-and-run.
+In *python-vibe* experiments.
+<https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/>
+
+Same 18 scripts on MLX Qwen2.5-Coder-0.5B-Instruct-4bit. Four drafts
+at temperature 0.7: **6 / 18** base, **9 / 18** with one repair,
+**2 / 18** LoRA, **6 / 18** LoRA with repair. Greedy (temperature 0,
+three repeats): **2 / 18** unique tasks on base, **3 / 18** with
+repair, **0 / 54** LoRA.
+
 ## BibTeX
 
 ```bibtex
@@ -60,5 +73,15 @@ The full table of laptop runs:
   month = sep,
   day = {5},
   url = {https://yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/}
+}
+
+@misc{bichel_05b_sample_and_run_2026,
+  author = {Bichel, Yauhen},
+  title = {0.5{B} sample-and-run},
+  howpublished = {python-vibe experiments},
+  year = {2026},
+  month = sep,
+  day = {5},
+  url = {https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/}
 }
 ```

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from harness.observe.trace_record import append_turn, redact
+from harness.observe.trace_record import append_turn, default_trace_path, redact, render_last
 
 
 class TraceRecordTest(unittest.TestCase):
@@ -103,6 +103,22 @@ class TraceRecordTest(unittest.TestCase):
         for host in ("db.internal", "build.lan", "wiki.corp"):
             with self.subTest(host=host):
                 self.assertEqual(redact(host), "[host]")
+
+
+class LastTurnsTest(unittest.TestCase):
+    def test_no_file_says_so(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            text = render_last(Path(tmp))
+        self.assertIn("no traces", text)
+
+    def test_it_prints_the_latest_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = default_trace_path(Path(tmp))
+            append_turn(dest, {"user": "first", "assistant": "Action: read", "action": "read"})
+            append_turn(dest, {"user": "next", "assistant": "Action: done", "action": "done"})
+            text = render_last(Path(tmp))
+        self.assertIn("2 turns", text)
+        self.assertIn("done: Action: done", text)
 
 
 if __name__ == "__main__":
