@@ -80,9 +80,10 @@ and OpenCoder hit 180s. The same four then finished the daily clamp
 *text* (no helper prompt) in 22–40 s. The real first helper chat is
 about 1,700 tokens and finished in 12–39 s on those four. A clean
 cold first turn (unload, then that chat) was 17 s on the 8B, 54 s
-on DeepSeek, and 38 s on SWE-agent-LM. Daily clamp still timed out
-when a load returned no bytes. A reply is not a daily score.
-**Do not switch.**
+on DeepSeek, and 38 s on SWE-agent-LM. A later daily remasure did
+not evict `qwen2.5-coder:7b`; DeepSeek's first clamp generate then
+hit 180s and the 7B coder was still loaded. A reply is not a daily
+score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score
