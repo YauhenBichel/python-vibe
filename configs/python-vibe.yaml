@@ -1,4 +1,5 @@
 # QLoRA on Qwen2.5-Coder-0.5B (~400 MB 4-bit). Cloud-sized.
+# Adapters are frozen at step 100. Do not add pairs to chase the 18 eval tasks.
 model: mlx-community/Qwen2.5-Coder-0.5B-Instruct-4bit
 train: true
 fine_tune_type: lora

@@ -3,6 +3,7 @@
 
   PYTHONPATH=src python scripts/eval.py --variant all --repeats 3
   PYTHONPATH=src python scripts/eval.py --variant lora-repair --repeats 3 --task weekday
+  PYTHONPATH=src python scripts/eval.py --variant base --repeats 1 --samples 4 --temperature 0.7
 
 CI does not run this. Unit tests score the reference scripts only.
 """
@@ -19,14 +20,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.models import SPECS  # noqa: E402
-from harness.engines import any_mlx, make_mlx, make_ollama  # noqa: E402
+from harness.engines import any_mlx, make_hint, make_mlx, make_ollama  # noqa: E402
 from harness.eval_loop import Score, run_repeats  # noqa: E402
 from harness.eval_tasks import all_tasks  # noqa: E402
 
 VARIANTS = ("base", "base-repair", "lora", "lora-repair")
 
 
-def _load(engine: str, variant: str, max_tokens: int):
+def _load(
+    engine: str, variant: str, max_tokens: int, *, temperature: float, top_p: float
+):
     spec = SPECS["python-vibe"]
     adapters = variant.startswith("lora")
     if engine == "auto":
@@ -34,8 +37,18 @@ def _load(engine: str, variant: str, max_tokens: int):
     if adapters and engine != "mlx":
         sys.exit("LoRA variants need --engine mlx (Ollama serves the untuned base)")
     if engine == "mlx":
-        return make_mlx(spec, max_tokens, adapters=adapters)
-    return make_ollama(spec)
+        return make_mlx(
+            spec,
+            max_tokens,
+            adapters=adapters,
+            temperature=temperature,
+            top_p=top_p,
+        )
+    return make_ollama(
+        spec,
+        temperature=temperature,
+        top_p=top_p if temperature > 0 else None,
+    )
 
 
 def _summarize(rows: list[Score]) -> dict[str, object]:
@@ -47,6 +60,7 @@ def _summarize(rows: list[Score]) -> dict[str, object]:
             "n": len(scores),
             "passed": sum(1 for s in scores if s.passed),
             "repaired": sum(1 for s in scores if s.repaired),
+            "hits": [s.hit for s in scores],
             "reasons": [s.reason for s in scores],
         }
         for task_id, scores in by_task.items()
@@ -63,6 +77,24 @@ def main() -> None:
     parser.add_argument("--variant", choices=(*VARIANTS, "all"), default="all")
     parser.add_argument("--engine", choices=("auto", "mlx", "ollama"), default="auto")
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument(
+        "--samples",
+        type=int,
+        default=1,
+        help="independent drafts per task (pass@k). Keep the first that runs",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="0 is greedy. Use ~0.7 with --samples 4",
+    )
+    parser.add_argument("--top-p", type=float, default=0.8)
+    parser.add_argument(
+        "--hint-model",
+        default="",
+        help="Ollama model that writes a one-line repair hint (e.g. llama3.1:8b)",
+    )
     parser.add_argument("--max-tokens", type=int, default=700)
     parser.add_argument("--task", action="append", help="run only these task ids")
     parser.add_argument(
@@ -72,6 +104,16 @@ def main() -> None:
         help="JSONL of every Score plus a final summary object",
     )
     args = parser.parse_args()
+    if args.repeats < 1 or args.samples < 1:
+        sys.exit("--repeats and --samples must be >= 1")
+    if args.temperature < 0:
+        sys.exit("--temperature must be >= 0")
+    if args.samples > 1 and args.temperature <= 0:
+        print(
+            "warning: --samples > 1 with --temperature 0 is greedy; drafts may match",
+            file=sys.stderr,
+            flush=True,
+        )
 
     wanted = set(args.task or [])
     tasks = [t for t in all_tasks() if not wanted or t.id in wanted]
@@ -87,23 +129,59 @@ def main() -> None:
             print(f"skipping {', '.join(skipped)} (need MLX)", flush=True)
         if not variants:
             sys.exit("LoRA variants need --engine mlx (Ollama serves the untuned base)")
+    hint = None
+    if args.hint_model.strip():
+        hint = make_hint(args.hint_model.strip())
+        if hint is None:
+            print(f"warning: hint model {args.hint_model} is down; raw traceback", file=sys.stderr)
+        else:
+            print(f"hint {args.hint_model}", flush=True)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     summaries = []
     with args.out.open("w", encoding="utf-8") as fh:
         for variant in variants:
-            label, generate = _load(args.engine, variant, args.max_tokens)
-            print(f"variant {variant} engine {label} tasks {len(tasks)} x{args.repeats}", flush=True)
+            label, generate = _load(
+                args.engine,
+                variant,
+                args.max_tokens,
+                temperature=args.temperature,
+                top_p=args.top_p,
+            )
+            print(
+                f"variant {variant} engine {label} temp {args.temperature:g} "
+                f"samples {args.samples} tasks {len(tasks)} x{args.repeats}",
+                flush=True,
+            )
             rows = []
+            repair = variant.endswith("repair")
             for row in run_repeats(
-                tasks, generate, repair=variant.endswith("repair"), repeats=args.repeats
+                tasks,
+                generate,
+                repair=repair,
+                repeats=args.repeats,
+                samples=args.samples,
+                hint=hint if repair else None,
             ):
                 rows.append(row)
-                rec = {**row.__dict__, "variant": variant, "engine": label}
+                rec = {
+                    **row.__dict__,
+                    "variant": variant,
+                    "engine": label,
+                    "temperature": args.temperature,
+                }
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 fh.flush()
                 mark = "ok" if row.passed else "fail"
-                print(f"  {mark:4} {row.task_id:14} {row.reason}", flush=True)
-            summary = {"variant": variant, "engine": label, **_summarize(rows)}
+                extra = f" @{row.hit or row.samples}" if row.samples > 1 else ""
+                print(f"  {mark:4} {row.task_id:14} {row.reason}{extra}", flush=True)
+            summary = {
+                "variant": variant,
+                "engine": label,
+                "temperature": args.temperature,
+                "samples": args.samples,
+                "repeats": args.repeats,
+                **_summarize(rows),
+            }
             summaries.append(summary)
             fh.write(json.dumps({"summary": True, **summary}, ensure_ascii=False) + "\n")
             print(

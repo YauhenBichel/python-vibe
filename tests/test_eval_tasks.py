@@ -42,15 +42,81 @@ class EvalTasksTest(unittest.TestCase):
 
     def test_generate_then_repair(self) -> None:
         task = next(t for t in all_tasks() if t.id == "clamp")
+        seen: list[str] = []
         drafts = iter(
             [
                 "```python\nprint('nope')\n```",
                 "```python\n" + task.reference + "\n```",
             ]
         )
-        score = score_generate(task, lambda _prompt: next(drafts), repair=True)
+
+        def generate(prompt: str) -> str:
+            seen.append(prompt)
+            return next(drafts)
+
+        score = score_generate(task, generate, repair=True)
         self.assertTrue(score.passed)
         self.assertTrue(score.repaired)
+        self.assertEqual(score.samples, 1)
+        self.assertEqual(score.hit, 1)
+        self.assertTrue(
+            any("stdout is wrong" in prompt for prompt in seen),
+            seen,
+        )
+
+    def test_pass_at_k_keeps_first_hit(self) -> None:
+        task = next(t for t in all_tasks() if t.id == "clamp")
+        n = {"calls": 0}
+
+        def generate(_prompt: str) -> str:
+            n["calls"] += 1
+            if n["calls"] < 3:
+                return "```python\nprint('nope')\n```"
+            return "```python\n" + task.reference + "\n```"
+
+        score = score_generate(task, generate, samples=4)
+        self.assertTrue(score.passed)
+        self.assertEqual(score.hit, 3)
+        self.assertEqual(score.samples, 3)
+        self.assertEqual(n["calls"], 3)
+
+    def test_pass_at_k_all_miss(self) -> None:
+        task = next(t for t in all_tasks() if t.id == "clamp")
+        n = {"calls": 0}
+
+        def generate(_prompt: str) -> str:
+            n["calls"] += 1
+            return "```python\nprint('nope')\n```"
+
+        score = score_generate(task, generate, samples=2)
+        self.assertFalse(score.passed)
+        self.assertEqual(score.hit, 0)
+        self.assertEqual(score.samples, 2)
+        self.assertEqual(n["calls"], 2)
+
+    def test_missing_sys_import_is_fixed(self) -> None:
+        task = Task(
+            id="argv",
+            prompt="print argv",
+            reference="import sys\nprint(sys.argv[1])\n",
+            argv=("hi",),
+            expect_stdout="hi\n",
+        )
+        score = score_source(task, "print(sys.argv[1])\n")
+        self.assertTrue(score.passed, score.stderr)
+
+    def test_repair_skips_traceback_draft(self) -> None:
+        task = next(t for t in all_tasks() if t.id == "clamp")
+        drafts = iter(
+            [
+                "```python\nprint('nope')\n```",
+                "```python\nTypeError: can only join an iterable\n```",
+            ]
+        )
+        score = score_generate(task, lambda _prompt: next(drafts), repair=True)
+        self.assertFalse(score.passed)
+        self.assertTrue(score.repaired)
+        self.assertEqual(score.reason, "no python block")
 
 
 if __name__ == "__main__":

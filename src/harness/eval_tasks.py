@@ -27,6 +27,7 @@ RUN_PREFIX = (
 REPAIR_PREFIX = (
     "The script failed when I ran it. Fix it.\n"
     "Reply with one complete fenced python block.\n"
+    "Do not paste the traceback. Write the fixed script only.\n"
 )
 
 

@@ -5,6 +5,7 @@ __pycache__/
 data/_card_test/
 adapters/
 fused/
+scratch/
 *.safetensors
 .mlx_cache/
 wandb/
