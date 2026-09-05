@@ -16,7 +16,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 
-from harness.act.autofix import apply_cover_test, apply_person_bind, unbound_typo
+from harness.act.autofix import (
+    apply_cli_mock_test,
+    apply_cover_test,
+    apply_person_bind,
+    unbound_typo,
+)
 from harness.act.parse import parse_turn_smart
 from harness.act.tools import run_python
 from harness.scan.names import undefined_in_file
@@ -39,6 +44,7 @@ from harness.observe.trace_record import append_turn, default_trace_path
 from harness.scan.design import render_design_review
 from harness.task import (
     looks_like_add_feature,
+    looks_like_app_loop,
     looks_like_bugfix,
     looks_like_design_loop,
     looks_like_question,
@@ -544,6 +550,8 @@ def _nudge_after_action(project, state: LoopState, turn, result: str, target):
 
 def _cover_after_add(project, task: str, path: str) -> str:
     """Add the AAA test once the new function exists. Empty if not this job."""
+    if looks_like_app_loop(task):
+        return apply_cli_mock_test(project, task, write=True)
     if not looks_like_add_feature(task):
         return ""
     if "test" in (path or "").replace("\\", "/").lower():

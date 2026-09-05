@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from harness.act.autofix.scaffold import apply_package_scaffold
+from harness.act.autofix.scaffold import apply_cli_mock_test, apply_package_scaffold
 from harness.agent.policy import (
     LoopState,
     next_prompt,
@@ -218,3 +218,39 @@ class AppLoopTest(unittest.TestCase):
             got = next_prompt(state, _Turn("run"), "exit 0\n.")
         self.assertIn("done", got.lower())
         self.assertIn("list and show", got.lower())
+
+    def test_mechanical_mock_test_is_green(self) -> None:
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import json\n"
+                "import os\n"
+                "import urllib.request\n"
+                "\n"
+                "def list_pulls(owner, repository):\n"
+                "    token = os.environ['GITHUB_TOKEN']\n"
+                "    req = urllib.request.Request('https://example')\n"
+                "    req.add_header('authorization', token)\n"
+                "    with urllib.request.urlopen(req) as response:\n"
+                "        return json.loads(response.read().decode())\n"
+                "def show_pull(owner, repository, number):\n"
+                "    return {}\n",
+                encoding="utf-8",
+            )
+            note = apply_cli_mock_test(root, CLI)
+            self.assertIn("tests/test_pr_review.py", note)
+            dest = root / "tests" / "test_pr_review.py"
+            self.assertIn("GITHUB_TOKEN", dest.read_text(encoding="utf-8"))
+            self.assertEqual(apply_cli_mock_test(root, CLI), "")
+            ran = subprocess.run(
+                [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                env={**os.environ, "PYTHONPATH": str(root)},
+            )
+        self.assertEqual(ran.returncode, 0, ran.stderr + ran.stdout)

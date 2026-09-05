@@ -59,6 +59,14 @@ reprints this list.
 
 On a large project: `python-vibe run --scope src "write tests for apply_discount"`.
 
+A GitHub PR-review CLI from one prompt aims at `list` and `show` on the
+first `run`. Comment, pagination, and a config file are a later command,
+not a higher `--steps`:
+
+```bash
+python-vibe run "add the comment subcommand and a mocked test"
+```
+
 To try a change without writing: add `--dry-run`.
 
 What those four commands did on one laptop:
