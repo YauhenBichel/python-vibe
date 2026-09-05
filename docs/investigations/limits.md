@@ -1,13 +1,13 @@
 ---
 title: What the harness cannot fix
-description: Five measurements from one week. A refusal calibrated 0 for 5, a pointer the model ignored 3 times out of 3, platform work at three of four on stock weights, a fine-tune that scored 0 of 4, and a week of real work that produced no training data at all.
+description: Six measurements from one week. A refusal calibrated 0 for 5, a pointer the model ignored 3 times out of 3, platform work at three of four on stock weights, a fine-tune that scored 0 of 4, a week of real work that produced no training data at all, and an excerpt that cut out the very lines the task named.
 permalink: /investigations/limits/
 date: 2026-09-04
 type: article
 ---
 
 Most of the work on this harness has been finding gaps a refusal or an
-oracle can close, and most of them can be closed. These five could not,
+oracle can close, and most of them can be closed. These six could not,
 and each says something different about where the line is.
 
 ## A refusal that was right and useless
@@ -138,9 +138,47 @@ believe a gap only if it is bigger than four cases.
 Until then, the honest position is the one the other three measurements
 above point at. The weights have not been the constraint.
 
+
+## A model failure that was not one
+
+Issue #159 recorded a run asked to add one field to a dict in a long
+file. It drafted a `Find:` line that is not in that file at all, was
+refused, and sent the same line again. Every failing run of that task
+went from `grep` straight to `patch`, so the reading was that the model
+guessed instead of looking.
+
+The harness had looked. It located the file and put it in the opening
+turn. But the file is 13,476 characters and too long to send whole, so
+it went as its first 3,500 and its last 800, middle dropped:
+
+```
+is the whole file in the preamble?          True
+is the dict the task means in the preamble? False
+```
+
+The model was asked to match a line it had never been shown. It was not
+guessing out of laziness; it was guessing because the part it needed was
+the part that had been cut.
+
+The excerpt is centred on the task's subject now — the longest dotted
+name in it, because `result.stopped` says where in a file the work is
+while `scripts/bench.py` only says which file. A test proves the dict
+arrives.
+
+**And the outcome did not move.** Five runs each side of a task of the
+same shape landed it nought times out of five. The defect was real, the
+fix is real, and the run still does not finish the job.
+
+The first attempt to measure this was worthless, which is worth saying.
+It asked for a field an earlier change had already added, so the check
+was true before any run and both sides scored four out of four. Eight
+runs measuring nothing, caught only because a task recorded as failing
+had suddenly become perfect.
+
 ## What these have in common
 
-Four of the five are cases where the harness knew something and it
+Five of the six are cases where the harness knew something, or was
+fixed so that it knew something, and it
 made no difference — a refusal nobody needed, a pointer nobody used,
 weights that were not the constraint. The fourth is the one that
 worked, and it worked by checking rather than by knowing: install the

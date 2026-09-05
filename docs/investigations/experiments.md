@@ -295,8 +295,9 @@ did.
 | Platform work on stock `llama3.1:8b` | **6 of 8** over two passes, no new weights |
 | This project's own fine-tune | **0 of 4** held-out, worse than its base model |
 | Training data collected in a week of real work | **0 rows** — recording was behind a flag |
+| Centring a long file's excerpt on the task's subject | Defect real and fixed; **0 of 5 either side** |
 
-Three of the four are cases where the harness knew something and it made
+Five of the six are cases where the harness knew something and it made
 no difference. The one that worked, worked by running something: a
 dependency's major bump was cleared by installing the version and
 calling every function the project uses against it.
