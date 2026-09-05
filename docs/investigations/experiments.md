@@ -221,8 +221,22 @@ word ok.` Cap 180s. No daily job.
 The 8B, the 7B coder, DeepSeek, and SWE-agent-LM answer. StarCoder2,
 CodeLlama, and OpenCoder do not finish even this prompt inside the
 cap that daily `run` uses. DeepSeek and SWE-agent-LM still timed out
-on daily clamp — a one-word reply is not a score. That is not a
-nine-cell table. **Do not switch.** Default stays `llama3.1:8b`.
+on daily clamp — a one-word reply is not a score.
+
+**Bare clamp prompt, same night.** The daily task text only. No
+harness system prompt. Cap 180s. No file write.
+
+| Model | Tokens | Wall |
+| --- | --- | --- |
+| `llama3.1:8b` | 384 | **22.3 s** |
+| `qwen2.5-coder:7b` | 565 | **35.5 s** |
+| `deepseek-coder:6.7b` | 281 | **24.0 s** |
+| `swe-agent-lm:7b` | 450 | **39.6 s** |
+
+Those four finish a short clamp ask. Daily clamp still timed out.
+The wall is the helper prompt, not a hung generate on this text.
+That is not a nine-cell table. **Do not switch.** Default stays
+`llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
@@ -597,10 +611,12 @@ python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 **Result.** Both tags are on disk. A one-word generate hit 180s on
-OpenCoder and finished in 19.6 s on SWE-agent-LM. Clamp timed out on
-both (write-tests 3 / 3 is the compiler bind, no model). That is not
-a score. Default stays `llama3.1:8b`. Other 7B–8B weights that fit
-this laptop, and the ones that do not, are listed on
+OpenCoder and finished in 19.6 s on SWE-agent-LM. The daily clamp
+*text* (no helper) finished in 40 s on SWE-agent-LM. Daily clamp
+timed out on both (write-tests 3 / 3 is the compiler bind, no
+model). That is not a score. Default stays `llama3.1:8b`. Other
+7B–8B weights that fit this laptop, and the ones that do not, are
+listed on
 [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
