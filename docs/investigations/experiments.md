@@ -277,6 +277,23 @@ No model. Seeded list+show+comment tree.
 python-vibe run "add pagination to the GitHub PR CLI"
 ```
 
+Same evening, config from a list+show+comment+`page=` tree. Typed:
+`add a config file via Path.home`. Twelve steps × 3.
+
+| Repeat | Config gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | open | steps | none |
+| 2 | open | steps | none |
+| 3 | open | steps | none |
+
+**0 / 3** closed config. The tree already looked finished, so the 8B
+wrote nothing — the pagination 0/3 shape. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_overflow_config.py`.
+
+```bash
+python-vibe run "add a config file via Path.home"
+```
+
 Everyday-ready is still the older bar.
 
 ## Everyday-ready bar
