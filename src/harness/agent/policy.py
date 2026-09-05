@@ -27,6 +27,7 @@ from harness.paths import as_project_rel
 from harness.locate import (
     refuse_app_ask,
     refuse_app_tests_first,
+    refuse_app_wrong_path,
     refuse_design_dirty,
     refuse_early_done,
     refuse_invented_review,
@@ -337,6 +338,7 @@ def _tool_refusals(state: LoopState, turn) -> str:
         lambda: refuse_write_tests_ask(state.task, turn.action),
         lambda: refuse_app_ask(state.task, turn.action),
         lambda: refuse_app_tests_first(state.task, state.project, turn.action, path),
+        lambda: refuse_app_wrong_path(state.task, turn.action, path),
         lambda: refuse_patch_before_reading(state, turn),
         lambda: refuse_new_path_before_existing(state, turn),
         lambda: refuse_wrong_file(state.task, state.project, turn.action, path),

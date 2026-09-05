@@ -438,6 +438,27 @@ def refuse_app_tests_first(task: str, project: Path | None, action: str, path: s
     return ""
 
 
+def refuse_app_wrong_path(task: str, action: str, path: str) -> str:
+    """Live 8B wrote pkg/pull_viewer.py and pkg.py after the hint named pr_review."""
+    from harness.task import looks_like_app_loop, package_noun
+
+    if not looks_like_app_loop(task) or action not in {"edit", "patch"}:
+        return ""
+    rel = (path or "").replace("\\", "/").lstrip("./")
+    if not rel:
+        return ""
+    noun = package_noun(task)
+    allowed = (
+        "pkg/__init__.py",
+        f"pkg/{noun}.py",
+        f"tests/test_{noun}.py",
+        "pkg/config.py",
+    )
+    if rel in allowed:
+        return ""
+    return f"The module is pkg/{noun}.py. Action: edit Path: pkg/{noun}.py"
+
+
 def refuse_write_tests_ask(task: str, action: str) -> str:
     """Cover-test jobs name the symbol. Asking where tests live wastes the step."""
     if action != "ask" or not looks_like_write_tests(task):

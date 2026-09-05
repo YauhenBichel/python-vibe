@@ -37,6 +37,7 @@ GitHub thread:
   <li><a href="#exact-stdout-on-the-05b">Exact stdout on the 0.5B</a></li>
   <li><a href="#sample-four-drafts-then-greedy">Sample four drafts, then greedy</a></li>
   <li><a href="#8b-daily-jobs">8B daily jobs</a></li>
+  <li><a href="#8b-greenfield-cli">8B greenfield CLI</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
   <li><a href="#which-small-open-model">Which small open model</a></li>
   <li><a href="#train-more-or-not">Train more, or not</a></li>
@@ -129,6 +130,37 @@ a green suite. Replay one of the wins:
 Everyday-ready is still the older bar: beat a clean 8B on parse **and**
 a real ≥1 KB fix. This table is the daily loop on small fixtures, not
 that bar.
+
+## 8B greenfield CLI
+
+**Example.** 5 September 2026. Ollama `llama3.1:8b`. Empty folder. Task:
+`design and develop a small cli app for reviewing github PRs`. Three
+repeats after the harness started scaffolding `pkg/` and refusing
+locate / ask. Twelve steps, same budget as the daily jobs.
+
+| Repeat | list + show + mocks | Stopped | What it wrote |
+| --- | --- | --- | --- |
+| 1 | yes | steps | `pkg/pr_review.py`, `pkg.py`, tests |
+| 2 | yes | steps | `pkg/pr_review.py`, tests |
+| 3 | no (`show`, `mocked_tests`) | steps | `pkg/pr_review.py`, `pkg/pull_viewer.py` |
+
+**2 / 3** had list, show, urllib, and mocked tests on disk. **0 / 3**
+said `done`. The miss spent the budget on a second module.
+
+Later the same day, after #206 (refuse locate until list and show
+exist), the same script, same model, same twelve-step budget:
+
+| Repeat | list + show + mocks | Stopped | What it wrote |
+| --- | --- | --- | --- |
+| 1 | yes | steps | `pkg/pr_review.py`, tests |
+| 2 | yes | steps | `pkg/pr_review.py`, tests |
+| 3 | yes | steps | `pkg/pr_review.py`, tests |
+
+**3 / 3** on the checklist. **0 / 3** said `done`. Every run hit the
+step cap with the files already on disk. Replay:
+`python scripts/measure/eval_cli_app.py`.
+
+Finish is still the gap. Everyday-ready is still the older bar.
 
 ## Four jobs, as typed
 
