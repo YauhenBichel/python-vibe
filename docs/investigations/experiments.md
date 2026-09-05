@@ -261,7 +261,14 @@ then the same first clamp chat. Cap 180s.
 | `swe-agent-lm:7b` | 28.2 s (empty) | **37.9 s** |
 
 A clean cold first turn is well under 180s. Daily clamp still timed
-out when a load returned no bytes. That is not a nine-cell table.
+out when a load returned no bytes.
+
+**Clean daily remasure, same night.** `keep_alive` 0 did not evict
+`qwen2.5-coder:7b`. Then `eval_daily.py --model deepseek-coder:6.7b`:
+write-tests 3 / 3 (compiler), first clamp generate 180s timeout.
+After the timeout, `qwen2.5-coder:7b` was still the loaded tag.
+DeepSeek never sat in memory. That swap is the 180s miss — the same
+first chat is 54 s from empty VRAM. Not a nine-cell table.
 **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
