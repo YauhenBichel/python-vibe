@@ -367,6 +367,22 @@ def refuse_redundant_locate(
 ) -> str:
     if action != "locate":
         return ""
+    from harness.task import looks_like_app_overflow
+
+    if looks_like_app_overflow(task):
+        from harness.scan.app_spec import next_overflow_action
+        from harness.task import package_noun
+
+        noun = package_noun(task)
+        line = (
+            next_overflow_action(project, task)
+            if project is not None
+            else (
+                f"Next Action must be edit Path: pkg/{noun}.py "
+                "with argparse subcommand comment.\n"
+            )
+        )
+        return "already located. " + line.strip()
     if looks_like_new_package(task):
         from harness.task import looks_like_app_loop, package_noun
 
@@ -409,7 +425,17 @@ def refuse_app_ask(task: str, action: str) -> str:
     """A greenfield CLI is not a clarifying question. Live 8B asked and stopped."""
     from harness.task import looks_like_app_loop, package_noun
 
-    if action != "ask" or not looks_like_app_loop(task):
+    if action != "ask":
+        return ""
+    from harness.task import looks_like_app_overflow
+
+    if looks_like_app_overflow(task):
+        noun = package_noun(task)
+        return (
+            f"Do not ask. Action: edit Path: pkg/{noun}.py with argparse "
+            "subcommand comment."
+        )
+    if not looks_like_app_loop(task):
         return ""
     noun = package_noun(task)
     return (
@@ -440,9 +466,11 @@ def refuse_app_tests_first(task: str, project: Path | None, action: str, path: s
 
 def refuse_app_wrong_path(task: str, action: str, path: str) -> str:
     """Live 8B wrote pkg/pull_viewer.py and pkg.py after the hint named pr_review."""
-    from harness.task import looks_like_app_loop, package_noun
+    from harness.task import looks_like_app_loop, looks_like_app_overflow, package_noun
 
-    if not looks_like_app_loop(task) or action not in {"edit", "patch"}:
+    if action not in {"edit", "patch"}:
+        return ""
+    if not looks_like_app_loop(task) and not looks_like_app_overflow(task):
         return ""
     rel = (path or "").replace("\\", "/").lstrip("./")
     if not rel:

@@ -180,6 +180,18 @@ def looks_like_app_loop(task: str) -> bool:
     return looks_like_new_package(task) and mentions_cli(task) and mentions_http(task)
 
 
+def looks_like_app_overflow(task: str) -> bool:
+    """A later typed run for comment / pagination / config. Not a new package."""
+    if looks_like_question(task) or looks_like_new_package(task):
+        return False
+    text = task.strip().lower()
+    if re.search(r"\bcomment\b", text) and re.search(
+        r"\b(subcommand|argparse|mocked)\b", text
+    ):
+        return True
+    return bool(re.search(r"\b(pagination|config file|path\.home)\b", text))
+
+
 def mentions_cli(task: str) -> bool:
     """True when the task names a CLI, even if it is also a new package."""
     return bool(_SCRIPT.search(_without_paths(task)))
@@ -207,7 +219,7 @@ def package_noun(task: str) -> str:
     for name in _SNAKE_NAME.findall(text):
         if name not in _PACKAGE_NOUN_SKIP:
             return name
-    if _GITHUB_PR_APP.search(text):
+    if _GITHUB_PR_APP.search(text) or looks_like_app_overflow(task):
         return "pr_review"
     purpose = re.search(r"\bfor\s+(.+)$", text)
     if purpose:

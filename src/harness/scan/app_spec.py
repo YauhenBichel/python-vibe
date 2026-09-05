@@ -202,6 +202,28 @@ def overflow_gaps(project: Path, task: str) -> list[Gap]:
     return [gap for gap in app_gaps(project, task) if gap.key in OVERFLOW_KEYS]
 
 
+def requested_overflow(task: str) -> tuple[str, ...]:
+    """Which overflow keys this typed run asked for. Empty means all of them."""
+    text = (task or "").lower()
+    keys: list[str] = []
+    if "comment" in text:
+        keys.append("comment")
+    if "pagination" in text or re.search(r"\bpage=", text):
+        keys.append("pagination")
+    if "config" in text or "path.home" in text:
+        keys.append("config")
+    return tuple(keys)
+
+
+def next_overflow_action(project: Path, task: str) -> str:
+    """The next overflow Action this run asked for, or empty when that piece exists."""
+    wanted = set(requested_overflow(task)) or set(OVERFLOW_KEYS)
+    for gap in overflow_gaps(project, task):
+        if gap.key in wanted:
+            return gap.next_action + "\n"
+    return ""
+
+
 def render_app_review(project: Path, task: str) -> str:
     gaps = required_gaps(project, task)
     extra = overflow_gaps(project, task)

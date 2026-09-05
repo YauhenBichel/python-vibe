@@ -25,6 +25,7 @@ from harness.task import (
     looks_like_fix_smell,
     looks_like_write_tests,
     looks_like_app_loop,
+    looks_like_app_overflow,
     looks_like_new_package,
     looks_like_refactor,
     question_symbol,
@@ -184,10 +185,18 @@ def refuse_package_done(task: str, ran_tests: bool, wrote: bool = True) -> str:
 
 def refuse_app_done(task: str, project: Path) -> str:
     """Refuse done while list/show/http/mocked tests are still missing."""
+    from harness.scan.app_spec import (
+        next_app_action,
+        next_overflow_action,
+        render_app_review,
+        required_gaps,
+    )
+
+    if looks_like_app_overflow(task):
+        leftover = next_overflow_action(project, task)
+        return ("not done. " + leftover.strip()) if leftover else ""
     if not looks_like_app_loop(task):
         return ""
-    from harness.scan.app_spec import next_app_action, render_app_review, required_gaps
-
     if required_gaps(project, task):
         return (
             "not done. "

@@ -66,6 +66,7 @@ from harness.task import (
     covered_symbol,
     looks_like_merge,
     looks_like_app_loop,
+    looks_like_app_overflow,
     looks_like_new_package,
     looks_like_question,
     looks_like_ship,
@@ -630,7 +631,7 @@ def should_run_suite_after_write(state: LoopState, result: str, path: str) -> bo
     """Daily write: run the suite when tests already cover the work."""
     if looks_like_design_loop(state.task) or looks_like_fix_smell(state.task):
         return False
-    if looks_like_app_loop(state.task):
+    if looks_like_app_loop(state.task) or looks_like_app_overflow(state.task):
         return _app_ready_to_run(state, result)
     if not result.startswith(("patched", "wrote")):
         return False
@@ -700,6 +701,13 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
         leftover = refuse_done_oracle(state.task, state.project, state.last_path)
         if leftover:
             return leftover + "\n"
+        if looks_like_app_overflow(state.task):
+            from harness.scan.app_spec import next_overflow_action
+
+            leftover = next_overflow_action(state.project, state.task)
+            if leftover:
+                return leftover
+            return "Tests passed. Action: done Summary: say what you changed.\n"
         if looks_like_app_loop(state.task):
             from harness.scan.app_spec import next_app_action, overflow_gaps
 
@@ -724,6 +732,11 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
                 f"Next Action must be patch Path: {rel} Find: {leftover[0]} "
                 "Replace: the name you assigned.\n"
             )
+    if looks_like_app_overflow(state.task) and wrote:
+        from harness.scan.app_spec import next_overflow_action
+
+        leftover = next_overflow_action(state.project, state.task)
+        return leftover or RUN_SUITE
     if looks_like_app_loop(state.task) and wrote:
         from harness.scan.app_spec import http_test_nudge, next_app_action
 
