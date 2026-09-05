@@ -19,6 +19,7 @@ approves; it only fails to object.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 # The bot writes two shapes, and reading only one of them missed a
 # major bump entirely. Actions get "bump x from 7 to 9"; Python
@@ -100,8 +101,20 @@ def _check_state(pull: dict) -> tuple[list[str], list[str]]:
     return sorted(set(failing)), sorted(set(unfinished))
 
 
-def refuse_bot_merge(pull: dict) -> str:
-    """Why this pull request needs a person. "" when nothing objects."""
+def refuse_bot_merge(pull: dict, project: Path | None = None) -> str:
+    """Why this pull request needs a person. "" when nothing objects.
+
+    `project` lets a major bump be answered rather than only refused.
+    Refusing every one of them scored nought for five here: five action
+    bumps were merged, every workflow stayed green, and the rule caught
+    nothing. A refusal nobody needs is a refusal that gets switched off.
+
+    What the pull request's own checks prove is that the workflows they
+    ran still work. If every workflow using the bumped action ran green
+    here, the thing that would break has already been exercised. If some
+    did not — `Pages` is skipped on a pull request, `Celebrate merge`
+    only runs on merge — then nothing was proved and a person reads it.
+    """
     failing, unfinished = _check_state(pull)
     if failing:
         return f"checks are failing: {', '.join(failing)}"
@@ -116,10 +129,19 @@ def refuse_bot_merge(pull: dict) -> str:
     bump = bump_in(str(pull.get("title") or ""))
     if bump and is_a_major_bump(bump[1], bump[2]):
         what, was, now = bump
+        unproven = (
+            unproven_workflows(project, pull, what) if project is not None else None
+        )
+        if unproven == []:
+            # Every workflow that uses it ran green on this very pull
+            # request. There is nothing left for a person to check.
+            return ""
+        where = f" It is used by {', '.join(unproven)}, which this pull " \
+                "request did not run." if unproven else ""
         return (
             f"{what} {was} to {now} is a major version bump. That is where "
             "breaking changes are allowed to live, and the title never "
-            "says so. Read the release notes and merge it by hand."
+            f"says so.{where} Read the release notes and merge it by hand."
         )
     state = (pull.get("mergeStateStatus") or "").upper()
     if state in {"BLOCKED", "DIRTY", "BEHIND", "DRAFT"}:
@@ -130,3 +152,70 @@ def refuse_bot_merge(pull: dict) -> str:
     if mergeable in {"", "UNKNOWN"} or state in {"", "UNKNOWN"}:
         return "GitHub has not worked out yet whether this merges; ask again"
     return ""
+
+
+# Where a repository keeps the workflows a bumped action might appear in.
+WORKFLOW_DIR = Path(".github/workflows")
+_WORKFLOW_NAME = re.compile(r"^name:\s*(.+?)\s*$", re.M)
+
+
+def workflows_using(project: Path, action: str) -> dict[str, str]:
+    """{workflow name: file name} for every workflow naming this action.
+
+    An action is bumped by its repository path, `actions/checkout`, and
+    that is exactly the string a workflow writes in its `uses:` line.
+    """
+    found: dict[str, str] = {}
+    root = Path(project) / WORKFLOW_DIR
+    if not root.is_dir():
+        return found
+    for path in sorted(root.glob("*.y*ml")):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if action not in text:
+            continue
+        named = _WORKFLOW_NAME.search(text)
+        found[named.group(1) if named else path.stem] = path.name
+    return found
+
+
+def workflows_that_passed(pull: dict) -> set[str]:
+    """Workflows this pull request actually ran green.
+
+    A check that was skipped or cancelled proves nothing about the
+    workflow it belongs to, which is the whole point: `Pages / build`
+    comes back SKIPPED on a pull request, so a green run says nothing
+    about whether the page still deploys.
+    """
+    passed: set[str] = set()
+    failed: set[str] = set()
+    for check in latest_of_each(pull):
+        name = str(check.get("workflowName") or "")
+        if not name:
+            continue
+        if (check.get("conclusion") or "").upper() == "SUCCESS":
+            passed.add(name)
+        else:
+            failed.add(name)
+    return passed - failed
+
+
+def unproven_workflows(project: Path, pull: dict, action: str) -> list[str] | None:
+    """Workflows using this action that the pull request did not exercise.
+
+    Empty means every workflow touching the action ran green here, so
+    the bump is already tested by the thing that would break.
+
+    **None means no workflow uses it at all**, which is not the same
+    thing and must not be read as one. A Python dependency appears in no
+    workflow, so an empty list would have waved through every
+    `huggingface-hub 0 to 1` on the grounds that nothing it touches
+    failed — when nothing it touches was looked at.
+    """
+    using = workflows_using(project, action)
+    if not using:
+        return None
+    green = workflows_that_passed(pull)
+    return sorted(name for name in using if name not in green)

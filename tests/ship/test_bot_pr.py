@@ -1,6 +1,7 @@
 """Judging a bot's pull request. No network, no live repository."""
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -216,6 +217,96 @@ class OnlyTheLatestRunOfACheckCountsTest(unittest.TestCase):
     def test_a_skipped_check_is_not_a_failure(self) -> None:
         rollup = [{"name": "celebrate", "conclusion": "SKIPPED"}]
         self.assertEqual(refuse_bot_merge(pull(statusCheckRollup=rollup)), "")
+
+
+
+class EvidenceCanAnswerABumpTest(unittest.TestCase):
+    """Refusing every major bump scored nought for five on real ones.
+
+    Five action bumps were merged here, every workflow stayed green, and
+    the rule caught nothing. A refusal nobody needs is a refusal that
+    gets switched off, so a bump the pull request's own checks have
+    already exercised is no longer refused.
+    """
+
+    GREEN = [
+        {"workflowName": "CI", "name": "ubuntu", "conclusion": "SUCCESS"},
+        {"workflowName": "Pages", "name": "build", "conclusion": "SKIPPED"},
+        {"workflowName": "Celebrate merge", "name": "go", "conclusion": "SUCCESS"},
+    ]
+
+    def _repo(self, tmp: str) -> Path:
+        root = Path(tmp)
+        flows = root / ".github" / "workflows"
+        flows.mkdir(parents=True)
+        (flows / "ci.yml").write_text(
+            "name: CI\njobs:\n  t:\n    steps:\n"
+            "      - uses: actions/checkout@v6\n",
+            encoding="utf-8",
+        )
+        (flows / "pages.yml").write_text(
+            "name: Pages\njobs:\n  b:\n    steps:\n"
+            "      - uses: actions/deploy-pages@v4\n",
+            encoding="utf-8",
+        )
+        return root
+
+    def _verdict(self, root: Path, title: str) -> str:
+        return refuse_bot_merge(
+            pull(title, statusCheckRollup=self.GREEN), root
+        )
+
+    def test_a_bump_every_workflow_using_it_ran_green_is_allowed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self.assertEqual(
+                self._verdict(root, "bump actions/checkout from 6 to 7"), ""
+            )
+
+    def test_a_bump_only_a_skipped_workflow_uses_is_refused(self) -> None:
+        """`Pages` is skipped on a pull request, so it proves nothing."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            refused = self._verdict(root, "bump actions/deploy-pages from 4 to 5")
+            self.assertIn("major version bump", refused)
+            self.assertIn("used by Pages", refused)
+
+    def test_no_workflow_using_it_is_not_the_same_as_proof(self) -> None:
+        """A Python dependency appears in no workflow at all.
+
+        An empty list of unexercised workflows would have waved every
+        such bump through, on the grounds that nothing it touches
+        failed — when nothing it touches was looked at.
+        """
+        from harness.ship.bot_pr import unproven_workflows
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self.assertIsNone(
+                unproven_workflows(root, pull(statusCheckRollup=self.GREEN),
+                                   "huggingface-hub")
+            )
+            refused = self._verdict(
+                root,
+                "update huggingface-hub requirement from >=0.26.0 to >=1.29.0",
+            )
+            self.assertIn("major version bump", refused)
+
+    def test_without_a_project_nothing_can_be_answered(self) -> None:
+        """The old behaviour, for a caller that has no tree to look at."""
+        refused = refuse_bot_merge(
+            pull("bump actions/checkout from 6 to 7", statusCheckRollup=self.GREEN)
+        )
+        self.assertIn("major version bump", refused)
+
+    def test_a_failing_run_of_a_workflow_does_not_count_as_green(self) -> None:
+        rollup = [
+            {"workflowName": "CI", "name": "a", "conclusion": "SUCCESS"},
+            {"workflowName": "CI", "name": "b", "conclusion": "FAILURE"},
+        ]
+        from harness.ship.bot_pr import workflows_that_passed
+
+        self.assertEqual(workflows_that_passed({"statusCheckRollup": rollup}), set())
 
 
 if __name__ == "__main__":

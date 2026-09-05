@@ -242,7 +242,7 @@ def merge_pr(project: Path, number: str, *, allowed: bool) -> str:
     # every check here optional the moment the network hiccups.
     if not state:
         return f"cannot read #{number} from GitHub, so not merging it"
-    refused = refuse_bot_merge(state)
+    refused = refuse_bot_merge(state, project)
     if refused:
         return f"not merging #{number}: {refused}"
     code, out = _run(
