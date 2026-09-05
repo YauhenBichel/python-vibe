@@ -95,7 +95,16 @@ def _mocks_http(tests: str) -> bool:
 
 
 def _tests_call_list_or_show(tests: str) -> bool:
-    return bool(re.search(r"\b(list_pulls|show_pull)\b", tests))
+    """8B often names the GET get_prs and drives list/show through main()."""
+    return bool(
+        re.search(
+            r"\b(list_pulls|show_pull|get_prs|test_main_list|test_main_show)\b",
+            tests,
+        )
+        or (
+            re.search(r"\bmain\s*\(", tests) and re.search(r"\b(list|show)\b", tests)
+        )
+    )
 
 
 def _has_pagination(impl: str) -> bool:
@@ -151,8 +160,8 @@ def app_gaps(project: Path, task: str, *, include_overflow: bool = True) -> list
             Gap(
                 "mocked_tests",
                 f"Next Action must be edit Path: {test} as a unittest.TestCase. "
-                "patch urllib.request.urlopen. AAA: got = list_pulls(...). "
-                "Do not call the network.",
+                "patch urllib.request.urlopen. Call list_pulls, get_prs, or "
+                "show_pull. Do not call the network.",
             )
         )
     if include_overflow:

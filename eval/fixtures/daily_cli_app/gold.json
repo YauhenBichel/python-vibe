@@ -1,0 +1,6 @@
+{
+  "task": "design and develop a small cli app for reviewing github PRs",
+  "package_noun": "pr_review",
+  "required": ["init", "http", "list", "show", "mocked_tests"],
+  "overflow": ["comment", "pagination", "config"]
+}
