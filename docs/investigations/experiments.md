@@ -184,7 +184,13 @@ step cap with the files already on disk. Replay:
 `python scripts/measure/eval_cli_app.py` (twelve steps; pass
 `--steps 20` for the first cell).
 
-Finish is still the gap. Everyday-ready is still the older bar.
+Finish was the gap: the files were on disk and the model kept
+writing. Once list and show exist, the harness now writes the mocked
+`urlopen` test (token via `patch.dict`) and runs the suite — the same
+idea as the add-feature cover test. Overflow (comment / pagination /
+config) is a later typed `run`, not more `--steps`.
+
+Everyday-ready is still the older bar.
 
 ## Four jobs, as typed
 
