@@ -671,6 +671,13 @@ than halved without a single extra run working — they just become
 refusals to act. Raising the count that works is the target; improving
 the manner of failing is not.
 
+The per-tier splits in that run suggested sending some task types to one
+model and some to the other. Checked at ten passes, the bugfix tier came
+out level at 18 of 20 each — the apparent gap was one case in a five-run
+sample — while tier 3 widened to 13 against 7. So there is no task type
+worth routing to `qwen2.5-coder`, and five passes turns out to be too
+few to compare two models per tier at all.
+
 Write-up: [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}).
 
 ## Where the failures are

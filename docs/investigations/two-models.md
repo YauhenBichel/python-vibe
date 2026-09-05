@@ -1,6 +1,6 @@
 ---
 title: Two models, one wall
-description: llama3.1:8b and qwen2.5-coder:7b score 51 and 50 out of 75 on the same benchmark. The same wall, and almost opposite failures — one writes wrong code, the other writes nothing.
+description: llama3.1:8b and qwen2.5-coder:7b score 51 and 50 out of 75 on the same benchmark, and fail in opposite ways. The per-tier differences that suggested routing needed ten passes, and one of them vanished.
 permalink: /investigations/two-models/
 date: 2026-09-05
 type: article
@@ -49,23 +49,42 @@ model ever reported success with the file untouched, which is the
 guarantee added earlier this week holding across two models rather than
 one.
 
-## And different tiers
+## And different tiers — one of which was noise
+
+The five-pass run split like this:
 
 | Tier | `llama3.1:8b` | `qwen2.5-coder:7b` |
 | --- | --- | --- |
 | 1 one small component | 4 | 6 |
-| 3 a new module with a test | 5 | **8 of 10** |
+| 3 a new module with a test | 5 | 8 of 10 |
 | 5 fix a bug already there | 4 | 0 |
-| 6 platform and operations | **11 of 20** | 10 |
+| 6 platform and operations | 11 of 20 | 10 |
 
-They are not the same tool at different accuracies. `llama3.1` is worst
-at platform work; `qwen2.5-coder` is worst at creating a new module with
-a test, and does not fail the bugfix tier at all.
+Four failures against nought on the bugfix tier looked like a real
+difference, and it was the reason to consider sending some tasks to one
+model and some to the other. Each tier holds two to four cases, so five
+passes is a handful of runs, and it was worth checking before building
+anything on it.
+
+Ten passes on the two tiers with the largest apparent gap:
+
+| Ten passes, two cases each | `llama3.1:8b` | `qwen2.5-coder:7b` |
+| --- | --- | --- |
+| 5 fix a bug already there | **18 of 20** | **18 of 20** |
+| 3 a new module with a test | **13 of 20** | **7 of 20** |
+
+**The bugfix advantage was not there.** Identical at ten passes; the
+gap came from one case, `fix-offbyone`, in a five-run sample.
+
+**The tier-3 gap is real, and larger than five passes suggested.** Six
+cases apart on twenty runs. `llama3.1` is better at "create a new module
+and a test for it" — the task type a coder model would be expected to
+win.
 
 ## What it changes
 
-**A model swap is not the fix.** Two models score the same, so nothing
-is gained by preferring one outright.
+**A model swap is not the fix.** Two models score the same overall, so
+nothing is gained by preferring one outright.
 
 **The bar for a fine-tune moved.** The stated target was the sixty-seven
 per cent that writes plausible wrong code, and `qwen2.5-coder` shows
@@ -73,17 +92,30 @@ that number can be cut without any gain in work done — the failures
 simply change shape. A fine-tune has to raise the count of runs that
 work, not improve the manner of failing.
 
-**And the two failure sets barely overlap.** One is better at platform
-work, the other does not fail bugfixes. The harness already picks a lane
-per task and then asks the same model every time. Choosing the model per
-tier is a change to about ten lines, needs no training, and is the first
-thing measured this week with a reason to expect the number to move.
+**Routing between these two would gain nothing.** That was the plan this
+page originally argued for, and checking it removed the reason: the one
+tier where `qwen2.5-coder` looked stronger came out level, and the tier
+where it looked weaker came out weaker still. There is no task type to
+send it. `llama3.1:8b` is the better default and the apparent
+complementarity was an artefact of the sample size.
+
+**Five passes is not enough to compare two models here.** It is enough
+to compare a change against itself, which is what it was calibrated for
+— ten of fifteen cases change verdict between identical runs. A per-tier
+split cuts the same runs into groups of ten, and a difference that size
+needs ten passes before it means anything. The first table on this page
+is left in place because it is what five passes says, and the second is
+what the same question answers when asked properly.
 
 ## Reproducing this
 
 ```bash
 python scripts/measure/bench.py --repeat 5
 python scripts/measure/bench.py --model qwen2.5-coder:7b --repeat 5
+
+# and the per-tier numbers, which need ten passes to mean anything
+python scripts/measure/bench.py --tier 5 --repeat 10
+python scripts/measure/bench.py --tier 5 --model qwen2.5-coder:7b --repeat 10
 ```
 
 Both print a row per run with what was written and why it failed. The
