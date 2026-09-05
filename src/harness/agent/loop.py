@@ -102,9 +102,16 @@ def new_trace_id() -> str:
 
 
 def _trace_result(
-    options: AgentOptions, result: AgentResult, trace_id: str = ""
+    options: AgentOptions, result: AgentResult, trace_id: str
 ) -> None:
-    """Keep a row saying how the run ended, and under which id."""
+    """Keep a row saying how the run ended, and under which id.
+
+    `trace_id` has no default on purpose. It had one, and a caller that
+    forgot it wrote a closing row signed with an empty string — which
+    reads as a run whose turns cannot be found, so its outcome could not
+    be used to filter anything. Three of the first thirty-five turns
+    collected after the change were exactly that.
+    """
     dest = trace_path(options)
     if dest is None:
         return
@@ -224,7 +231,7 @@ class Agent:
         ):
             finished = decide(run)
             if finished is not None:
-                _trace_result(run.options, finished)
+                _trace_result(run.options, finished, run.trace_id)
                 return finished
 
         # Every run ends with a row saying how it ended. Without one,
