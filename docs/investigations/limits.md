@@ -216,13 +216,23 @@ is the expected shape.
 
 ## What these have in common
 
-Five of the six are cases where the harness knew something, or was
-fixed so that it knew something, and it
-made no difference — a refusal nobody needed, a pointer nobody used,
-weights that were not the constraint. The fourth is the one that
-worked, and it worked by checking rather than by knowing: install the
-version, call the functions, run the suite.
+Six of the seven are cases where the harness knew something, or was
+fixed so that it knew something, and it made no difference. A refusal
+nobody needed. A pointer nobody used. An excerpt that had been cutting
+out the lines the task named, corrected, with the task failing exactly
+as often afterwards. A length rule the model could finally see, and the
+same score either side. Weights that were never the constraint. And a
+week of real work that recorded nothing, because the flag that would
+have kept it was off.
 
-The pattern across the whole project holds up. What closes a gap is an
-oracle — something that runs and comes back true or false. What does
-not close a gap is telling the model more.
+The one that worked, worked by running something: a dependency's major
+bump was cleared by installing the version, calling every function the
+project uses against it, and running the suite.
+
+The seventh has since become useful, and it is worth saying how. The
+refusal on a major bump stopped guessing from a version number and
+started reading what the pull request's own runs had already proved.
+That is the same move: not knowing more, but checking.
+
+What closes a gap is an oracle — something that runs and comes back true
+or false. What does not close a gap is telling the model more.
