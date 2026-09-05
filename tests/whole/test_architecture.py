@@ -491,7 +491,11 @@ class TestsSitBesideWhatTheyTestTest(unittest.TestCase):
             d.name for d in (ROOT / "scripts").iterdir()
             if d.is_dir() and not d.name.startswith(("_", "."))
         )
-        self.assertEqual(folders, ["measure", "run", "website", "weights"])
+        # The three reasons to run something: point the tool at a
+        # project, find out whether it is any good, or build the weights
+        # it talks to. A fourth name here means either a new job worth
+        # naming, or a folder that wandered in.
+        self.assertEqual(folders, ["measure", "run", "weights"])
 
 
 if __name__ == "__main__":
