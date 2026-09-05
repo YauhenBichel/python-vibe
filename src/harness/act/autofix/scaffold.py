@@ -10,11 +10,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from harness.scan.app_spec import required_gaps
+from harness.scan.app_spec import list_getter_name, required_gaps
 from harness.task import looks_like_app_loop, looks_like_new_package, package_noun
 
 INIT_BODY = '"""Public exports only. Implementation lives in sibling modules."""\n'
-_GETTERS = ("list_pulls", "get_prs")
 _MOCK_TEST = """\
 import json
 import os
@@ -81,9 +80,9 @@ def _list_getter(project: Path) -> tuple[str, str]:
             text = path.read_text(encoding="utf-8")
         except OSError:
             continue
-        for name in _GETTERS:
-            if f"def {name}" in text:
-                return path.stem, name
+        name = list_getter_name(text)
+        if name:
+            return path.stem, name
     return "", ""
 
 
@@ -104,7 +103,8 @@ def apply_cli_mock_test(project: Path, task: str, *, write: bool = True) -> str:
         existing = ""
     if "urlopen" in existing and "GITHUB_TOKEN" in existing and fn in existing:
         return ""
-    body = _MOCK_TEST.format(mod=mod, fn=fn, cls=fn.title().replace("_", ""))
+    cls = "".join(part.title() for part in fn.split("_"))
+    body = _MOCK_TEST.format(mod=mod, fn=fn, cls=cls)
     rel = dest.relative_to(Path(project)).as_posix()
     if write:
         dest.parent.mkdir(parents=True, exist_ok=True)

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from harness.scan.app_spec import (
     app_is_clean,
+    list_getter_name,
     next_app_action,
     next_overflow_action,
     overflow_gaps,
@@ -99,6 +100,57 @@ class AppSpecTest(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(required_gaps(root, CLI), [])
+
+    def test_list_prs_and_show_pr_count_without_add_parser(self) -> None:
+        impl = (
+            "import os\n"
+            "import urllib.request\n"
+            "TOKEN = os.environ['GITHUB_TOKEN']\n"
+            "def list_prs(owner, repository):\n"
+            "    urllib.request.urlopen('https://example')\n"
+            "    return []\n"
+            "def show_pr(owner, repository, number):\n"
+            "    return {}\n"
+        )
+        self.assertEqual(list_getter_name(impl), "list_prs")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            tests = root / "tests"
+            pkg.mkdir()
+            tests.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(impl, encoding="utf-8")
+            (tests / "test_pr_review.py").write_text(
+                "from unittest.mock import patch\n"
+                "from pkg.pr_review import list_prs\n"
+                "def test_list_prs_returns_titles():\n"
+                "    with patch('urllib.request.urlopen'):\n"
+                "        list_prs('o', 'r')\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(required_gaps(root, CLI), [])
+
+    def test_get_pr_is_show_not_list(self) -> None:
+        impl = (
+            "def get_pr(owner, repository, number):\n"
+            "    return {}\n"
+        )
+        self.assertEqual(list_getter_name(impl), "")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            pkg.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n" + impl,
+                encoding="utf-8",
+            )
+            keys = [gap.key for gap in required_gaps(root, CLI)]
+        self.assertIn("list", keys)
+        self.assertNotIn("show", keys)
 
     def test_gold_fixture_noun_and_keys(self) -> None:
         from harness.scan.app_spec import OVERFLOW_KEYS, REQUIRED_KEYS

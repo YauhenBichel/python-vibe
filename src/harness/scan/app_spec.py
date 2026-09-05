@@ -18,6 +18,15 @@ from harness.task import package_noun
 CLEAN_PHRASE = "app checklist clean"
 REQUIRED_KEYS = ("init", "http", "list", "show", "mocked_tests")
 OVERFLOW_KEYS = ("comment", "pagination", "config")
+# Live 8B named the GET list_prs / fetch_pulls, not only list_pulls / get_prs.
+# After #214 the remasure left mocked_tests missing when those names were used.
+_LIST_GETTER = re.compile(
+    r"^(?:list_pulls|get_prs|(?:list|get|fetch|load)_[a-z0-9_]*"
+    r"(?:pull_requests|prs|pulls))$"
+)
+_SHOW_FN = re.compile(
+    r"^(?:show_pull|show_pr|get_pr|get_pull|fetch_pr|fetch_pull)$"
+)
 
 
 @dataclass(frozen=True)
@@ -56,18 +65,32 @@ def _read_tree(project: Path) -> tuple[str, str]:
     return "\n".join(impl_parts), "\n".join(test_parts)
 
 
+def _top_defs(source: str) -> list[str]:
+    return re.findall(r"^def\s+([a-z_][a-z0-9_]*)\s*\(", source, re.M)
+
+
+def list_getter_name(impl: str) -> str:
+    """The list/GET function the 8B wrote, or empty."""
+    names = _top_defs(impl)
+    for preferred in ("list_pulls", "get_prs"):
+        if preferred in names:
+            return preferred
+    for name in names:
+        if _LIST_GETTER.match(name):
+            return name
+    return ""
+
+
 def _has_list_command(impl: str) -> bool:
     return bool(
-        re.search(r'add_parser\(\s*["\']list["\']', impl)
-        or re.search(r"\bdef list_pulls\b", impl)
+        re.search(r'add_parser\(\s*["\']list["\']', impl) or list_getter_name(impl)
     )
 
 
 def _has_show_command(impl: str) -> bool:
-    return bool(
-        re.search(r'add_parser\(\s*["\']show["\']', impl)
-        or re.search(r"\bdef show_pull\b", impl)
-    )
+    if re.search(r'add_parser\(\s*["\']show["\']', impl):
+        return True
+    return any(_SHOW_FN.match(name) for name in _top_defs(impl))
 
 
 def _has_comment_command(impl: str) -> bool:
@@ -96,16 +119,13 @@ def _mocks_http(tests: str) -> bool:
 
 
 def _tests_call_list_or_show(tests: str) -> bool:
-    """8B often names the GET get_prs and drives list/show through main()."""
-    return bool(
-        re.search(
-            r"\b(list_pulls|show_pull|get_prs|test_main_list|test_main_show)\b",
-            tests,
-        )
-        or (
-            re.search(r"\bmain\s*\(", tests) and re.search(r"\b(list|show)\b", tests)
-        )
-    )
+    """8B often names the GET get_prs / list_prs and drives list/show via main()."""
+    if re.search(r"\b(test_main_list|test_main_show)\b", tests):
+        return True
+    if re.search(r"\bmain\s*\(", tests) and re.search(r"\b(list|show)\b", tests):
+        return True
+    called = re.findall(r"\b([a-z_][a-z0-9_]*)\s*\(", tests)
+    return any(_LIST_GETTER.match(name) or _SHOW_FN.match(name) for name in called)
 
 
 def _has_pagination(impl: str) -> bool:

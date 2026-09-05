@@ -264,6 +264,87 @@ class AppLoopTest(unittest.TestCase):
             )
         self.assertEqual(ran.returncode, 0, ran.stderr + ran.stdout)
 
+    def test_mechanical_mock_test_binds_list_prs(self) -> None:
+        """Remasure #214: list/show existed under 8B names; mock test never wrote."""
+        import subprocess
+        import sys
+
+        from harness.scan.app_spec import required_gaps
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import json\n"
+                "import os\n"
+                "import urllib.request\n"
+                "\n"
+                "def list_prs(owner, repository):\n"
+                "    token = os.environ['GITHUB_TOKEN']\n"
+                "    req = urllib.request.Request('https://example')\n"
+                "    req.add_header('authorization', token)\n"
+                "    with urllib.request.urlopen(req) as response:\n"
+                "        return json.loads(response.read().decode())\n"
+                "def show_pr(owner, repository, number):\n"
+                "    return {}\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {gap.key for gap in required_gaps(root, CLI)},
+                {"mocked_tests"},
+            )
+            note = apply_cli_mock_test(root, CLI)
+            self.assertIn("tests/test_pr_review.py", note)
+            dest = root / "tests" / "test_pr_review.py"
+            body = dest.read_text(encoding="utf-8")
+            self.assertIn("list_prs", body)
+            self.assertIn("GITHUB_TOKEN", body)
+            self.assertEqual(required_gaps(root, CLI), [])
+            self.assertEqual(apply_cli_mock_test(root, CLI), "")
+            ran = subprocess.run(
+                [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                env={**os.environ, "PYTHONPATH": str(root)},
+            )
+        self.assertEqual(ran.returncode, 0, ran.stderr + ran.stdout)
+
+    def test_mechanical_mock_test_finds_list_prs_via_add_parser(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_prs(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "    return []\n"
+                "parser.add_parser('list')\n"
+                "parser.add_parser('show')\n",
+                encoding="utf-8",
+            )
+            note = apply_cli_mock_test(root, CLI)
+            dest = root / "tests" / "test_pr_review.py"
+            self.assertIn("tests/test_pr_review.py", note)
+            self.assertIn("list_prs", dest.read_text(encoding="utf-8"))
+
+    def test_mechanical_mock_test_waits_for_show(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_prs(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "    return []\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(apply_cli_mock_test(root, CLI), "")
+
     def test_overflow_done_is_refused_until_comment(self) -> None:
         overflow = "add the comment subcommand and a mocked test"
         with tempfile.TemporaryDirectory() as tmp:
