@@ -33,6 +33,16 @@ class EvalGateTest(unittest.TestCase):
         self.assertNotIn("return tota", body)
         self.assertNotIn("subtotl", body)
 
+    def test_everyday_live_fixture_is_1kb_filter_not_clamp(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        broken = root / "eval" / "fixtures" / "everyday_live" / "pkg" / "util_stats.py"
+        body = broken.read_text(encoding="utf-8")
+        self.assertGreaterEqual(broken.stat().st_size, 1000)
+        self.assertIn("if low <= float(v) <= high", body)
+        self.assertNotIn("return 0.0", body.split("def clip", 1)[1].split("def ", 1)[0])
+        self.assertNotIn("return tota", body)
+        self.assertNotIn("subtotl", body)
+
     def test_tiny_detection(self) -> None:
         self.assertTrue(is_tiny_model("qwen2.5-coder:0.5b"))
         self.assertFalse(is_tiny_model("llama3.1:8b"))

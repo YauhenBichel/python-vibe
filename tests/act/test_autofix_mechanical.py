@@ -276,6 +276,51 @@ class MechanicalFinishTest(unittest.TestCase):
         self.assertIn("return float(sum(cleaned))", body)
         self.assertIn("Tests passed", result.summary)
 
+    def test_everyday_live_clip_is_left_alone(self) -> None:
+        """Filter vs clamp is a model job. Do not bind it."""
+        import shutil
+
+        fixture = (
+            Path(__file__).resolve().parents[2] / "eval" / "fixtures" / "everyday_live"
+        )
+        task = (
+            "fix clip in pkg/util_stats.py so values outside low and high are clamped"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp)
+            shutil.copytree(fixture, dest, dirs_exist_ok=True)
+            before = (dest / "pkg" / "util_stats.py").read_text(encoding="utf-8")
+            note = apply_mechanical(dest, task, "pkg/util_stats.py", write=True)
+            after = (dest / "pkg" / "util_stats.py").read_text(encoding="utf-8")
+        self.assertEqual(note, "")
+        self.assertEqual(before, after)
+        self.assertIn("if low <= float(v) <= high", after)
+
+    def test_everyday_live_clip_needs_the_engine(self) -> None:
+        """A mechanical pass must not finish this cell without a model."""
+        import shutil
+
+        fixture = (
+            Path(__file__).resolve().parents[2] / "eval" / "fixtures" / "everyday_live"
+        )
+        task = (
+            "fix clip in pkg/util_stats.py so values outside low and high are clamped"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp)
+            shutil.copytree(fixture, dest, dirs_exist_ok=True)
+            options = AgentOptions(project=dest, task=task)
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError("clip must not be a compiler job"),
+            ):
+                with self.assertRaisesRegex(
+                    AssertionError, "clip must not be a compiler job"
+                ):
+                    Agent(options).run()
+            body = (dest / "pkg" / "util_stats.py").read_text(encoding="utf-8")
+        self.assertIn("if low <= float(v) <= high", body)
+
 
 class MechanicalFastPathTest(unittest.TestCase):
     """A fix the harness can make itself should not need the model at all.
