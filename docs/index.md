@@ -29,14 +29,17 @@ python-vibe run  "find the NameError and fix it"
 python-vibe run  "add a function total_lines and a test"
 ```
 
-`brief` needs no model. `ask` never writes. `run` keeps a `.bak` of
-anything it edits. Point at another folder by putting it first:
+`brief` needs no model. `ask` never writes. Daily `run` writes, then
+runs the suite; a failing traceback goes back once. The NameError and
+`total_lines` jobs are harness demos on `demo/orders` — no model.
+`run` keeps a `.bak` of anything it edits. Point at another folder by
+putting it first:
 `python-vibe ask ~/app "what does compute_total return?"`.
 
 <div class="stats">
   <div class="stat"><b>Ask</b><span>A question about one file or function</span></div>
   <div class="stat"><b>Test</b><span>Cover one named function</span></div>
-  <div class="stat"><b>Fix</b><span>A NameError or a one-line bug</span></div>
+  <div class="stat"><b>Fix</b><span>A failing suite, one repair</span></div>
   <div class="stat"><b>Add</b><span>One small function and a test</span></div>
 </div>
 
