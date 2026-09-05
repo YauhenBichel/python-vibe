@@ -5,6 +5,7 @@
 
 Empty folder each time. The harness scaffolds pkg/ + tests/. Pass means
 list, show, urllib, and mocked tests exist (score_cli_app list_show_ready).
+Default --steps (20). Do not raise the budget; overflow is a second run.
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from harness.scan.app_spec import required_gaps  # noqa: E402
 
 TASK = "design and develop a small cli app for reviewing github PRs"
 REPEATS = 3
-STEPS = 12
+STEPS = 20
 
 
 def _run_one(model: str) -> dict:
