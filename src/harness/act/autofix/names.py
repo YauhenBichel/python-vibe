@@ -12,12 +12,13 @@ before the first generate. A green suite ends the run without a model.
 import ast
 import io
 import keyword
+import re
 import tokenize
 from pathlib import Path
 from typing import NamedTuple
 from harness.act.code import apply_source
 from harness.scan.names import undefined_in_file, undefined_names
-from harness.task import looks_like_bugfix, named_project_file
+from harness.task import looks_like_bugfix, named_project_file, question_symbol
 
 
 
@@ -262,3 +263,60 @@ def apply_typo_fixes(source: str) -> str:
     for bad, good in typo_pairs(source):
         text = _rename_name_tokens(text, bad, good)
     return text
+
+
+def _top_def_span(source: str, name: str) -> tuple[int, int] | None:
+    lines = source.splitlines(keepends=True)
+    start = next(
+        (
+            index
+            for index, line in enumerate(lines)
+            if re.match(rf"^def {re.escape(name)}\s*\(", line)
+        ),
+        None,
+    )
+    if start is None:
+        return None
+    end = len(lines)
+    for index in range(start + 1, len(lines)):
+        line = lines[index]
+        if line and not line[:1].isspace() and line.startswith(
+            ("def ", "class ", "if __name__")
+        ):
+            end = index
+            break
+    return start, end
+
+
+def apply_zero_return_sum(source: str, task: str) -> str:
+    """Replace `return 0` in the named sum function. Everyday-ready fixture.
+
+    Live 8B wrote nothing × 3 after #229 / #238 / #245. The task already
+    says sum the rows. Only a whole-line literal zero inside that def.
+    """
+    if "sum" not in (task or "").lower():
+        return source
+    name = question_symbol(task)
+    if not name:
+        return source
+    span = _top_def_span(source, name)
+    if span is None:
+        return source
+    start, end = span
+    lines = source.splitlines(keepends=True)
+    body = "".join(lines[start:end])
+    series = "cleaned" if re.search(r"\bcleaned\s*=", body) else ""
+    if not series:
+        shown = re.match(rf"^def {re.escape(name)}\s*\(\s*([A-Za-z_]\w*)", lines[start])
+        series = shown.group(1) if shown else ""
+    if not series:
+        return source
+    last = None
+    for index in range(start, end):
+        if re.match(r"^\s+return 0(?:\.0)?\s*$", lines[index]):
+            last = index
+    if last is None:
+        return source
+    indent = re.match(r"^(\s*)", lines[last]).group(1)
+    lines[last] = f"{indent}return float(sum({series}))\n"
+    return "".join(lines)

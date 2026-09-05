@@ -29,7 +29,11 @@ from harness.act.autofix.additions import (
 from harness.act.autofix.moves import apply_file_move, apply_function_move
 from harness.act.autofix.conflicts import _resolve_conflict, looks_like_conflict
 from harness.act.autofix.cover import apply_cover_test
-from harness.act.autofix.names import apply_typo_fixes, typo_pairs
+from harness.act.autofix.names import (
+    apply_typo_fixes,
+    apply_zero_return_sum,
+    typo_pairs,
+)
 from harness.act.autofix.scaffold import apply_home_config, apply_list_page_query
 
 
@@ -65,6 +69,10 @@ def _repair_in_place(
                 text = fixed
                 shown = ", ".join(f"{bad} → {good}" for bad, good in pairs)
                 notes.append(f"bound unique NameError typo ({shown}) in {rel}")
+            summed = apply_zero_return_sum(text, task)
+            if summed != text:
+                text = summed
+                notes.append(f"bound a zero return to a sum in {rel}")
         if text != original and notes and write:
             apply_source(path, text, original=original)
         return notes
