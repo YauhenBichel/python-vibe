@@ -114,3 +114,4 @@ Freeze the 0.5B adapters. Keep generate → run → one repair in the loop.
 Daily work stays an 8B. Do not add more handwritten style pairs to chase
 these eighteen scripts. The MLX follow-up put a number on that: greedy
 LoRA scored 0 / 54. Four untuned drafts plus one repair scored 9 / 18.
+The later loop scored 12 / 18 with zero hint-repairs.

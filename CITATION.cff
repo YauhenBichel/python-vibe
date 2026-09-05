@@ -30,5 +30,6 @@ preferred-citation:
   notes: >-
     Measurements, including the 5 Sep 2026 0.5B exact-stdout eval
     (Ollama 7/54 base, 12/54 with one repair) and the same-day MLX
-    sample-and-run (four drafts 9/18 best cell; greedy LoRA 0/54),
+    sample-and-run (four drafts 9/18; later loop 12/18 with 0
+    hint-repairs; greedy LoRA 0/54),
     are at https://yauhenbichel.github.io/python-vibe/cite/

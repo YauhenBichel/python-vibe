@@ -78,19 +78,20 @@ Ship these before training another model.
 
 The 18-script MLX pair is
 [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}).
-Four drafts plus one repair is **9 / 18**. Greedy LoRA is **0 / 54**.
-Hours and expected unique-task lift on those 18:
+Four drafts plus one repair is **9 / 18**. The later loop
+(`datetime` prepend, “stdout is wrong,” one 8B hint) is **12 / 18**.
+Zero of those twelve were a hint-repair. Greedy LoRA is **0 / 54**.
 
-| Next | Hours | Expected lift |
+| Next | Hours | Lift after measuring |
 | --- | --- | --- |
 | Keep base, four drafts, one repair as the 0.5B stdout default | 0 | Holds 9 / 18 |
-| Prepend `sys` / `re` on that NameError; reject a traceback-as-source | already in the later loop | 0 on the greedy MLX grid (those NameErrors did not appear) |
-| Prepend `datetime` the same way | shipped | 0 unique (weekday already a repair pass) |
-| 8B one-line hint from stderr, then one 0.5B rewrite | next measured cell | +3 to +6 if the leftover class is extra words / ISO `T` / argv |
-| Eight drafts instead of four | one measured run | +0 to +2 |
+| Prepend `sys` / `re` / `datetime`; reject a traceback-as-source | shipped | weekday is a first pass |
+| 8B one-line hint from stderr, then one 0.5B rewrite | measured | 12 / 18 headline, 0 hint-repairs. Stop |
+| Eight drafts instead of four | one measured run | +0 to +2. Not worth it at n = 1 |
 | Train the 18 prompts into the 0.5B | days, and it leaks the eval | Not a capability |
 
-Daily `run` stays an 8B. Do not spend the week on more 0.5B pairs.
+Daily `run` stays an 8B. Do not spend the week on more 0.5B pairs
+or on another 8B-hint cell for this board.
 
 ## What not to spend a week on
 

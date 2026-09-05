@@ -52,7 +52,9 @@ Same 18 scripts on MLX Qwen2.5-Coder-0.5B-Instruct-4bit. Four drafts
 at temperature 0.7: **6 / 18** base, **9 / 18** with one repair,
 **2 / 18** LoRA, **6 / 18** LoRA with repair. Greedy (temperature 0,
 three repeats): **2 / 18** unique tasks on base, **3 / 18** with
-repair, **0 / 54** LoRA.
+repair, **0 / 54** LoRA. Later the same day, four drafts plus
+`datetime` prepend and an 8B hint: **12 / 18**. Zero of those
+twelve were a hint-repair.
 
 ## BibTeX
 

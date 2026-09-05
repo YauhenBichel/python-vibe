@@ -1,6 +1,6 @@
 ---
 title: 0.5B sample-and-run
-description: Same 18 held-out scripts on MLX. Four drafts at temperature 0.7 scored 6/18 base and 9/18 with one repair. Greedy LoRA scored 0/54. Sampling beat the adapter.
+description: Same 18 held-out scripts on MLX. Four drafts scored 9/18 with one repair. A later loop scored 12/18, but zero of those twelve were a hint-repair. Greedy LoRA scored 0/54.
 permalink: /investigations/sample-and-run/
 date: 2026-09-05
 type: article
@@ -12,9 +12,10 @@ type: article
 at temperature 0.7 beat one greedy draft? Does the step-100 LoRA help,
 or only the loop (draw again, run, one traceback repair)?
 
-**Answer.** The loop wins. The LoRA loses. Best cell is **untuned base
-plus one repair**: **9 / 18** with four drafts. Greedy LoRA is
-**0 / 54**.
+**Answer.** The loop wins. The LoRA loses. Four drafts plus one
+repair scored **9 / 18**. The later loop (prepend `datetime`, say
+when stdout is wrong, one 8B hint) scored **12 / 18**. Zero of those
+twelve were a hint-repair. Greedy LoRA is **0 / 54**.
 
 Cite this note:
 [Cite]({{ '/cite/' | relative_url }}).
@@ -31,6 +32,7 @@ Related:
   <li><a href="#the-two-grids">The two grids</a></li>
   <li><a href="#what-sampling-found">What sampling found</a></li>
   <li><a href="#what-failed">What failed</a></li>
+  <li><a href="#the-8b-hint-cell">The 8B hint cell</a></li>
   <li><a href="#estimate-of-next-steps">Estimate of next steps</a></li>
   <li><a href="#decision">Decision</a></li>
 </ol>
@@ -44,12 +46,13 @@ greedy note. None of those prompts are in the 45 train pairs. A run
 counts only when the extracted script exits 0 and stdout matches
 (trailing newline ignored).
 
-Two MLX runs the same day:
+Three MLX runs the same day:
 
 | Run | Drafts per task | Temperature | Repeats | What it answers |
 | --- | --- | --- | --- | --- |
 | Four drafts | up to 4, history cleared | 0.7 | 1 | Can a different draw ship? |
 | Greedy | 1 | 0 | 3 | Is that draw stable? |
+| Four drafts + later loop | up to 4, plus one 8B hint | 0.7 | 1 | Does a bigger-model note help? |
 
 Temperature is how randomly the next token is picked. It is not skill.
 **0** is almost the same script every time. **0.7** is the Qwen chat
@@ -60,19 +63,20 @@ The earlier Ollama greedy run (no LoRA) is a different engine:
 **7 / 54** base, **12 / 54** with one repair. Rates are directional,
 not a paired A/B.
 
-The greedy MLX run also had a later loop tweak: if the last script
+The greedy MLX run had a later loop tweak: if the last script
 NameErrors on `sys` or `re`, prepend the import and rerun once, and
 reject a repair whose first line is a traceback. That prepend did not
-fire. Greedy drafts never NameErrored on `sys` or `re`. weekday is
-`datetime`, which the prepend does not touch. Treat the two MLX grids
-as the same model, not as a harness A/B.
+fire. Greedy drafts never NameErrored on `sys` or `re`. weekday was
+still `datetime`. Treat the first two MLX grids as the same model,
+not as a harness A/B. The third run added `datetime` prepend and the
+8B hint.
 
 ## The two grids
 
 <div class="stats">
+  <div class="stat"><b>12 / 18</b><span>four drafts + later loop</span></div>
   <div class="stat"><b>9 / 18</b><span>base + four drafts + repair</span></div>
-  <div class="stat"><b>6 / 18</b><span>base, four drafts</span></div>
-  <div class="stat"><b>2 / 18</b><span>greedy base (unique tasks)</span></div>
+  <div class="stat"><b>0</b><span>hint-repairs in the 12</span></div>
   <div class="stat"><b>0 / 54</b><span>greedy LoRA, with or without repair</span></div>
 </div>
 
@@ -130,8 +134,11 @@ repair (count-ext, anagram, fizzbuzz, unique-order). It still lost
 clamp, median, wrap, relpath, rotate, fib, and sum-even to the
 untuned base.
 
-Five tasks never passed on any four-draft variant: weekday, slugify,
-csv-col, indent4, iso-date. Greedy later cleared weekday only.
+Five tasks never passed on the first four-draft grid: weekday,
+slugify, csv-col, indent4, iso-date. Greedy later cleared weekday
+only. The later loop cleared weekday on the first draw (prepend
+`datetime`) and also count-ext, palindrome, and csv-col. wrap
+flipped off. n = 1; treat single-task flips as noise except weekday.
 
 ## What failed
 
@@ -155,36 +162,69 @@ palindrome `Yes`, sum-even `21`, indent4 left two-space padding,
 csv-col `FileNotFoundError: '1'`, median `NameError: main`, iso-date
 `int('05T17:27:00')`. Three copies of each.
 
+## The 8B hint cell
+
+Same 18, four drafts, temperature 0.7, one trial, base + repair.
+After a miss, `llama3.1:8b` writes one line from the traceback or
+from “exited 0 but stdout is wrong,” then the 0.5B rewrites once.
+The loop also prepends `from datetime import datetime` when that
+NameError appears.
+
+**12 / 18.** Zero of the twelve are a `repair pass`. Every win was
+a clean first draft on some sample.
+
+| Task | This cell | Earlier four-draft + repair |
+| --- | --- | --- |
+| weekday | pass @1 (prepend) | — |
+| count-ext | pass @3 | — |
+| palindrome | pass @3 | — |
+| csv-col | pass @2 | — |
+| wrap | — | @2 |
+| slugify, indent4, anagram, iso-date, relpath | — | — |
+
+The +3 versus 9 / 18 is **weekday** (mechanical prepend) plus three
+sample flips in and wrap out. n = 1. The 8B note did not turn a
+failing last draft into a pass. That matches
+[Asking a bigger model]({{ '/investigations/asking-a-bigger-model/' | relative_url }}):
+the stuck point is worth a remote call only when the local model
+is already on the right file. Here the 0.5B was not.
+
+Still down after the hint: slugify, indent4, anagram, wrap,
+iso-date, relpath.
+
 ## Estimate of next steps
 
 Ordered by expected unique-task lift on these 18, per hour of work.
 No new 0.5B train pairs. Daily `run` stays an 8B through the same
 guard.
 
-| Next | Hours | Expected lift | Why that number |
+| Next | Hours | Lift after measuring | Why that number |
 | --- | --- | --- | --- |
-| Product default: base, four drafts, one repair | already the measured winner | Keeps **9 / 18** as the 0.5B stdout ceiling we have | LoRA is four tasks behind on the same sampler, and 0 / 54 greedy |
-| Prepend `import sys` / `import re` on that NameError, reject a traceback-as-source | already in the later loop | **0** on this greedy grid | Those NameErrors did not appear. Ollama greedy crashed 24 / 54, often on `sys` — re-run that engine if you want a number |
-| Also prepend `datetime` / `from datetime import datetime` | shipped | **+0 unique** on greedy (weekday already a repair pass); saves the repair turn | `datetime.strptime` gets `from datetime import datetime`; `datetime.date` gets `import datetime` |
-| 8B writes one line from stderr, 0.5B rewrites once | next measured cell | **+3 to +6** unique if the hint names extra words, the ISO `T`, or swapped argv | Repair now also says “exited 0 but stdout is wrong” so extra words reach the 8B. Asking-a-bigger-model: spend the remote call on the stuck point, not the file |
-| Eight drafts at 0.7 instead of four | one measured run | **+0 to +2** | wrap already landed on draw 4. Diminishing |
+| Product default: base, four drafts, one repair | already the measured winner | Holds **9 / 18** without the later loop | LoRA is four tasks behind on the same sampler, and 0 / 54 greedy |
+| Prepend `sys` / `re` / `datetime`; reject a traceback-as-source | shipped | weekday is now a first pass | `datetime.strptime` gets `from datetime import datetime` |
+| 8B one-line hint, then one 0.5B rewrite | measured (~11 min) | **12 / 18** headline, **0** hint-repairs | Extra words and ISO `T` still lose. Do not spend another day here |
+| Eight drafts at 0.7 instead of four | one measured run | **+0 to +2** | Diminishing. wrap already flipped both ways at n = 1 |
 | Train the 18 prompts into the 0.5B | days, and it leaks the eval | Not a capability | The adapter already taught tone and scored 0 / 54 greedy |
+| Daily work on an 8B | already the product | Not this eval | Live parse and a real ≥1 KB fix stay the bar |
 
-Confidence is high on “do not train” and “keep four drafts.” Medium
-on the 8B hint: the leftover failures are format and extra words, not
-missing algorithms. Low on more samples.
+The 8B-hint estimate was +3 to +6 unique if the leftover class was
+extra words. The leftover class is still extra words, ISO, and
+slugify. The 0.5B does not take the note. Stop.
 
-What the 0.5B still will not do after that work: daily `Action:`
-parse, a ≥1 KB fix, or eleven of the eighteen if the hint is weak.
-Everyday-ready is still an 8B on live parse **and** a real fix.
+What the 0.5B still will not do: daily `Action:` parse, a ≥1 KB
+fix, or slugify / indent4 / iso-date. Everyday-ready is still an
+8B on live parse **and** a real fix.
 
 ## Decision
 
-1. Freeze the step-100 adapters. Do not add pairs to chase weekday,
-   slugify, or iso-date.
-2. For 0.5B stdout smoke: **untuned base, four drafts, one repair**.
-   The LoRA is style only.
-3. Keep generate → run → one repair. Prefer a new draw over a second
-   greedy repair.
-4. The next measured hour is an 8B one-line hint on extra words /
-   ISO / argv. Then stop. Daily work stays an 8B.
+1. Freeze the step-100 adapters. Do not add pairs to chase slugify
+   or iso-date.
+2. For 0.5B stdout smoke: **untuned base, four drafts, one repair**,
+   plus the `datetime` prepend. The LoRA is style only.
+3. Keep generate → run → one repair. Prefer a new draw over a
+   second greedy repair. Do not wait on an 8B hint to make the
+   0.5B debug itself.
+4. Stop spending hours on this 18-script board. Daily work stays
+   an 8B. The 8B daily-jobs table on
+   [Experiments]({{ '/investigations/experiments/' | relative_url }})
+   is **8 / 9**.
