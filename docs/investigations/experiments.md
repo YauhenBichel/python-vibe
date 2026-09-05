@@ -538,7 +538,8 @@ python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 
 **Result.** The import path is in-tree. No daily score yet. Neither
 weight was trained on this `Action:` / `Find:` loop. Default stays
-`llama3.1:8b`.
+`llama3.1:8b`. Other 7B–8B weights that fit this laptop, and the ones
+that do not, are listed on [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 

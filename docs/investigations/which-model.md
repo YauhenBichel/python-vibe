@@ -62,8 +62,12 @@ The 7B coder stopped twice to ask where `clamp` should go. The logic-bug
 3 / 3 on both sides is a compiler `return 0` bind, not the model writing
 the sum. A two-case gap is noise. **Do not switch.**
 
-OpenCoder 8B and SWE-agent-LM 7B are not in this table yet. Import them
-with `scripts/weights/import_hf_ollama.py`, then remasure.
+Also queued for the same nine jobs, no cell yet: `deepseek-coder:6.7b`,
+`starcoder2:7b`, `codellama:7b-python`. StarCoder2 is often a completion
+model and may miss `Action:`. OpenCoder 8B and SWE-agent-LM 7B are not
+`ollama pull` tags; import them with
+`scripts/weights/import_hf_ollama.py`, then remasure.
+See [Hub models](./hub-models.md).
 
 ## One run is not a score
 
