@@ -77,9 +77,11 @@ everyday brain.
   names the stand-in; GGUF of *your* LoRA is `--from-gguf`.
 - `scripts/measure/eval_everyday.py`: gold weekday + count-md `/run`, ≥1 KB NameError
   fixture, Action: parse fixtures. `--live` on this machine (29 Aug 2026):
-  `llama3.1:8b` parsed **2 / 3** prompts (above the 50% floor). That is not
-  everyday-ready. Do not ship that claim until live beats a clean 8B baseline
-  on a real ≥1 KB fix *and* parse rate.
+  `llama3.1:8b` parsed **2 / 3** prompts (above the 50% floor). 5 September
+  2026, same machine: harness parse **11 / 15** vs clean **0 / 15**; harness
+  failed the ≥1 KB logic fix **0 / 3** while a clean one-shot passed
+  **3 / 3**. That is not everyday-ready. Replay:
+  `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 Live `agent.py` + `llama3.1:8b` loops on this machine (29 Aug 2026):
 
