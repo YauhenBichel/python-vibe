@@ -24,7 +24,7 @@ editors or chat products.
 | 0.5B exact stdout | 18 held-out scripts, 3 repeats, Ollama | **7 / 54** base, **12 / 54** with repair |
 | 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** then **12 / 18** with later loop; 0 hint-repairs; greedy LoRA **0 / 54** |
 | 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9** |
-| 8B greenfield CLI | GitHub PR CLI, empty folder, 3 repeats | **2 / 3** then **3 / 3** list+show after #206; 0/3 `done` |
+| 8B greenfield CLI | GitHub PR CLI, empty folder, 3 repeats | **1 / 3** (20 steps) then **2 / 3** then **3 / 3** after #206; 0/3 `done` |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
