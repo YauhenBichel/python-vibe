@@ -149,7 +149,21 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
         self.assertIn("subtotl → subtotal", text)
         self.assertIn("def total_lines(prices: list[int]) -> int:", text)
-        self.assertIn("8.5 s", text)
+        self.assertIn("/media/live-demo.gif", text)
+        self.assertIn("asciinema play docs/media/live-demo.cast", text)
+
+    def test_live_recording_is_checked_in(self) -> None:
+        gif = DOCS / "media" / "live-demo.gif"
+        cast = DOCS / "media" / "live-demo.cast"
+        self.assertTrue(gif.is_file(), gif)
+        self.assertTrue(cast.is_file(), cast)
+        self.assertLess(gif.stat().st_size, 800_000, "keep the GIF small enough to ship")
+        body = cast.read_text(encoding="utf-8")
+        self.assertNotIn("/Users/", body)
+        self.assertNotIn("DevBox/", body)
+        self.assertIn("python-vibe brief", body)
+        self.assertIn("subtotl", body)
+        self.assertIn("total_lines", body)
 
 
 def _front_matter(path: Path) -> dict[str, str]:

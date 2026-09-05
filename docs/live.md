@@ -1,16 +1,30 @@
 ---
 title: Live demo
-description: A real python-vibe session on demo/orders. Five commands, one laptop, 5 September 2026. Only ask called the model.
+description: A real asciinema recording of python-vibe on demo/orders. Five commands, one laptop, 5 September 2026. Only ask called the model.
 permalink: /live/
 date: 2026-09-05
 ---
 
 # Live demo
 
-5 September 2026. One laptop. `demo/orders`, a fresh copy, so this run
-could not see anyone else's edits. Daily model: Ollama `llama3.1:8b`.
-Only **ask** called it. The other four commands finished without a
-model.
+A real shell recording. 5 September 2026. One laptop. A fresh copy of
+`demo/orders`. Daily model: Ollama `llama3.1:8b`. Only **ask** called
+it. The other four commands finished without a model.
+
+![python-vibe on demo/orders — brief, layout, ask, fix, add]({{ '/media/live-demo.gif' | relative_url }})
+
+Recorded with asciinema. The GIF loops; the log below is the same
+session, static. Replay the cast:
+
+```bash
+asciinema play docs/media/live-demo.cast
+```
+
+Re-record it (needs Ollama `llama3.1:8b`):
+
+```bash
+PYTHONPATH=src python scripts/measure/record_live.py
+```
 
 Type the same thing after [Start]({{ '/start/' | relative_url }}):
 
@@ -79,21 +93,25 @@ import.
 
 ## Ask a question
 
-`llama3.1:8b`. 8.5 s. The first draft was only `"int"`. The harness sent
-that back. The second draft named what the function computes.
+`llama3.1:8b`. The first draft was only `"int"`. The harness sent that
+back. The second draft named what the function computes.
 
 ```
 $ python-vibe ask "what does compute_total return?"
+ollama:llama3.1:8b  project /tmp/orders  mode small
 
 --- step 1 ---
 Action: done
 Summary: "int"
 
+too thin. Action: done Summary: quote int and say in a sentence what it
+computes, from the code you read.
+
 --- step 2 ---
 Action: done
-Summary: "int, which computes the sum of the line prices of one order."
+Summary: "int", which computes the sum of the line prices of one order.
 
-int, which computes the sum of the line prices of one order.
+"int", which computes the sum of the line prices of one order.
 ```
 
 Nothing was written.
