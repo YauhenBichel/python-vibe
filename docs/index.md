@@ -13,6 +13,7 @@ the code in your prompt goes to that host; the default does not.
 
 <p class="cta">
   <a href="{{ '/start/' | relative_url }}">Install and run</a>
+  <a href="{{ '/live/' | relative_url }}">Live session</a>
   <a href="{{ '/scenarios/' | relative_url }}">What you type</a>
   <a href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">Source on GitHub</a>
 </p>

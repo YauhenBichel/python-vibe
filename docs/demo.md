@@ -7,6 +7,9 @@ date: 2026-08-29
 
 # Demo
 
+A single typed session on this same tree:
+[Live demo]({{ '/live/' | relative_url }}).
+
 Every case below was run against `demo/orders`, a small project with a few deliberate problems in it, using `llama3.1:8b` through Ollama on one laptop. Each case started from a fresh copy, so no case could see another one's changes.
 
 Reproduce it:

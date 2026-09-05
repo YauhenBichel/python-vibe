@@ -7,6 +7,9 @@ date: 2026-08-29
 
 # Scenarios
 
+A typed session on the same tree (5 Sep 2026):
+[Live demo]({{ '/live/' | relative_url }}).
+
 29 August 2026, one laptop, `llama3.1:8b` through Ollama. Each command ran
 against a **fresh copy** of `demo/orders`, so no job could see another's
 files.

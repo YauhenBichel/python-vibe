@@ -1,0 +1,148 @@
+---
+title: Live demo
+description: A real python-vibe session on demo/orders. Five commands, one laptop, 5 September 2026. Only ask called the model.
+permalink: /live/
+date: 2026-09-05
+---
+
+# Live demo
+
+5 September 2026. One laptop. `demo/orders`, a fresh copy, so this run
+could not see anyone else's edits. Daily model: Ollama `llama3.1:8b`.
+Only **ask** called it. The other four commands finished without a
+model.
+
+Type the same thing after [Start]({{ '/start/' | relative_url }}):
+
+```bash
+cd demo/orders
+python-vibe brief
+python-vibe layout
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "find the NameError and fix it"
+python-vibe run  "add a function total_lines and a test"
+```
+
+The eleven-case table, including misses, is still on
+[Demo]({{ '/demo/' | relative_url }}).
+
+<nav class="toc" aria-label="On this page">
+<p>On this page</p>
+<ol>
+  <li><a href="#size-the-folder">Size the folder</a></li>
+  <li><a href="#what-is-tangled">What is tangled</a></li>
+  <li><a href="#ask-a-question">Ask a question</a></li>
+  <li><a href="#fix-the-nameerror">Fix the NameError</a></li>
+  <li><a href="#add-a-function">Add a function</a></li>
+</ol>
+</nav>
+
+## Size the folder
+
+No model. 0.2 s.
+
+```
+$ python-vibe brief
+
+10 Python and Markdown files, 2.9 KB in total.
+Small enough that python-vibe can read all of it, so you can ask about any part.
+
+Files:
+  README.md  685 B
+  src/__init__.py  68 B
+  src/orders.py  467 B
+  src/orders_controller.py  568 B
+  src/orders_service.py  285 B
+  src/render.py  193 B
+  src/report.py  155 B
+  src/util.py  67 B
+  tests/__init__.py  0 B
+  tests/test_orders.py  511 B
+
+python-vibe has 23 skills it can apply. It picks them from the wording of
+your task; you do not choose them.
+```
+
+## What is tangled
+
+No model. 0.1 s.
+
+```
+$ python-vibe layout
+
+layout: 1 finding(s), worst first.
+  [cycle] src/render.py and src/report.py import each other
+
+Next move (do only this one): Move what they share into a new module both
+import.
+```
+
+## Ask a question
+
+`llama3.1:8b`. 8.5 s. The first draft was only `"int"`. The harness sent
+that back. The second draft named what the function computes.
+
+```
+$ python-vibe ask "what does compute_total return?"
+
+--- step 1 ---
+Action: done
+Summary: "int"
+
+--- step 2 ---
+Action: done
+Summary: "int, which computes the sum of the line prices of one order."
+
+int, which computes the sum of the line prices of one order.
+```
+
+Nothing was written.
+
+## Fix the NameError
+
+No model. 0.2 s. `src/orders.py` had `subtotl` on the tax line.
+
+```
+$ python-vibe run "find the NameError and fix it"
+
+bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
+```
+
+After:
+
+```python
+def total_with_tax(prices: list[int]) -> float:
+    """Order total including tax."""
+    subtotal = compute_total(prices)
+    return subtotal + (subtotal * TAX_RATE)
+```
+
+A `.bak` of the file sits next to it.
+
+## Add a function
+
+No model. 0.2 s.
+
+```
+$ python-vibe run "add a function total_lines and a test"
+
+added def total_lines(prices) in src/orders.py. Tests passed.
+```
+
+What landed:
+
+```python
+def total_lines(prices: list[int]) -> int:
+    return len(prices)
+```
+
+```python
+def test_total_lines_returns_the_expected_result(self) -> None:
+    prices = [10, 20]
+    got = total_lines(prices)
+    self.assertEqual(got, 2)
+```
+
+The suite stayed green. `ask` is the slow step because it is the one
+that talks to weights. The two writes are the same every time, which is
+why they are the ones on [Start]({{ '/start/' | relative_url }}).
