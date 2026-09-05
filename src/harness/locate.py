@@ -640,7 +640,7 @@ def refuse_thin_review(task: str, summary: str, report: str) -> str:
         )
     keys = [
         word
-        for word in ("SoC", "god", "tests", "scripts", "split", "__init__")
+        for word in ("SoC", "god", "outsized", "tests", "scripts", "split", "__init__")
         if word.lower() in report.lower()
     ]
     if not keys:
