@@ -286,7 +286,9 @@ DeepSeek first): write-tests 3 / 3 (compiler), first clamp generate
 180s timeout. After the timeout the tag *was* loaded. An isolated
 first chat on that tag was 38 s; the daily first generate did not
 return in 180s. A follow-up `ok` generate while `/api/ps` still
-listed the tag hit 60s. Listed is not the same as answering. Still
+listed the tag hit 60s. Listed is not the same as answering. After
+`/api/ps` was empty again, the same `ok` prompt finished in **6.8 s**
+(load 6.5 s). The wedge ended when the listed load expired. Still
 not a nine-cell table. **Do not switch.** Default stays
 `llama3.1:8b`.
 
