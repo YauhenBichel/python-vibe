@@ -42,6 +42,7 @@ def write_and_run(
     *,
     cwd: Path | None = None,
     timeout: float = 12,
+    stdin: str | None = None,
 ) -> RunResult:
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(source.rstrip() + "\n", encoding="utf-8")
@@ -52,6 +53,7 @@ def write_and_run(
         text=True,
         timeout=timeout,
         check=False,
+        input=stdin,
     )
     return RunResult(proc.returncode, proc.stdout, proc.stderr)
 

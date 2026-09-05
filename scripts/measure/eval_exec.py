@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Held-out execution eval: base vs LoRA vs LoRA+repair.
 
-  PYTHONPATH=src python scripts/eval.py --variant all --repeats 3
-  PYTHONPATH=src python scripts/eval.py --variant lora-repair --repeats 3 --task weekday
+  PYTHONPATH=src python scripts/measure/eval_exec.py --variant all --repeats 3
+  PYTHONPATH=src python scripts/measure/eval_exec.py --variant lora-repair --repeats 3 --task weekday
 
 CI does not run this. Unit tests score the reference scripts only.
 """
@@ -15,27 +15,33 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from finetune.models import SPECS  # noqa: E402
-from harness.engines import any_mlx, make_mlx, make_ollama  # noqa: E402
-from harness.eval_loop import Score, run_repeats  # noqa: E402
-from harness.eval_tasks import all_tasks  # noqa: E402
+from harness.memory import Conversation  # noqa: E402
+from harness.model.engine import has_mlx, make_generate, mlx_pythons  # noqa: E402
+from harness.observe.eval_loop import Score, run_repeats  # noqa: E402
+from harness.observe.eval_tasks import all_tasks  # noqa: E402
 
 VARIANTS = ("base", "base-repair", "lora", "lora-repair")
+
+
+def _any_mlx() -> bool:
+    return any(has_mlx(path) for path in mlx_pythons())
 
 
 def _load(engine: str, variant: str, max_tokens: int):
     spec = SPECS["python-vibe"]
     adapters = variant.startswith("lora")
     if engine == "auto":
-        engine = "mlx" if any_mlx() else "ollama"
+        engine = "mlx" if _any_mlx() else "ollama"
     if adapters and engine != "mlx":
         sys.exit("LoRA variants need --engine mlx (Ollama serves the untuned base)")
-    if engine == "mlx":
-        return make_mlx(spec, max_tokens, adapters=adapters)
-    return make_ollama(spec)
+    memory = Conversation(system=spec.system)
+    return make_generate(
+        engine, max_tokens, memory=memory, adapters=adapters
+    )
 
 
 def _summarize(rows: list[Score]) -> dict[str, object]:
@@ -80,7 +86,7 @@ def main() -> None:
         sys.exit(f"unknown task id(s): {sorted(wanted - known)}")
 
     variants = list(VARIANTS if args.variant == "all" else (args.variant,))
-    if args.engine == "ollama" or (args.engine == "auto" and not any_mlx()):
+    if args.engine == "ollama" or (args.engine == "auto" and not _any_mlx()):
         skipped = [v for v in variants if v.startswith("lora")]
         variants = [v for v in variants if not v.startswith("lora")]
         if skipped:

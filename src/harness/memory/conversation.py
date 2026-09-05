@@ -60,6 +60,12 @@ class Conversation:
             return
         self.turns.append((prompt, reply))
 
+    def clear(self) -> None:
+        """Forget the run, keep the budget and the system line."""
+        self.opening = ""
+        self.turns.clear()
+        self.dropped = 0
+
     def messages(self, prompt: str) -> list[dict[str, str]]:
         """What to send for `prompt`, trimmed from the middle to fit."""
         head: list[dict[str, str]] = []
