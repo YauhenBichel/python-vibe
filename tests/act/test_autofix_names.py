@@ -451,6 +451,33 @@ class MethodNameIsNotInScopeTest(unittest.TestCase):
 class ZeroReturnSumTest(unittest.TestCase):
     TASK = "fix compute_total in pkg/util_stats.py so it sums the rows"
 
+    def test_an_int_signature_gets_an_int_sum(self) -> None:
+        """A repair that argues with the declared type has to be undone.
+
+        The rule was written against a `-> float` fixture over a cleaned
+        series, where a float is right. This project also has
+        `compute_total(rows: list[int]) -> int`, and writing
+        `float(sum(rows))` into that contradicts the signature the
+        person wrote.
+        """
+        source = "def compute_total(rows: list[int]) -> int:\n    return 0\n"
+        got = apply_zero_return_sum(source, self.TASK)
+        self.assertIn("return sum(rows)", got)
+        self.assertNotIn("float(", got)
+
+    def test_a_float_signature_still_gets_a_float(self) -> None:
+        source = "def compute_total(rows: list[float]) -> float:\n    return 0\n"
+        self.assertIn(
+            "return float(sum(rows))", apply_zero_return_sum(source, self.TASK)
+        )
+
+    def test_no_annotation_keeps_the_wider_type(self) -> None:
+        """Nothing was declared, so nothing is contradicted."""
+        source = "def compute_total(rows):\n    return 0\n"
+        self.assertIn(
+            "return float(sum(rows))", apply_zero_return_sum(source, self.TASK)
+        )
+
     def test_literal_zero_in_compute_total_becomes_a_sum(self) -> None:
         fixture = ROOT / "eval" / "fixtures" / "everyday_fix" / "pkg" / "util_stats.py"
         source = fixture.read_text(encoding="utf-8")
