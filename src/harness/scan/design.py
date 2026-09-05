@@ -9,7 +9,32 @@ from harness.scan.project_brief import iter_text_files
 
 MAX_FINDINGS = 16
 GOD_DEFS = 4
+# Where a function stops being one thing. The architecture test in this
+# repository refuses at 80, which is the point where a function cannot
+# be read at all; this is the earlier point, where it should be split.
+# Two numbers because they answer two questions, and 40 flags 7% of the
+# functions here rather than most of them.
+LONG_DEF = 40
 CLEAN_PHRASE = "no structure findings"
+
+
+def longest_def(source: str) -> tuple[str, int] | None:
+    """The longest top-level function in the file, and its length.
+
+    One finding per file rather than one per function: a file with six
+    long functions has one problem, and sixteen findings of the same
+    shape push everything else off the report.
+    """
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return None
+    found = [
+        (node.name, (node.end_lineno or node.lineno) - node.lineno)
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+    return max(found, key=lambda item: item[1]) if found else None
 
 
 def _defs(source: str) -> list[str]:
@@ -59,6 +84,13 @@ def render_design_review(project: Path, scope: str = "") -> str:
             findings.append(
                 f"god module: {rel} has {len(names)} top-level functions — "
                 "Action: edit Path: pkg/<new_concern>.py with one function"
+            )
+        longest = longest_def(source)
+        if longest and longest[1] > LONG_DEF and "test" not in rel:
+            name, length = longest
+            findings.append(
+                f"long function: {rel}:{name} is {length} lines — "
+                f"over {LONG_DEF}, split it into one function per thing it does"
             )
         if (
             rel.startswith(("pkg/", "src/"))
