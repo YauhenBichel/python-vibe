@@ -151,6 +151,7 @@ Bench record (machine, models, every run) {{ '/investigations/bench-record/' | a
 Cloud weights {{ '/investigations/cloud-weights/' | absolute_url }}
 Local vs hosted {{ '/investigations/local-vs-cloud/' | absolute_url }}
 Same jobs {{ '/investigations/same-jobs/' | absolute_url }}
+The instrument was broken {{ '/investigations/measuring/' | absolute_url }}
 Two models, one wall {{ '/investigations/two-models/' | absolute_url }}
 Where the failures are {{ '/investigations/failures/' | absolute_url }}
 What the harness cannot fix {{ '/investigations/limits/' | absolute_url }}

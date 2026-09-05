@@ -185,7 +185,21 @@ CASES = [
 ]
 
 
-def run(case: Case, model: str, steps: int) -> dict:
+# What a person says when a run stops to ask. Deliberately empty of
+# information: answering the question properly would hand over the thing
+# the case is checking, and every model would score the same.
+#
+# Without any answer at all, a question ends the run and counts as a
+# failure. Models differ enormously in how often they ask — on tier 3,
+# `llama3.1:8b` asked in one run of twenty and `qwen2.5-coder:7b` in
+# eleven — so a benchmark with nobody there measures willingness to act
+# without asking, and calls it capability.
+NO_HELP = (
+    "Use the most likely reading, say which you chose, and continue."
+)
+
+
+def run(case: Case, model: str, steps: int, engine: str = "ollama") -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         project = Path(tmp)
         for rel, body in {**BASE, **case.files}.items():
@@ -195,7 +209,14 @@ def run(case: Case, model: str, steps: int) -> dict:
         started = time.time()
         try:
             result = Agent(
-                AgentOptions(project=project, task=case.task, model=model, steps=steps)
+                AgentOptions(
+                    project=project,
+                    task=case.task,
+                    model=model,
+                    steps=steps,
+                    engine=engine,
+                    on_question=lambda _question: NO_HELP,
+                )
             ).run()
         except Exception as exc:  # noqa: BLE001
             return {"case": case.key, "tier": case.tier, "worked": "error",
@@ -219,6 +240,7 @@ def run(case: Case, model: str, steps: int) -> dict:
         return {"case": case.key, "tier": case.tier,
                 "worked": "yes" if worked else "no", "why": why, "suite": suite,
                 "stopped": result.stopped,
+                "asked": sum(1 for step in result.steps if step.action == "ask"),
                 "steps": len(result.steps), "writes": list(result.writes),
                 "seconds": round(time.time() - started, 1)}
 
@@ -303,6 +325,11 @@ def main() -> int:
     )
     parser.add_argument("--tier", type=int, action="append", default=[])
     parser.add_argument("--model", default=AgentOptions(project=Path(".")).model)
+    parser.add_argument(
+        "--engine",
+        default="ollama",
+        help="ollama (local), or openai to measure a model too big to run here",
+    )
     parser.add_argument("--steps", type=int, default=10)
     parser.add_argument(
         "--repeat",
@@ -319,7 +346,7 @@ def main() -> int:
     rows: list[dict] = []
     for number in range(1, args.repeat + 1):
         for case in cases:
-            row = run(case, args.model, args.steps)
+            row = run(case, args.model, args.steps, args.engine)
             row["pass"] = number
             rows.append(row)
             print(json.dumps(row), flush=True)
