@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: If you use python-vibe or quote a measured score, please cite it.
+type: software
+title: python-vibe
+abstract: >-
+  A laptop Python vibe-coding kit. The model proposes; a deterministic
+  harness decides what ships. Daily work is an 8B local model. The public
+  0.5B LoRA is a style prior.
+authors:
+  - family-names: Bichel
+    given-names: Yauhen
+    website: https://github.com/YauhenBichel
+repository-code: https://github.com/YauhenBichel/python-vibe
+url: https://yauhenbichel.github.io/python-vibe/
+license: Apache-2.0
+date-released: "2026-08-29"
+keywords:
+  - python
+  - llm
+  - code-generation
+  - harness
+preferred-citation:
+  type: software
+  title: python-vibe
+  authors:
+    - family-names: Bichel
+      given-names: Yauhen
+  year: 2026
+  url: https://github.com/YauhenBichel/python-vibe
+  notes: >-
+    Measurements, including the 5 Sep 2026 0.5B exact-stdout eval
+    (7/54 base, 12/54 with one repair), are at
+    https://yauhenbichel.github.io/python-vibe/cite/

@@ -93,6 +93,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 8B listen_addr answer after hint fix: done in 1 step, quoted a host/port tuple, omitted env and argv defaults.
 - 0.5B / --tiny parsed Actions that day: 0/2 (echoed the skill, no Action parse).
 - 0.5B held-out vibe (weekday, count-md, jsonl, docstring): 0/4.
+- 0.5B exact-stdout (18 scripts × 3, 5 Sep 2026): 7/54 base, 12/54 after one traceback repair.
 - qwen2.5-coder:1.5b first Action on add-feature_pkg (question + add multiply): 0/2 (prose or `# patch`, no Action:).
 - llama3.2:1b on the same two tasks: 0/2.
 - OpenSRE-style 100 smallest files: 100× "no issues". That is not a review.
@@ -128,7 +129,9 @@ A free bash tool does not transfer to an 8B on a laptop working tree.
 Home {{ '/' | absolute_url }}
 Start {{ '/start/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
+Cite {{ '/cite/' | absolute_url }}
 Experiments {{ '/investigations/experiments/' | absolute_url }}
+0.5B exact-stdout eval {{ '/investigations/held-out-exec-eval/' | absolute_url }}
 First-run four {{ '/investigations/first-run-four/' | absolute_url }}
 Bench record (machine, models, every run) {{ '/investigations/bench-record/' | absolute_url }}
 Cloud weights {{ '/investigations/cloud-weights/' | absolute_url }}

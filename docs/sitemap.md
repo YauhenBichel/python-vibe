@@ -17,7 +17,9 @@ permalink: /sitemap.xml
   <url><loc>{{ '/ide-plugins/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>{{ '/research-vibe-review/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>{{ '/investigations/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>{{ '/investigations/experiments/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>{{ '/cite/' | absolute_url }}</loc><lastmod>2026-09-05</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>{{ '/investigations/experiments/' | absolute_url }}</loc><lastmod>2026-09-05</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>{{ '/investigations/held-out-exec-eval/' | absolute_url }}</loc><lastmod>2026-09-05</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/bench-record/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/first-run-four/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/local-vs-cloud/' | absolute_url }}</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>

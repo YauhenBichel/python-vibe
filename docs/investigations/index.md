@@ -12,8 +12,8 @@ Dates are the day of the measurement. Public pages do not name other
 editors or chat products.
 
 <div class="stats">
-  <div class="stat"><b>0 / 4</b><span>0.5B vibe</span></div>
-  <div class="stat"><b>4 / 4</b><span>Start commands after the harness</span></div>
+  <div class="stat"><b>7 / 54</b><span>0.5B exact stdout</span></div>
+  <div class="stat"><b>12 / 54</b><span>0.5B after one repair</span></div>
   <div class="stat"><b>8 / 15</b><span>8B live parse</span></div>
   <div class="stat"><b>6–9 / 9</b><span>8B when code must run, six runs</span></div>
 </div>
@@ -21,6 +21,7 @@ editors or chat products.
 | Experiment | Example | Result |
 | --- | --- | --- |
 | 0.5B as daily work | weekday helper, count-md, `Action:` | 0 / 4 vibe, 0 / 2 parse |
+| 0.5B exact stdout | 18 held-out scripts, 3 repeats | **7 / 54** base, **12 / 54** with repair |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
@@ -35,6 +36,8 @@ What you type:
 | Note | What it answers |
 | --- | --- |
 | [Experiments]({{ '/investigations/experiments/' | relative_url }}) | Every measured run, with the example and the score. |
+| [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 7 / 54 base, 12 / 54 after one repair. 5 Sep 2026. |
+| [Cite]({{ '/cite/' | relative_url }}) | APA and BibTeX for the software and that measurement. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and all six runs behind the numbers. |
 | [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. |
 | [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. |
