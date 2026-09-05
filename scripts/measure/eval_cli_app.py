@@ -5,6 +5,7 @@
 
 Empty folder each time. The harness scaffolds pkg/ + tests/. Pass means
 list, show, urllib, and mocked tests exist (score_cli_app list_show_ready).
+Default 12 steps (the later #206 cell). Pass --steps 20 for the first cell.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ REPEATS = 3
 STEPS = 12
 
 
-def _run_one(model: str) -> dict:
+def _run_one(model: str, steps: int) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         dest = Path(tmp)
         result = Agent(
@@ -35,7 +36,7 @@ def _run_one(model: str) -> dict:
                 task=TASK,
                 model=model,
                 keep_no_record=True,
-                steps=STEPS,
+                steps=steps,
             )
         ).run()
         missing = [gap.key for gap in required_gaps(dest, TASK)]
@@ -50,11 +51,14 @@ def _run_one(model: str) -> dict:
 
 def main() -> None:
     model = DEFAULT_EVERYDAY_OLLAMA
+    steps = STEPS
     if "--model" in sys.argv:
         model = sys.argv[sys.argv.index("--model") + 1]
+    if "--steps" in sys.argv:
+        steps = int(sys.argv[sys.argv.index("--steps") + 1])
     rows = []
     for _repeat in range(REPEATS):
-        row = _run_one(model)
+        row = _run_one(model, steps)
         rows.append(row)
         print(json.dumps(row, ensure_ascii=False), flush=True)
     passed = sum(int(row["ok"]) for row in rows)
