@@ -91,7 +91,8 @@ everyday brain.
   recorded night:
   `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`. The next
   live cell is a ≥1 KB logic bug we commit never to autofix, scored only
-  when turns are non-empty.
+  when turns are non-empty. That cell is `clip` in
+  `eval/fixtures/everyday_live` (filter vs clamp). Not yet remasured.
 
 Live `agent.py` + `llama3.1:8b` loops on this machine (29 Aug 2026):
 

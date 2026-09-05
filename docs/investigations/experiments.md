@@ -374,8 +374,11 @@ that used that shape is **retired as a model job**. Do not remasure
 `eval/fixtures/everyday_fix`. Replay of the last recorded night:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
-The next live ≥1 KB cell is a later job: a logic bug we commit never to
-autofix, scored only when `#248` turns are non-empty.
+The live ≥1 KB cell is `clip` in `eval/fixtures/everyday_live`: it
+filters outliers instead of clamping them. The compiler leaves that
+shape alone. Score it only when `#248` turns are non-empty. Not yet
+remasured. Replay:
+`PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed
 

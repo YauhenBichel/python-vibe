@@ -68,6 +68,17 @@ class EverydayBarTurnsTest(unittest.TestCase):
         got = script._turns(result)
         self.assertEqual(len(got[0]["refused"]), 200)
 
+    def test_compiler_only_write_does_not_count(self) -> None:
+        script = _script()
+        self.assertFalse(script._model_fix_ok(True, []))
+        self.assertFalse(script._model_fix_ok(False, [{"n": 1}]))
+        self.assertTrue(script._model_fix_ok(True, [{"n": 1, "action": "patch"}]))
+
+    def test_live_cell_is_clip_not_the_retired_zero_return(self) -> None:
+        script = _script()
+        self.assertEqual(script.FIXTURE.name, "everyday_live")
+        self.assertIn("clip", script.TASK)
+
 
 if __name__ == "__main__":
     unittest.main()

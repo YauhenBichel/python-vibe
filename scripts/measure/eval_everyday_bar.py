@@ -3,12 +3,15 @@
 
   PYTHONPATH=src python scripts/measure/eval_everyday_bar.py
 
-Live parse is the fifteen action_prompts.jsonl rows. The fix is
-compute_total returning 0 in a ≥1 KB file — not a planted NameError.
-Clean 8B means the same Ollama model with no AGENT_SYSTEM and no
-agent loop (one-shot draft). Default twelve steps on the harness fix.
-Each harness_fix row includes the turns (action, path, refusal) so a
-0/3 is diagnosable. The eval still does not record traces.
+Live parse is the fifteen action_prompts.jsonl rows. The live fix is
+clip filtering instead of clamping in a ≥1 KB file — not a planted
+NameError, and not a whole-line return 0. A compiler-only write does
+not count: harness_fix is ok only when the suite is green and turns
+are non-empty. Clean 8B means the same Ollama model with no
+AGENT_SYSTEM and no agent loop (one-shot draft). Default twelve steps
+on the harness fix. Each harness_fix row includes the turns (action,
+path, refusal) so a 0/3 is diagnosable. The eval still does not
+record traces.
 """
 
 from __future__ import annotations
@@ -30,8 +33,10 @@ from harness.act.code import extract_python  # noqa: E402
 from harness.act.parse import parse_turn  # noqa: E402
 from harness.model.ollama_generate import OllamaGenerate  # noqa: E402
 
-TASK = "fix compute_total in pkg/util_stats.py so it sums the rows"
-FIXTURE = ROOT / "eval" / "fixtures" / "everyday_fix"
+TASK = (
+    "fix clip in pkg/util_stats.py so values outside low and high are clamped"
+)
+FIXTURE = ROOT / "eval" / "fixtures" / "everyday_live"
 PROMPTS = ROOT / "eval" / "action_prompts.jsonl"
 REPEATS = 3
 STEPS = 12
@@ -71,7 +76,12 @@ def _parse(model: str, system: str) -> dict:
     return {"ok": ok, "n": len(rows)}
 
 
-def _suite_and_sum(project: Path) -> bool:
+def _model_fix_ok(suite: bool, turns: list) -> bool:
+    """A compiler-only write does not count. Turns must be non-empty."""
+    return bool(suite and turns)
+
+
+def _suite_and_clip(project: Path) -> bool:
     proc = subprocess.run(
         [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"],
         cwd=project,
@@ -87,9 +97,9 @@ def _suite_and_sum(project: Path) -> bool:
             del sys.modules[name]
     sys.path.insert(0, str(project))
     try:
-        from pkg.util_stats import compute_total  # type: ignore
+        from pkg.util_stats import clip  # type: ignore
 
-        return float(compute_total([1.0, 2.0, 3.0])) == 6.0
+        return clip([-2.0, 0.5, 9.0], 0.0, 1.0) == [0.0, 0.5, 1.0]
     except Exception:
         return False
     finally:
@@ -131,12 +141,13 @@ def _harness_fix(model: str) -> dict:
                 steps=STEPS,
             )
         ).run()
-        ok = _suite_and_sum(dest)
+        turns = _turns(result)
+        suite = _suite_and_clip(dest)
         return {
-            "ok": ok,
+            "ok": _model_fix_ok(suite, turns),
             "stopped": result.stopped,
             "writes": list(result.writes),
-            "turns": _turns(result),
+            "turns": turns,
         }
 
 
@@ -144,23 +155,24 @@ def _clean_fix(model: str) -> dict:
     backend = OllamaGenerate(model, "")
     src = (FIXTURE / "pkg" / "util_stats.py").read_text(encoding="utf-8")
     draft = backend(
-        "Fix compute_total so it sums the rows. Return only Python.\n\n" + src
+        "Fix clip so values outside low and high are clamped. "
+        "Return only Python.\n\n" + src
     )
     extracted = extract_python(draft) or ""
     with tempfile.TemporaryDirectory() as tmp:
         dest = Path(tmp)
         shutil.copytree(FIXTURE, dest, dirs_exist_ok=True)
         target = dest / "pkg" / "util_stats.py"
-        if "def compute_total" in extracted and len(extracted) > 40:
+        if "def clip" in extracted and len(extracted) > 40:
             if extracted.lstrip().startswith(("import ", "from ", '"""')):
                 target.write_text(extracted, encoding="utf-8")
             else:
                 body = target.read_text(encoding="utf-8")
-                start = body.find("def compute_total")
+                start = body.find("def clip")
                 end = body.find("\n\ndef ", start + 1)
                 if start >= 0 and end > start:
                     target.write_text(body[:start] + extracted + body[end:], encoding="utf-8")
-        ok = _suite_and_sum(dest)
+        ok = _suite_and_clip(dest)
         return {"ok": ok, "extracted": bool(extracted)}
 
 
