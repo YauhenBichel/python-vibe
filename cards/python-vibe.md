@@ -111,6 +111,29 @@ after that checkpoint.
 
 Base weights: `Qwen/Qwen2.5-Coder-0.5B-Instruct`, Apache-2.0.
 
+## Experiments
+
+One laptop. 29–30 August and 5 September 2026. **Not everyday-ready.**
+Everyday-ready still means beating an untuned `llama3.1:8b` on live parse
+**and** a real ≥1 KB fix the model wrote. Full write-up:
+[Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+
+| Experiment | Example | Result |
+| --- | --- | --- |
+| 0.5B as daily work | weekday helper, count-md, `Action:` | **0 / 4** vibe, **0 / 2** parse |
+| 0.5B exact stdout | 18 held-out scripts, 3 repeats, Ollama | **7 / 54** base, **12 / 54** with one repair |
+| 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** then **12 / 18** with a later loop; greedy LoRA **0 / 54** |
+| 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9** |
+| 8B greenfield CLI | GitHub PR CLI, empty folder, 3 repeats | **3 / 3** after #220 (suite + `done`); overflow comment **3 / 3** after #222; pagination **3 / 3** after #233; config **3 / 3** after #241 |
+| Everyday-ready bar | 15 parse prompts + ≥1 KB logic fix × 3 | after #246: harness parse **9 / 15** vs clean **0 / 15**; harness fix **3 / 3** (no model turns) vs clean **3 / 3**. Zero-return cell retired as a model job. Not everyday-ready. |
+| Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
+| Which open model | same bench, code must run | 8B **6–9 / 9** over six runs; 30B timeout |
+| Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
+| A real repository | 4,580 files, not a fixture | reading works; writing **1 / 12** |
+
+These adapters are the 0.5B style prior in that table. They are not the
+8B daily path. Do not remasure the retired zero-return ≥1 KB cell.
+
 ## Which model to run it with
 
 Three local models were measured on the same eleven jobs, each checked by
@@ -169,8 +192,9 @@ where these runs fail.
 
 ## What was measured
 
-Full write-up:
-[which model](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/investigations/which-model.md)
+Scores, examples, and replay commands:
+[Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/)
+· [which model](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/investigations/which-model.md)
 · [research-vibe-review](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/research-vibe-review.md).
 
 - About 45 training pairs. Validation was best near step 100, which is what
