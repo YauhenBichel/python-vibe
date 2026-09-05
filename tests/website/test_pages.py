@@ -26,6 +26,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "architecture.md",
             "skills.md",
             "demo.md",
+            "live.md",
             "local-editor.md",
             "ide-plugins.md",
             "cursor.md",
@@ -111,6 +112,7 @@ class PagesInvestigationsTest(unittest.TestCase):
         labels = [item.strip() for item in labels if item.strip()]
         self.assertEqual(labels, list(dict.fromkeys(labels)), labels)
         self.assertEqual(labels.count("Demo"), 1)
+        self.assertEqual(labels.count("Live"), 1)
         self.assertIn(":focus-visible", css)
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn("prefers-color-scheme: dark", css)
@@ -140,6 +142,14 @@ class PagesInvestigationsTest(unittest.TestCase):
                 elif _CURSOR.search(line) and not allow_cursor:
                     hits.append(f"{path.relative_to(ROOT)}:{i}")
         self.assertEqual(hits, [])
+
+    def test_live_page_is_a_real_session(self) -> None:
+        text = (DOCS / "live.md").read_text(encoding="utf-8")
+        self.assertIn('$ python-vibe brief', text)
+        self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
+        self.assertIn("subtotl → subtotal", text)
+        self.assertIn("def total_lines(prices: list[int]) -> int:", text)
+        self.assertIn("8.5 s", text)
 
 
 def _front_matter(path: Path) -> dict[str, str]:

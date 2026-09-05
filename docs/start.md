@@ -60,6 +60,8 @@ To try a change without writing: add `--dry-run`.
 
 What those four commands did on one laptop:
 [Scenarios]({{ '/scenarios/' | relative_url }}).
+A typed session, with the real replies:
+[Live demo]({{ '/live/' | relative_url }}).
 Every measured run:
 [Experiments]({{ '/investigations/experiments/' | relative_url }}).
 
