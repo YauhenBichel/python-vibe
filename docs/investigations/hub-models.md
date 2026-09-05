@@ -45,7 +45,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `qwen2.5-coder:1.5b` → [Qwen/Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | 986 MB | On disk. **No `Action:` parse** in the probes below. |
 | `llama3.2:1b` → [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 1.3 GB | On disk. **No `Action:` parse.** |
 | `qwen3coder` 30B-class | 18 GB | Already timed out at the 180s Ollama cap. |
-| `qwen2.5-coder:7b` | — | Optional write specialist after a live compare. `ollama pull`. |
+| `qwen2.5-coder:7b` | 4.7 GB | On disk. Same-night daily **7 / 9**. Do not switch. |
 | `opencoder:8b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
 | `swe-agent-lm:7b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
 

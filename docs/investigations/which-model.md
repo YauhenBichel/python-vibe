@@ -2,7 +2,7 @@
 title: Which model
 description: Three local models measured on the same eleven jobs. The 8B wins the work this is built for, the 7B coder loses it, and the 30B does not finish at all.
 permalink: /investigations/which-model/
-date: 2026-08-29
+date: 2026-09-05
 ---
 
 # Which model
@@ -12,7 +12,9 @@ work and worse at everything this project is actually used for. A 30B does
 not finish a single task on this laptop.
 
 Related: [model lanes](./model-lanes.md) ·
-[fine-tune or harness](./fine-tune-or-harness.md).
+[fine-tune or harness](./fine-tune-or-harness.md) ·
+[two models, one wall](./two-models.md) ·
+[Hub models](./hub-models.md).
 
 ## How this was measured
 
@@ -45,6 +47,22 @@ Measured on one laptop, 29 August 2026, through Ollama.
 The 30B result is not a score. Every case ended in a timeout, so the model
 never produced a usable turn at all.
 
+## Same-night daily jobs, 5 September 2026
+
+`scripts/measure/eval_daily.py`. Write a test, add `clamp`, fix a sum.
+Three repeats. Twelve steps.
+
+| Model | Write tests | Add clamp | Logic bug | Passed |
+| --- | --- | --- | --- | --- |
+| `llama3.1:8b` | 3 / 3 | 3 / 3 | 3 / 3 | **9 / 9** |
+| `qwen2.5-coder:7b` | 3 / 3 | 1 / 3 | 3 / 3 | **7 / 9** |
+
+The 7B coder stopped twice to ask where `clamp` should go. The logic-bug
+3 / 3 on both sides is a compiler `return 0` bind, not the model writing
+the sum. A two-case gap is noise. **Do not switch.**
+
+OpenCoder 8B and SWE-agent-LM 7B are not in this table yet. Import them
+with `scripts/weights/import_hf_ollama.py`, then remasure.
 
 ## One run is not a score
 

@@ -23,7 +23,8 @@ editors or chat products.
 | 0.5B as daily work | weekday helper, count-md, `Action:` | 0 / 4 vibe, 0 / 2 parse |
 | 0.5B exact stdout | 18 held-out scripts, 3 repeats, Ollama | **7 / 54** base, **12 / 54** with repair |
 | 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** then **12 / 18** with later loop; 0 hint-repairs; greedy LoRA **0 / 54** |
-| 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9** |
+| 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9**; same-night remasure **9 / 9** |
+| 7B coder daily | same script, `qwen2.5-coder:7b` | **7 / 9** (add 1 / 3). Clip bar: parse **10 / 15** vs clean **1 / 15**; fix **0 / 3**. Default stays 8B |
 | 8B greenfield CLI | GitHub PR CLI, empty folder, 3 repeats | **3 / 3** after #220 (suite + `done`); overflow comment **3 / 3** after #222; pagination **3 / 3** after #233; config **3 / 3** after #241 |
 | Everyday-ready bar | 15 parse prompts + ≥1 KB logic fix × 3 | after #254: harness parse **8 / 15** vs clean **0 / 15**; harness fix **0 / 3** (writes `[]` × 3; turns non-empty) vs clean **3 / 3**. Clip cell. Not everyday-ready. |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
@@ -58,7 +59,7 @@ What you type:
 | [Small models, classic development]({{ '/investigations/small-llm-harness/' | relative_url }}) | How an 8B reaches bigger-model outcomes: oracles. |
 | [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}) | When to train again. Not on 35 pairs. Not on 30 traces. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for questions, writes, structure, ship. |
-| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Three local models on the same eleven jobs. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Three local models on the same eleven jobs. Same-night daily: 8B 9/9, 7B 7/9. |
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Hugging Face ids. 1.5B and 1B do not parse Action:. OpenCoder and SWE-agent-LM import as GGUF. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The harness stays here. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B LoRA is not daily work. |
