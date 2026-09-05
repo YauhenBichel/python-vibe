@@ -2,11 +2,11 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from finetune.python_vibe import all_pairs
-from harness.eval_loop import score_generate, score_source
-from harness.eval_tasks import Task, all_tasks
+from harness.observe.eval_loop import score_generate, score_source
+from harness.observe.eval_tasks import Task, all_tasks
 
 
 class EvalTasksTest(unittest.TestCase):

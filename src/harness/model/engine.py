@@ -70,6 +70,7 @@ def make_generate(
     model: str | None = None,
     system: str | None = None,
     memory=None,
+    adapters: bool = True,
 ) -> tuple[str, Callable[[str], str]]:
     """A label and a function that answers one prompt.
 
@@ -81,7 +82,9 @@ def make_generate(
     if engine == "auto":
         engine = "mlx" if any(has_mlx(p) for p in mlx_pythons()) else "ollama"
     if engine == "mlx":
-        return _mlx_generate(max_tokens, system=system, memory=memory)
+        return _mlx_generate(
+            max_tokens, system=system, memory=memory, adapters=adapters
+        )
     if engine == "openai":
         return _openai_generate(
             max_tokens, model=model, system=system, memory=memory
@@ -92,15 +95,25 @@ def make_generate(
 
 
 def _mlx_generate(
-    max_tokens: int, *, system: str | None = None, memory=None
+    max_tokens: int,
+    *,
+    system: str | None = None,
+    memory=None,
+    adapters: bool = True,
 ) -> tuple[str, Callable[[str], str]]:
     reexec_for_mlx()
     from mlx_lm import generate, load
 
     spec = SPECS["python-vibe"]
-    local = ensure_adapters(spec)
-    adapter = _stage_best(local) if (local / BEST_ADAPTER).is_file() else local
-    model, tokenizer = load(spec.mlx_base, adapter_path=str(adapter))
+    adapter_path: str | None = None
+    label = f"mlx-base:{spec.mlx_base}"
+    if adapters:
+        local = ensure_adapters(spec)
+        adapter = _stage_best(local) if (local / BEST_ADAPTER).is_file() else local
+        adapter_path = str(adapter)
+        label = f"mlx-lora:{adapter.name}"
+    model, tokenizer = load(spec.mlx_base, adapter_path=adapter_path)
+
     def generate_once(prompt: str) -> str:
         text = tokenizer.apply_chat_template(
             memory.messages(prompt), tokenize=False, add_generation_prompt=True
@@ -108,7 +121,7 @@ def _mlx_generate(
         return generate(model, tokenizer, prompt=text, max_tokens=max_tokens)
 
     generate_once.memory = memory  # type: ignore[attr-defined]
-    return f"mlx-lora:{adapter.name}", generate_once
+    return label, generate_once
 
 
 def _openai_generate(

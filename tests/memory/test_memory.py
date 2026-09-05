@@ -57,6 +57,15 @@ class ConversationTest(unittest.TestCase):
         messages = mem.messages("hello")
         self.assertEqual(messages[0], {"role": "system", "content": "be careful"})
 
+    def test_clear_forgets_the_run_and_keeps_the_system(self) -> None:
+        mem = Conversation(budget_tokens=8192, system="be careful")
+        mem.remember("opening", "reply")
+        mem.clear()
+        self.assertEqual(mem.opening, "")
+        self.assertEqual(mem.turns, [])
+        self.assertEqual(mem.dropped, 0)
+        self.assertEqual(mem.system, "be careful")
+
     def test_an_opening_too_large_for_the_budget_is_dropped_not_cut(self) -> None:
         """Half a function read as a whole one is worse than none."""
         mem = Conversation(budget_tokens=64, system="s")

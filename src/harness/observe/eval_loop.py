@@ -8,13 +8,14 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness.code import RunResult, extract_python, write_and_run
-from harness.engines import GenerateFn, remember
-from harness.eval_tasks import REPAIR_PREFIX, RUN_PREFIX, Task
-from harness.fallbacks import PYTHON_VIBE_FALLBACK
-from harness.python_vibe import PythonVibeGuard
-from harness.run import complete
-from harness.types import Outcome
+from harness.act.code import RunResult, extract_python, write_and_run
+from harness.guard.fallbacks import PYTHON_VIBE_FALLBACK
+from harness.guard.python_vibe import PythonVibeGuard
+from harness.guard.run import complete
+from harness.guard.types import Outcome
+from harness.observe.eval_tasks import REPAIR_PREFIX, RUN_PREFIX, Task
+
+GenerateFn = Callable[[str], str]
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,23 @@ class Score:
 
 def stdout_matches(expect: str, got: str) -> bool:
     return got.rstrip("\n") == expect.rstrip("\n")
+
+
+def _remember(generate: GenerateFn, prompt: str, draft: str) -> None:
+    memory = getattr(generate, "memory", None)
+    if memory is None:
+        return
+    memory.remember(prompt, draft)
+
+
+def _reset(generate: GenerateFn) -> None:
+    memory = getattr(generate, "memory", None)
+    if memory is not None:
+        memory.clear()
+        return
+    history = getattr(generate, "history", None)
+    if history is not None:
+        history.clear()
 
 
 def run_source(task: Task, source: str, dest: Path) -> tuple[bool, RunResult]:
@@ -119,7 +137,7 @@ def score_generate(
     if early is not None:
         return Score(task.id, early.passed, False, early.reason, "", "", 1, early.fallback)
     assert source is not None
-    remember(generate, prompt, outcome.output or source)
+    _remember(generate, prompt, outcome.output or source)
     first = score_source(task, source)
     if first.passed or not repair:
         return first
@@ -163,7 +181,5 @@ def run_repeats(
             if reset is not None:
                 reset()
             else:
-                history = getattr(generate, "history", None)
-                if history is not None:
-                    history.clear()
+                _reset(generate)
             yield score_generate(task, generate, repair=repair)

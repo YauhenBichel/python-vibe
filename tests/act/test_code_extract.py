@@ -29,6 +29,18 @@ class ExtractPythonTest(unittest.TestCase):
         self.assertEqual(result.code, 0)
         self.assertEqual(result.stdout.strip(), "ok")
 
+    def test_run_reads_stdin(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_test_stdin.py"
+            result = write_and_run(
+                "import sys\nprint(sys.argv[1] + sys.stdin.read(), end='')\n",
+                dest,
+                ["hi"],
+                stdin=" there",
+            )
+        self.assertEqual(result.code, 0)
+        self.assertEqual(result.stdout, "hi there")
+
     def test_resolve_stays_in_project(self) -> None:
         root = Path(__file__).resolve().parents[2]
         path = resolve_project_file(root, "src/harness/act/code.py")
