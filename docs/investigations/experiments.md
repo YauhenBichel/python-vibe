@@ -212,13 +212,17 @@ word ok.` Cap 180s. No daily job.
 | --- | --- | --- |
 | `llama3.1:8b` (already loaded) | `Ok` | **3.9 s** |
 | `qwen2.5-coder:7b` (swap from 8B) | `Ok.` | **11.5 s** |
+| `deepseek-coder:6.7b` (after 7B coder) | `Ok` | **3.8 s** |
+| `swe-agent-lm:7b` (after DeepSeek) | `OK.` | **19.6 s** |
+| `starcoder2:7b` | timeout | 180 s |
 | `codellama:7b-python` | timeout | 180 s |
 | `opencoder:8b` | timeout | 180 s |
 
-The 8B and the 7B coder answer. CodeLlama and OpenCoder do not finish
-even this prompt inside the cap that daily `run` uses. That is why
-those daily tables stay incomplete. That is not a nine-cell table.
-**Do not switch.** Default stays `llama3.1:8b`.
+The 8B, the 7B coder, DeepSeek, and SWE-agent-LM answer. StarCoder2,
+CodeLlama, and OpenCoder do not finish even this prompt inside the
+cap that daily `run` uses. DeepSeek and SWE-agent-LM still timed out
+on daily clamp — a one-word reply is not a score. That is not a
+nine-cell table. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
@@ -593,8 +597,8 @@ python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 **Result.** Both tags are on disk. A one-word generate hit 180s on
-OpenCoder (the loaded 8B replied in 3.9 s). Clamp timed out the same
-way (write-tests 3 / 3 is the compiler bind, no model). That is not
+OpenCoder and finished in 19.6 s on SWE-agent-LM. Clamp timed out on
+both (write-tests 3 / 3 is the compiler bind, no model). That is not
 a score. Default stays `llama3.1:8b`. Other 7B–8B weights that fit
 this laptop, and the ones that do not, are listed on
 [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
