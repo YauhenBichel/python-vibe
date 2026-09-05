@@ -8,9 +8,11 @@ from pathlib import Path
 from harness.scan.app_spec import (
     app_is_clean,
     next_app_action,
+    next_overflow_action,
     overflow_gaps,
     render_app_review,
     required_gaps,
+    requested_overflow,
 )
 from harness.task import looks_like_app_loop, package_noun
 
@@ -123,6 +125,40 @@ class AppSpecTest(unittest.TestCase):
         self.assertIn("pkg/pr_review.py", line)
         self.assertEqual(package_noun(CLI), "pr_review")
         self.assertTrue(looks_like_app_loop(CLI))
+
+    def test_comment_run_names_only_comment(self) -> None:
+        overflow = "add the comment subcommand and a mocked test"
+        self.assertEqual(requested_overflow(overflow), ("comment",))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pkg = root / "pkg"
+            tests = root / "tests"
+            pkg.mkdir()
+            tests.mkdir()
+            (pkg / "__init__.py").write_text('"""exports"""\n', encoding="utf-8")
+            (pkg / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "    return []\n"
+                "def show_pull(owner, repository, number):\n"
+                "    return {}\n"
+                "parser.add_parser('list')\n"
+                "parser.add_parser('show')\n",
+                encoding="utf-8",
+            )
+            (tests / "test_pr_review.py").write_text(
+                "from unittest.mock import patch\n"
+                "from pkg.pr_review import list_pulls\n"
+                "with patch('urllib.request.urlopen'):\n"
+                "    list_pulls('o', 'r')\n",
+                encoding="utf-8",
+            )
+            line = next_overflow_action(root, overflow)
+        self.assertIn("comment", line)
+        self.assertIn("pkg/pr_review.py", line)
 
 
 if __name__ == "__main__":

@@ -50,6 +50,15 @@ class AppLoopTest(unittest.TestCase):
         self.assertIn("Do not ask", refuse_app_ask(CLI, "ask"))
         self.assertTrue(looks_like_app_loop(CLI))
 
+    def test_overflow_locate_and_ask_are_refused(self) -> None:
+        overflow = "add the comment subcommand and a mocked test"
+        self.assertIn(
+            "comment",
+            refuse_redundant_locate(overflow, "locate", False),
+        )
+        self.assertIn("Do not ask", refuse_app_ask(overflow, "ask"))
+        self.assertIn("comment", refuse_app_ask(overflow, "ask"))
+
     def test_hint_names_the_module_not_weekday(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -254,3 +263,35 @@ class AppLoopTest(unittest.TestCase):
                 env={**os.environ, "PYTHONPATH": str(root)},
             )
         self.assertEqual(ran.returncode, 0, ran.stderr + ran.stdout)
+
+    def test_overflow_done_is_refused_until_comment(self) -> None:
+        overflow = "add the comment subcommand and a mocked test"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "    return []\n"
+                "def show_pull(owner, repository, number):\n"
+                "    return {}\n"
+                "parser.add_parser('list')\n"
+                "parser.add_parser('show')\n",
+                encoding="utf-8",
+            )
+            state = LoopState(
+                task=overflow, project=root, wrote_something=True, ran_tests=True
+            )
+            blocked = refuse_done(state, _Turn("done", summary="added comment"))
+            got = next_prompt(
+                state, _Turn("edit", path="pkg/pr_review.py"), "wrote pkg/pr_review.py"
+            )
+        self.assertIn("comment", blocked)
+        self.assertIn("pkg/pr_review.py", got)
+
+
+if __name__ == "__main__":
+    unittest.main()

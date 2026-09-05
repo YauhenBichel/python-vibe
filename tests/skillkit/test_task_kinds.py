@@ -12,6 +12,7 @@ from harness.task import (
     looks_like_bugfix,
     looks_like_design_loop,
     looks_like_app_loop,
+    looks_like_app_overflow,
     looks_like_new_package,
     looks_like_question,
     looks_like_review_code,
@@ -149,6 +150,25 @@ class GreenfieldCliTest(unittest.TestCase):
         self.assertNotIn("write-script", names)
         self.assertNotIn("review-design", names)
         self.assertNotIn("open-pr", names)
+
+
+OVERFLOW = "add the comment subcommand and a mocked test"
+
+
+class AppOverflowTest(unittest.TestCase):
+    def test_comment_run_is_overflow_not_a_new_package(self) -> None:
+        self.assertTrue(looks_like_app_overflow(OVERFLOW))
+        self.assertFalse(looks_like_app_loop(OVERFLOW))
+        self.assertFalse(looks_like_new_package(OVERFLOW))
+        self.assertEqual(package_noun(OVERFLOW), "pr_review")
+
+    def test_pick_does_not_offer_add_feature(self) -> None:
+        names = [item.name for item in pick_skills(OVERFLOW, list_skills())]
+        self.assertEqual(names, ["write-cli-app", "call-http", "write-tests"])
+        self.assertNotIn("add-feature", names)
+
+    def test_a_plain_add_is_not_overflow(self) -> None:
+        self.assertFalse(looks_like_app_overflow("add a function multiply"))
 
 
 if __name__ == "__main__":
