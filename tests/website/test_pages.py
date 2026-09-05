@@ -30,6 +30,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "local-editor.md",
             "ide-plugins.md",
             "cursor.md",
+            "vscode.md",
             "editor-demos.md",
             "research-vibe-review.md",
             "investigations/index.md",
@@ -166,6 +167,29 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("subtotl", body)
         self.assertIn("total_lines", body)
 
+    def test_vscode_page_is_a_real_session(self) -> None:
+        text = (DOCS / "vscode.md").read_text(encoding="utf-8")
+        self.assertIn("/media/vscode-demo.gif", text)
+        self.assertIn("asciinema play docs/media/vscode-demo.cast", text)
+        self.assertIn("python scripts/measure/record_vscode.py", text)
+        self.assertIn("python-vibe editors vscode", text)
+        self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
+        self.assertIn("subtotl → subtotal", text)
+
+    def test_vscode_recording_is_checked_in(self) -> None:
+        gif = DOCS / "media" / "vscode-demo.gif"
+        cast = DOCS / "media" / "vscode-demo.cast"
+        self.assertTrue(gif.is_file(), gif)
+        self.assertTrue(cast.is_file(), cast)
+        self.assertLess(gif.stat().st_size, 800_000, "keep the GIF small enough to ship")
+        body = cast.read_text(encoding="utf-8")
+        self.assertNotIn("/Users/", body)
+        self.assertNotIn("DevBox/", body)
+        self.assertIn("python-vibe editors vscode", body)
+        self.assertIn("python-vibe brief", body)
+        self.assertIn("compute_total", body)
+        self.assertIn("subtotl", body)
+
     def test_daily_recording_is_checked_in(self) -> None:
         gif = DOCS / "media" / "daily-run.gif"
         cast = DOCS / "media" / "daily-run.cast"
@@ -296,7 +320,14 @@ class CrossPlatformDocsTest(unittest.TestCase):
     Apple Silicon. A page that offers only those shuts Windows out.
     """
 
-    RUN_PAGES = ("start.md", "api.md", "skills.md", "ide-plugins.md", "cursor.md")
+    RUN_PAGES = (
+        "start.md",
+        "api.md",
+        "skills.md",
+        "ide-plugins.md",
+        "cursor.md",
+        "vscode.md",
+    )
 
     def test_each_page_shows_the_installed_command(self) -> None:
         missing = [

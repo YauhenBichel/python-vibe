@@ -56,7 +56,7 @@ edits. Point at another folder by putting it first:
     <h2>See the work</h2>
     <p><a href="{{ '/investigations/' | relative_url }}">Results</a> — the map of every score.</p>
     <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep the 8B.</p>
-    <p><a href="{{ '/editor-demos/' | relative_url }}">Editors</a> — from the chat panel.</p>
+    <p><a href="{{ '/vscode/' | relative_url }}">VS Code</a> — Tasks: Run Task. Recorded walkthrough.</p>
     <p><a href="{{ '/architecture/' | relative_url }}">Architecture</a> — how the helper is stacked.</p>
   </div>
 </div>

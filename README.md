@@ -51,6 +51,7 @@ result.summary, result.writes
 Full settings: [docs/api.md](./docs/api.md). Layers: [docs/architecture.md](./docs/architecture.md).
 Site: [Start](https://yauhenbichel.github.io/python-vibe/start/).
 A typed session on `demo/orders` (5 Sep 2026): [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
+The same jobs from VS Code Tasks: [VS Code](https://yauhenbichel.github.io/python-vibe/vscode/).
 What those commands did on one laptop: [Scenarios](https://yauhenbichel.github.io/python-vibe/scenarios/).
 The map of every score: [Results](https://yauhenbichel.github.io/python-vibe/investigations/).
 The long table: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
@@ -83,6 +84,33 @@ A same-day **daily** `run` (8B, logic bug, suite after the write):
 `docs/media/daily-run.gif`. Replay:
 `asciinema play docs/media/daily-run.cast`.
 Full page: [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
+
+## In VS Code
+
+5 September 2026. Fresh copy of `demo/orders`. Install the tasks, then
+**Tasks: Run Task**. Only `ask` called `llama3.1:8b`. The NameError
+repair is a harness demo (no model). Same commands the tasks run, not
+a screenshot of the editor window.
+
+![python-vibe VS Code tasks on demo/orders](docs/media/vscode-demo.gif)
+
+```
+$ python-vibe editors vscode
+Reload the window, then Command Palette → Tasks: Run Task → python-vibe: ask
+
+$ python-vibe brief
+10 Python and Markdown files, 2.9 KB in total.
+
+$ python-vibe ask "what does compute_total return?"
+"int" - it computes the sum of the line prices of one order.
+
+$ python-vibe run "find the NameError and fix it"
+bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
+```
+
+Replay: `asciinema play docs/media/vscode-demo.cast`.
+Re-record: `PYTHONPATH=src python scripts/measure/record_vscode.py`.
+Full page: [VS Code](https://yauhenbichel.github.io/python-vibe/vscode/).
 
 ## Experiments
 

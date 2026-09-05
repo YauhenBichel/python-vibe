@@ -11,11 +11,15 @@ Three easy paths. All stay on `127.0.0.1` unless you choose otherwise.
 | Path | One command | What you get |
 | --- | --- | --- |
 | Cursor (easiest) | `python-vibe editors cursor --allow-writes` | MCP + tasks in this folder. See [Cursor]({{ '/cursor/' | relative_url }}). |
-| Editor tasks | `python-vibe editors vscode` | Command Palette → Run Task → ask / run / brief. Uses the same **write limit**. |
+| Editor tasks | `python-vibe editors vscode` | Command Palette → Run Task → ask / run / brief. Uses the same **write limit**. Walkthrough: [VS Code]({{ '/vscode/' | relative_url }}). |
 | Continue (VS Code) | `python-vibe editors continue` | Chat uses local Ollama 8B. Uses the **editor’s** tools. |
 | Zed | `python-vibe editors zed` | Merges a `context_servers` entry into `.zed/settings.json`. Same write limit. |
 
-`pip install -e .` first so `python-vibe` is on your PATH. `--project` defaults to the current folder. Files land in `.vscode/`, `.continue/`, or `.cursor/` inside **your** app. This repo already ships `.cursor/mcp.json`.
+`python3 scripts/run/install.py` then `source .venv/bin/activate` so
+`python-vibe` is on PATH (macOS often has no `pip`). `--project`
+defaults to the current folder. Files land in `.vscode/`, `.continue/`,
+or `.cursor/` inside **your** app. This repo already ships
+`.cursor/mcp.json`.
 
 Drop-in sources: [`editors/`](https://github.com/YauhenBichel/python-vibe/tree/HEAD/editors).
 

@@ -51,6 +51,7 @@ Windows: `pip install -e ".[train]"`.
 
 What you type, and what happened on demo/orders: {{ '/scenarios/' | absolute_url }}
 A typed session and asciinema recording: {{ '/live/' | absolute_url }}
+VS Code tasks, same day, same folder: {{ '/vscode/' | absolute_url }}
 
 --tiny is the 0.5B sidecar. Do not use it for daily work. Large trees: pass --scope and start with Action: map.
 
@@ -132,6 +133,7 @@ A free bash tool does not transfer to an 8B on a laptop working tree.
 Home {{ '/' | absolute_url }}
 Start {{ '/start/' | absolute_url }}
 Live demo {{ '/live/' | absolute_url }}
+VS Code {{ '/vscode/' | absolute_url }}
 Architecture {{ '/architecture/' | absolute_url }}
 Cite {{ '/cite/' | absolute_url }}
 Experiments {{ '/investigations/experiments/' | absolute_url }}
