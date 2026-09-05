@@ -49,6 +49,7 @@ def recorded_files(extra_roots: list[Path]) -> list[Path]:
     """Every trace file worth reading, in the order they are read."""
     found = [
         ROOT / "data" / "agent-loop" / "extra.jsonl",
+        ROOT / "data" / "agent-loop" / "collected.jsonl",
         ROOT / default_trace_path(ROOT).relative_to(ROOT),
     ]
     found.extend(default_trace_path(root.expanduser()) for root in extra_roots)
