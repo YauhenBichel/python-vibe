@@ -244,6 +244,27 @@ typed runs, not `--steps`. Replay:
 python-vibe run "add the comment subcommand and a mocked test"
 ```
 
+Same evening, pagination from a list+show+comment tree. Typed:
+`add pagination to the GitHub PR CLI`. After #228 (indented `page=`
+counts; a module-level `pulls?page=` NameErrors on import). Twelve
+steps × 3. Seeded list+show+comment tree.
+
+| Repeat | Pagination gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | open | steps | none |
+| 2 | open | steps | none |
+| 3 | open | steps | none |
+
+**0 / 3** closed pagination. Config stayed leftover. An earlier
+twenty-step try on a leftover comment tree wrote `pkg/pagination.py`
+and a module-level `?page=`, then drifted. The timed cell wrote
+nothing. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_overflow_page.py`.
+
+```bash
+python-vibe run "add pagination to the GitHub PR CLI"
+```
+
 Everyday-ready is still the older bar.
 
 ## Everyday-ready bar
@@ -260,8 +281,17 @@ repeats, twelve steps. Clean 8B is the same model with no
 | Live parse | **11 / 15** | **0 / 15** |
 | ≥1 KB logic fix | **0 / 3** (`steps`; two writes were tests only) | **3 / 3** (one-shot) |
 
-Harness beats clean on parse. Clean beats harness on the real fix.
-**Not everyday-ready.** Replay:
+After #229 (refuse rewriting a covering test). Same evening, same
+script, same twelve steps.
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **10 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **0 / 3** (`steps`; writes `[]` × 3) | **3 / 3** (one-shot) |
+
+#229 stopped the test rewrite. It did not get a patch on
+`compute_total`. Harness still beats clean on parse. Clean still beats
+harness on the real fix. **Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed
