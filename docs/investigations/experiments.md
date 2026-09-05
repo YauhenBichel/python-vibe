@@ -343,6 +343,16 @@ same script, same twelve steps.
 
 #238 did not get a patch on `compute_total`. Harness still beats clean
 on parse. Clean still beats harness on the real fix.
+
+Same evening, after overflow closed (#243). Same script, same twelve
+steps.
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **12 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **0 / 3** (`steps` × 2, `done` × 1; writes `[]` × 3) | **3 / 3** (one-shot) |
+
+Parse moved. The fix did not: still no write to `compute_total`.
 **Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
