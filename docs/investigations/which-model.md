@@ -74,9 +74,9 @@ finished. OpenCoder and StarCoder2: warmup got 0 bytes in 300s.
 SWE-agent-LM was in memory and still timed out on clamp. CodeLlama's
 warmup returned, then clamp still hit 180s. DeepSeek got one clamp
 through, then the same cap. A one-word generate (`Reply with the
-single word ok.`) finished in 3.9 s on the loaded 8B and 11.5 s on
-the 7B coder after a swap; CodeLlama and OpenCoder hit 180s. That is
-not a score. **Do not switch.**
+single word ok.`) finished on the 8B (3.9 s), 7B coder (11.5 s),
+DeepSeek (3.8 s), and SWE-agent-LM (19.6 s). StarCoder2, CodeLlama,
+and OpenCoder hit 180s. A reply is not a daily score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score
