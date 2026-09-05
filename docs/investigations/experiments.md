@@ -762,6 +762,34 @@ builds its own memory, so every step started from nothing.
 
 Write-up: [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}).
 
+## The instrument was broken
+
+A day spent asking whether a bigger model breaks the wall found two
+faults in the benchmark instead. Both were invisible while only local
+models were measured; both would have made a fine-tune evaluation wrong.
+
+**Result**
+
+| Tier 3, ten passes | Nobody answering | Answered |
+| --- | --- | --- |
+| `llama3.1:8b` | 13 of 20 | **14 of 20** |
+| `qwen2.5-coder:7b` | 7 of 20 | **13 of 20** |
+
+A run that stops to ask needs somebody to answer, and nobody was there,
+so the question ended the run as a failure. `qwen2.5-coder:7b` asks in
+eleven runs of twenty where `llama3.1:8b` asks in one, so the benchmark
+was measuring willingness to act without asking.
+
+The second fault only appears against a hosted model: it wraps drafts in
+markdown fences, the fence reaches the file unchanged, and the result is
+a `SyntaxError`. Nine of ten runs then produced nothing that would load.
+A 14B, meanwhile, times out on this machine three times out of three.
+
+So whether size breaks the wall is still unanswered, and every model
+number published before this is unsafe.
+
+Write-up: [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}).
+
 ## Two models, one wall
 
 Before training anything, the cheap question: is the base model the
