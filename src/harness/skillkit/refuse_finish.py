@@ -81,6 +81,9 @@ def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
     from harness.scan.names import undefined_in_file
     from harness.task import named_project_file, rename_pair
 
+    if looks_like_app_overflow(task):
+        return ""
+
     paths: list[str] = []
     named = named_project_file(task, project)
     if named:
@@ -252,7 +255,9 @@ def _anything_calls(project: Path, name: str, skip: Path) -> bool:
     return False
 
 
-def refuse_unwired_addition(project: Path, last_path: str) -> str:
+def refuse_unwired_addition(
+    project: Path, last_path: str, task: str = ""
+) -> str:
     """A function added, and nobody left to call it.
 
     Asked to add a check that refuses to send when a prompt carries a
@@ -262,8 +267,13 @@ def refuse_unwired_addition(project: Path, last_path: str) -> str:
 
     Whether the body is any good needs a reader. Whether anything will
     ever run it does not, so that much is checked here.
+
+    Overflow comment is the piece the later run asked for. Live 8B wrote
+    comment_on and done was refused because argparse never called it.
     """
     if not last_path:
+        return ""
+    if task and looks_like_app_overflow(task):
         return ""
     path = Path(project) / last_path
     for name in _added_functions(path):
