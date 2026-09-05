@@ -102,7 +102,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 7B / 14B / 32B listed in everyday.py: not pulled. 30B-class on disk timed out at 180s.
 - python-vibe-8b adapters: missing.
 - Hub comparison: {{ '/investigations/hub-models/' | absolute_url }}
-- OpenCoder 8B and SWE-agent-LM 7B are not `ollama pull` tags. Import Q4_K_M with `scripts/weights/import_hf_ollama.py`, then `--model opencoder:8b` or `--model swe-agent-lm:7b`. No daily score yet. Default stays 8B.
+- OpenCoder 8B and SWE-agent-LM 7B are not `ollama pull` tags. Import Q4_K_M with `scripts/weights/import_hf_ollama.py`, then `--model opencoder:8b` or `--model swe-agent-lm:7b`. No daily score yet. Default stays 8B. Other 7B–8B weights that fit 18 GB (OpenHands-LM, Seed-Coder, Granite, Yi-Coder) wait until that table has scores. Do not pull 14B or 30B.
 
 ## Limits vs a hosted IDE agent
 

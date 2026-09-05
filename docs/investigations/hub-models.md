@@ -28,6 +28,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 <ol>
   <li><a href="#on-this-laptop-today">On this laptop today</a></li>
   <li><a href="#hub-weights-that-are-not-an-ollama-tag">Hub weights that are not an Ollama tag</a></li>
+  <li><a href="#what-else-fits-this-laptop">What else fits this laptop</a></li>
   <li><a href="#first-action-probes-29-aug-2026">First Action probes, 29 Aug 2026</a></li>
   <li><a href="#hub-ids-that-fit-this-repo">Hub ids that fit this repo</a></li>
   <li><a href="#later-lora-bases">Later LoRA bases</a></li>
@@ -46,6 +47,9 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `llama3.2:1b` → [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 1.3 GB | On disk. **No `Action:` parse.** |
 | `qwen3coder` 30B-class | 18 GB | Already timed out at the 180s Ollama cap. |
 | `qwen2.5-coder:7b` | 4.7 GB | On disk. Same-night daily **7 / 9**. Do not switch. |
+| `deepseek-coder:6.7b` | 3.8 GB | On disk. Daily table not in yet. |
+| `starcoder2:7b` | 4.0 GB | On disk. Often a completion model. May miss `Action:`. |
+| `codellama:7b-python` | ~3.8 GB | Same daily table as the 8B / 7B coder. |
 | `opencoder:8b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
 | `swe-agent-lm:7b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
 
@@ -79,6 +83,51 @@ repeat it.
 
 **Result.** The catalog and the Modelfile are in-tree. No daily score
 yet. Do not switch the default on a missing table.
+
+## What else fits this laptop
+
+This machine is an Apple M3 Pro with 18 GB unified memory. About
+11–12 GB is left for a model. A 7B–8B Q4_K_M file is about 4–5 GB
+and runs. A 14B already caused swap. A 30B timed out at 180 seconds.
+Do not pull those two.
+
+Looked up on Hugging Face, 5 September 2026. Downloads are not a
+score for this helper.
+
+### Already on the measure list
+
+These write Python. None of them were trained on python-vibe
+`Action:` / `Find:`.
+
+| Weight | Size class | How to run | Notes |
+| --- | --- | --- | --- |
+| [Qwen/Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | 7B, Apache-2.0 | `ollama pull qwen2.5-coder:7b` | Daily **7 / 9**. Official GGUF also exists. |
+| [deepseek-ai/deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) | 6.7B | `ollama pull deepseek-coder:6.7b` | On disk. Daily not in yet. |
+| [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. Completion-style. May miss `Action:`. |
+| [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | Same daily table. |
+| [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | Import, then measure. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | Qwen2.5-Coder plus 5k traces from **their** agent. |
+
+### Fits, measure later
+
+Do not download these until the table above has scores. A 9B Q4 is
+about 5.5 GB — tight, but inside 12 GB.
+
+| Weight | Why it is interesting | Why wait |
+| --- | --- | --- |
+| [OpenHands/openhands-lm-7b-v0.1](https://huggingface.co/OpenHands/openhands-lm-7b-v0.1) (MIT). GGUF: [bartowski/all-hands_openhands-lm-7b-v0.1-GGUF](https://huggingface.co/bartowski/all-hands_openhands-lm-7b-v0.1-GGUF) | Same 7B coder family, trained on SWE-Gym for **their** agent. | Same warning as SWE-agent-LM. Import after that one has a daily score. |
+| [ByteDance-Seed/Seed-Coder-8B-Instruct](https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Instruct) (MIT). GGUF: [unsloth/Seed-Coder-8B-Instruct-GGUF](https://huggingface.co/unsloth/Seed-Coder-8B-Instruct-GGUF) | New code-instruct 8B. | No Ollama library tag. Same import path as OpenCoder. Not measured. |
+| [ibm-granite/granite-8b-code-instruct-4k](https://huggingface.co/ibm-granite/granite-8b-code-instruct-4k) (Apache-2.0). GGUF: [ibm-granite/granite-8b-code-instruct-4k-GGUF](https://huggingface.co/ibm-granite/granite-8b-code-instruct-4k-GGUF) | Code + commits. Official GGUF. | Older 4k context. Measure only if the 7B/8B table is still a tie. |
+| [01-ai/Yi-Coder-9B-Chat](https://huggingface.co/01-ai/Yi-Coder-9B-Chat) (Apache-2.0). GGUF: [bartowski/Yi-Coder-9B-Chat-GGUF](https://huggingface.co/bartowski/Yi-Coder-9B-Chat-GGUF) | Strong code chat. Q4 about 5.5 GB. | Larger than the 7B pack. Last, not first. |
+
+### Do not pull for this laptop
+
+| Weight | Why not |
+| --- | --- |
+| `qwen2.5-coder:14b` (already on disk, 9 GB) | Caused swap here. |
+| `qwen3coder` / 30B-class (18 GB) | Timed out at 180 seconds. |
+| DeepSeek-Coder-V2-Lite (~16B), Codestral 22B, Qwen2.5-Coder-32B | Over the 11–12 GB room. Use [cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}). |
+| Random 0-download “function calling” LoRAs | Wrong schema. Not this `Action:` line. |
 
 Hub lifetime downloads (overview, 29 Aug 2026) are not a quality score for
 this harness. Qwen2.5-Coder-0.5B-Instruct has 14.2M downloads and still
