@@ -5,12 +5,13 @@
 
 Empty folder each time. The harness scaffolds pkg/ + tests/. Pass means
 list, show, urllib, and mocked tests exist (score_cli_app list_show_ready).
-Default 12 steps (the later #206 cell). Pass --steps 20 for the first cell.
+Each row also records suite green and stopped. Default 12 steps.
 """
 
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -40,9 +41,18 @@ def _run_one(model: str, steps: int) -> dict:
             )
         ).run()
         missing = [gap.key for gap in required_gaps(dest, TASK)]
+        suite = subprocess.run(
+            [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"],
+            cwd=dest,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
         return {
             "ok": not missing,
             "missing": missing,
+            "suite": suite.returncode == 0,
             "stopped": result.stopped,
             "writes": list(result.writes),
             "summary": result.summary[:160],
