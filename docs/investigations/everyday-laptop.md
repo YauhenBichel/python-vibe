@@ -82,8 +82,10 @@ everyday brain.
   failed the ≥1 KB logic fix **0 / 3** (two writes were tests only). After
   #229 (same evening): parse **10 / 15** vs **0 / 15**; fix still **0 / 3**,
   writes `[]` × 3. After #238 (refuse explore): parse **11 / 15** vs
-  **0 / 15**; fix still **0 / 3**, writes `[]` × 3, while a clean one-shot
-  passed **3 / 3**. That is not everyday-ready. Replay:
+  **0 / 15**; fix still **0 / 3**, writes `[]` × 3. After #246 (same
+  evening): parse **9 / 15** vs **0 / 15**; harness fix **3 / 3** with no
+  model turns (the harness wrote the sum) while a clean one-shot passed
+  **3 / 3**. That is not everyday-ready. Replay:
   `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 Live `agent.py` + `llama3.1:8b` loops on this machine (29 Aug 2026):
