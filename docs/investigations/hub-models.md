@@ -47,7 +47,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `llama3.2:1b` → [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 1.3 GB | On disk. **No `Action:` parse.** |
 | `qwen3coder` 30B-class | 18 GB | Already timed out at the 180s Ollama cap. |
 | `qwen2.5-coder:7b` | 4.7 GB | On disk. Same-night daily **7 / 9**. Do not switch. |
-| `deepseek-coder:6.7b` | 3.8 GB | On disk. First helper chat **54 s** from empty VRAM; 180s when swapping off the 7B. |
+| `deepseek-coder:6.7b` | 3.8 GB | On disk. Empty VRAM daily: first clamp **passed**, second 180s. Incomplete. |
 | `starcoder2:7b` | 4.0 GB | On disk. One-word generate hit 180s. Completion-style. |
 | `codellama:7b-python` | 3.8 GB | On disk. One-word generate hit 180s. |
 | `opencoder:8b` | 4.7 GB | On disk. One-word generate hit 180s. |

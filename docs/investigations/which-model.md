@@ -58,6 +58,7 @@ Three repeats. Twelve steps.
 | `llama3.1:8b` | 3 / 3 | 3 / 3 | 3 / 3 | **9 / 9** |
 | `qwen2.5-coder:7b` | 3 / 3 | 1 / 3 | 3 / 3 | **7 / 9** |
 | `deepseek-coder:6.7b` | 3 / 3 (compiler) | 1 pass, 1 `steps`, 180s timeout | not run | incomplete |
+| `deepseek-coder:6.7b` (empty VRAM) | 3 / 3 (compiler) | **1 pass** (`steps`), then 180s | not run | incomplete |
 | `starcoder2:7b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
 | `codellama:7b-python` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
 | `opencoder:8b` | 3 / 3 (compiler) | 180s timeout | not run | incomplete |
@@ -80,10 +81,10 @@ and OpenCoder hit 180s. The same four then finished the daily clamp
 *text* (no helper prompt) in 22–40 s. The real first helper chat is
 about 1,700 tokens and finished in 12–39 s on those four. A clean
 cold first turn (unload, then that chat) was 17 s on the 8B, 54 s
-on DeepSeek, and 38 s on SWE-agent-LM. A later daily remasure did
-not evict `qwen2.5-coder:7b`; DeepSeek's first clamp generate then
-hit 180s and the 7B coder was still loaded. A reply is not a daily
-score. **Do not switch.**
+on DeepSeek, and 38 s on SWE-agent-LM. `keep_alive` 0 did not evict
+the 7B coder. `ollama stop` did: first clamp **passed** (`steps`),
+second clamp hit 180s. A reply is not a daily score.
+**Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score

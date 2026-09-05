@@ -186,6 +186,7 @@ OpenCoder and SWE-agent-LM came from Hub GGUFs
 | `llama3.1:8b` (same night) | 3 / 3 | 3 / 3 | 3 / 3 | **9 / 9** |
 | `qwen2.5-coder:7b` (same night) | 3 / 3 | 1 / 3 | 3 / 3 | **7 / 9** |
 | `deepseek-coder:6.7b` | 3 / 3 (compiler) | 1 pass, 1 `steps`, then 180s timeout | not run | incomplete |
+| `deepseek-coder:6.7b` (empty VRAM) | 3 / 3 (compiler) | **1 pass** (`steps`), then 180s timeout | not run | incomplete |
 | `starcoder2:7b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
 | `codellama:7b-python` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
 | `opencoder:8b` | 3 / 3 (compiler) | 180s timeout on the first generate | not run | incomplete |
@@ -268,8 +269,19 @@ out when a load returned no bytes.
 write-tests 3 / 3 (compiler), first clamp generate 180s timeout.
 After the timeout, `qwen2.5-coder:7b` was still the loaded tag.
 DeepSeek never sat in memory. That swap is the 180s miss — the same
-first chat is 54 s from empty VRAM. Not a nine-cell table.
-**Do not switch.** Default stays `llama3.1:8b`.
+first chat is 54 s from empty VRAM.
+
+**Empty VRAM daily, same night.** `ollama stop qwen2.5-coder:7b`
+left `{"models":[]}`. Then the same script:
+
+| Job | Result |
+| --- | --- |
+| Write tests | 3 / 3 (compiler) |
+| Add clamp | **1 pass** (`steps` after 12), then 180s timeout on the second |
+| Logic bug | not run |
+
+That is still not a nine-cell table. The first clamp did finish from
+empty VRAM. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.

@@ -109,7 +109,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 7B / 14B / 32B listed in everyday.py: not pulled. 30B-class on disk timed out at 180s.
 - python-vibe-8b adapters: missing.
 - Hub comparison: {{ '/investigations/hub-models/' | absolute_url }}
-- OpenCoder 8B and SWE-agent-LM 7B imported from Hub GGUF (`import_hf_ollama.py`). Write-tests 3/3 is the compiler bind. First helper clamp chat is ~1,700 tokens. Clean cold first turn: 8B 17s, DeepSeek 54s, SWE-agent-LM 38s. Daily remasure: DeepSeek first clamp hit 180s while qwen2.5-coder:7b stayed loaded. Not a score. Default stays 8B. Do not pull 14B or 30B.
+- OpenCoder 8B and SWE-agent-LM 7B imported from Hub GGUF (`import_hf_ollama.py`). Write-tests 3/3 is the compiler bind. After `ollama stop`, DeepSeek daily: first clamp passed (`steps`), second hit 180s. Not a nine-cell score. Default stays 8B. Do not pull 14B or 30B.
 
 ## Limits vs a hosted IDE agent
 

@@ -43,7 +43,7 @@ Public pages do not name other editors or chat products.
 
 | Note | In one sentence |
 | --- | --- |
-| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. DeepSeek first chat 54s from empty VRAM; 180s when swapping off the 7B. Keep the 8B. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. Empty VRAM DeepSeek: first clamp passed, second hit 180s. Keep the 8B. |
 | [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}) | A day comparing models found two faults in the benchmark instead. Every model number before this is unsafe. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
