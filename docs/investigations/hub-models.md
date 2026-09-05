@@ -51,7 +51,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `starcoder2:7b` | 4.0 GB | On disk. One-word generate hit 180s. Completion-style. |
 | `codellama:7b-python` | 3.8 GB | On disk. One-word generate hit 180s. |
 | `opencoder:8b` | 4.7 GB | On disk. One-word generate hit 180s. |
-| `swe-agent-lm:7b` | 4.7 GB | On disk. Empty VRAM daily: first clamp 180s. Isolated first chat was 38 s. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Listed after a 180s daily timeout; a follow-up `ok` hit 60s. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -83,8 +83,9 @@ repeat it.
 
 **Result.** Both tags are on this laptop: `opencoder:8b` and
 `swe-agent-lm:7b`. A clean cold first turn on SWE-agent-LM was 38 s.
-Empty VRAM daily still hit 180s on the first clamp generate (the tag
-was loaded after). OpenCoder still misses a one-word generate.
+Empty VRAM daily still hit 180s on the first clamp generate. A
+follow-up `ok` while `/api/ps` listed the tag hit 60s. Listed is
+not answering. OpenCoder still misses a one-word generate.
 Write-tests was 3 / 3 with no model (harness AAA bind). That is not
 a score. Do not switch the default.
 
@@ -110,7 +111,7 @@ These write Python. None of them were trained on python-vibe
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. One-word generate hit 180s. Completion-style. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | On disk. One-word generate hit 180s. |
 | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. One-word generate hit 180s. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Empty VRAM daily: first clamp 180s. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Listed after timeout; follow-up `ok` hit 60s. |
 
 ### Fits, measure later
 

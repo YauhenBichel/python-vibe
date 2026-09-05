@@ -43,11 +43,11 @@ Public pages do not name other editors or chat products.
 
 | Note | In one sentence |
 | --- | --- |
-| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. Empty VRAM: DeepSeek first clamp passed; SWE-agent still 180s. Keep the 8B. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. SWE-agent listed in memory still missed a 60s `ok`. Keep the 8B. |
 | [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}) | A day comparing models found two faults in the benchmark instead. Every model number before this is unsafe. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
-| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Empty VRAM SWE-agent daily: first clamp 180s. Isolated first chat was 38s. Do not switch. |
+| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | SWE-agent listed in memory still missed a 60s `ok`. Do not switch. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The helper stays on this machine. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B adapter is a demo, not daily work. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and the runs behind the numbers. |
