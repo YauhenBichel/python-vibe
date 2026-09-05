@@ -33,12 +33,15 @@ from harness.act.autofix.names import apply_typo_fixes, typo_pairs
 from harness.act.autofix.scaffold import apply_list_page_query
 
 
-def apply_mechanical(
-    project: Path, task: str, rel: str, *, write: bool = True
-) -> str:
-    """Write a rename, unique typo, or missing AAA test. Return a note, or empty."""
-    if not rel:
-        rel = named_project_file(task, project)
+def _repair_in_place(
+    project: Path, task: str, rel: str, *, write: bool
+) -> list[str]:
+    """Rewrite the named file, or the one file that holds the typo.
+
+    Split out of `apply_mechanical` when it crossed eighty lines. It is
+    one job: change a file that is already there. Everything after it in
+    the caller adds something new instead.
+    """
     notes: list[str] = []
     path = Path(project) / rel if rel else None
     text = original = ""
@@ -64,7 +67,8 @@ def apply_mechanical(
                 notes.append(f"bound unique NameError typo ({shown}) in {rel}")
         if text != original and notes and write:
             apply_source(path, text, original=original)
-    elif looks_like_bugfix(task):
+        return notes
+    if looks_like_bugfix(task):
         for dest, dest_rel in _impl_py(project):
             try:
                 original = dest.read_text(encoding="utf-8")
@@ -78,6 +82,17 @@ def apply_mechanical(
                 apply_source(dest, fixed, original=original)
             shown = ", ".join(f"{bad} → {good}" for bad, good in pairs)
             notes.append(f"bound unique NameError typo ({shown}) in {dest_rel}")
+    return notes
+
+
+def apply_mechanical(
+    project: Path, task: str, rel: str, *, write: bool = True
+) -> str:
+    """Write a rename, unique typo, or missing AAA test. Return a note, or empty."""
+    if not rel:
+        rel = named_project_file(task, project)
+    notes: list[str] = _repair_in_place(project, task, rel, write=write)
+    path = Path(project) / rel if rel else None
     if looks_like_add_feature(task):
         added = apply_add_function(project, task, write=write)
         if added:
@@ -92,7 +107,14 @@ def apply_mechanical(
     if moved_one:
         notes.append(moved_one)
     if path is not None and path.is_file() and looks_like_conflict(task):
-        note = _resolve_conflict(path, rel, original, write=write)
+        # Read again rather than carry the text out of the repair above:
+        # that repair may have rewritten the file, and a conflict has to
+        # be resolved against what is on disk now.
+        try:
+            current = path.read_text(encoding="utf-8")
+        except OSError:
+            current = ""
+        note = _resolve_conflict(path, rel, current, write=write)
         if note:
             notes.append(note)
     if looks_like_write_tests(task):
