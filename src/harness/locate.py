@@ -14,6 +14,7 @@ from harness.task import (
     everyday_example_path,
     everyday_skill_name,
     named_project_file,
+    looks_like_bugfix,
     looks_like_design_loop,
     looks_like_everyday_code,
     looks_like_fix_smell,
@@ -473,6 +474,36 @@ def refuse_app_tests_first(task: str, project: Path | None, action: str, path: s
         noun = package_noun(task)
         return f"Implementation first. Action: edit Path: pkg/{noun}.py"
     return ""
+
+
+def refuse_bugfix_tests_first(
+    task: str, project: Path | None, action: str, path: str
+) -> str:
+    """A named-file bugfix whose symbol already has a test is not a write-tests job.
+
+    Live 8B rewrote tests/test_util_stats.py on the everyday-ready fixture
+    and never patched compute_total.
+    """
+    if not looks_like_bugfix(task) or action not in {"edit", "patch"}:
+        return ""
+    if project is None:
+        return ""
+    named = named_project_file(task, project)
+    if not named:
+        return ""
+    rel = (path or "").replace("\\", "/")
+    parts = [part for part in rel.split("/") if part]
+    if "tests" not in parts and not (parts and parts[-1].startswith("test_")):
+        return ""
+    from harness.skillkit.refuse_finish import tests_call
+
+    symbol = covered_symbol(task) or question_symbol(task)
+    if not symbol or not tests_call(project, symbol):
+        return ""
+    return (
+        f"The test already covers {symbol}. "
+        f"Action: patch Path: {named} with a Find: line copied whole from the file."
+    )
 
 
 def refuse_app_wrong_path(task: str, action: str, path: str) -> str:
