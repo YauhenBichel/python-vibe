@@ -404,6 +404,61 @@ class AppLoopTest(unittest.TestCase):
         self.assertIn("comment", blocked)
         self.assertIn("pkg/pr_review.py", got)
 
+    def test_overflow_hint_does_not_say_grep(self) -> None:
+        from harness.locate import prelude, refuse_app_overflow_explore
+        from harness.scan.project_brief import classify_project, start_hint
+
+        overflow = "add the comment subcommand and a mocked test"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            hint = start_hint(classify_project(root), overflow)
+            text, path = prelude(root, overflow)
+        self.assertIn("comment", hint)
+        self.assertNotIn("Grep first", hint)
+        self.assertIn("pkg/pr_review.py", text)
+        self.assertEqual(path, "pkg/pr_review.py")
+        self.assertIn("Do not grep", refuse_app_overflow_explore(overflow, "grep"))
+
+    def test_overflow_done_is_allowed_once_comment_exists(self) -> None:
+        overflow = "add the comment subcommand and a mocked test"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            impl = root / "pkg" / "pr_review.py"
+            before = (
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(o, r):\n"
+                "    urllib.request.urlopen('https://example')\n"
+                "def show_pull(o, r, n):\n"
+                "    return {}\n"
+                "parser.add_parser('list')\n"
+                "parser.add_parser('show')\n"
+            )
+            impl.write_text(before, encoding="utf-8")
+            impl.with_suffix(".py.bak").write_text(before, encoding="utf-8")
+            impl.write_text(
+                before + "def comment_on(o, r, n):\n    return None\n",
+                encoding="utf-8",
+            )
+            state = LoopState(
+                task=overflow,
+                project=root,
+                last_path="pkg/pr_review.py",
+                wrote_something=True,
+                ran_tests=True,
+            )
+            blocked = refuse_done(
+                state, _Turn("done", summary="added comment_on")
+            )
+            from harness.skillkit.refuse_finish import refuse_unwired_addition
+
+            still_unwired = refuse_unwired_addition(root, "pkg/pr_review.py")
+        self.assertEqual(blocked, "")
+        self.assertIn("comment_on", still_unwired)
+
 
 if __name__ == "__main__":
     unittest.main()

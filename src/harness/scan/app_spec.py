@@ -97,6 +97,7 @@ def _has_comment_command(impl: str) -> bool:
     return bool(
         re.search(r'add_parser\(\s*["\']comment["\']', impl)
         or re.search(r"\bdef comment_on\b", impl)
+        or re.search(r"\bdef comment\b", impl)
     )
 
 

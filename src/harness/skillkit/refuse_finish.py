@@ -81,6 +81,9 @@ def refuse_done_oracle(task: str, project: Path, last_path: str) -> str:
     from harness.scan.names import undefined_in_file
     from harness.task import named_project_file, rename_pair
 
+    if looks_like_app_overflow(task):
+        return ""
+
     paths: list[str] = []
     named = named_project_file(task, project)
     if named:

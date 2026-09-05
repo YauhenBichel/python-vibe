@@ -266,6 +266,18 @@ def start_hint(brief: ProjectBrief, task: str, *, located: bool = False) -> str:
             f"This is a {skill} task. First Action: edit Path: {example} "
             "with one function. urllib only — no curl. Then a test, then run."
         )
+    return _start_hint_write(task)
+
+
+def _start_hint_write(task: str) -> str:
+    """The leftover write-shaped jobs after the named kinds above."""
+    if looks_like_app_overflow(task):
+        return (
+            "This is an overflow CLI task. First Action: edit Path: "
+            "pkg/pr_review.py with argparse subcommand comment and "
+            "def comment_on(...). urllib. Token from the environment. "
+            "Do not grep. Do not ask."
+        )
     if looks_like_add_feature(task):
         return (
             "This is an add-feature task. Grep first. If it is missing, add the "

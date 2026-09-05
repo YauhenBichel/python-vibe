@@ -201,7 +201,36 @@ September 2026. Ollama `llama3.1:8b`.
 
 **1 / 3** checklist. **1 / 3** suite green. **1 / 3** `done`. Two of
 three stayed red after one repair, so I stopped adding product copy.
-Replay: `PYTHONPATH=src python scripts/measure/eval_cli_app.py`.
+
+Same prompt, twelve steps, after the mock test bound the list/GET
+name the 8B wrote (#220). Same evening. Ollama `llama3.1:8b`.
+
+| Repeat | Checklist | Suite | Stopped | Wrote |
+| --- | --- | --- | --- | --- |
+| 1 | yes | green | `done` | `pkg/pr_review.py` × 2, tests |
+| 2 | yes | green | `done` | `pkg/pr_review.py`, tests |
+| 3 | yes | green | `done` | `pkg/pr_review.py` × 4, tests |
+
+**3 / 3** checklist. **3 / 3** suite green. **3 / 3** `done`. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_app.py`.
+
+Later the same day, overflow from a runnable list+show tree. Typed:
+`add the comment subcommand and a mocked test`. After #216.
+
+| Check | Result |
+| --- | --- |
+| First try | `grep` `comment` (add-feature hint). 20 steps. No comment |
+| Timed cell (12 steps × 3) | **0 / 3** closed the comment gap. Every repeat hit the cap |
+| After hint tighten | first Action `edit`; `def comment_on` on disk; `done` refused because nothing called it |
+
+`def comment` now counts. Overflow `done` is allowed once that piece
+exists — argparse wiring is not demanded by the unused-function guard.
+Pagination and config stay later runs, not `--steps`. Replay:
+`python scripts/measure/eval_cli_overflow.py`.
+
+```bash
+python-vibe run "add the comment subcommand and a mocked test"
+```
 
 Later the same day, overflow from a runnable list+show tree. Typed:
 `add the comment subcommand and a mocked test`. After #216.
