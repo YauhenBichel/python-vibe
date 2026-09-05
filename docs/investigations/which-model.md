@@ -85,8 +85,9 @@ cold first turn (unload, then that chat) was 17 s on the 8B, 54 s
 on DeepSeek, and 38 s on SWE-agent-LM. `keep_alive` 0 did not evict
 the 7B coder. `ollama stop` did: DeepSeek first clamp **passed**
 (`steps`), second hit 180s. SWE-agent-LM from empty VRAM still hit
-180s on the first clamp generate (the tag was loaded after). A reply
-is not a daily score. **Do not switch.**
+180s on the first clamp generate (the tag was loaded after). A
+follow-up `ok` generate while it was still listed hit 60s. Listed
+is not answering. A reply is not a daily score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score
