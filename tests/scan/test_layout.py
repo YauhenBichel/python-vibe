@@ -5,7 +5,7 @@ from pathlib import Path
 from harness.scan.layout import (
     find_cycles,
     find_flat_packages,
-    find_god_modules,
+    find_outsized_modules,
     has_tests,
     render_layout,
     review_layout,
@@ -68,21 +68,21 @@ class FlatAndGodTest(unittest.TestCase):
                     _write(root, f"pkg/{group}/m{i}.py", "x = 1\n")
             self.assertEqual(find_flat_packages(root), [])
 
-    def test_god_module_is_reported(self) -> None:
+    def test_an_outsized_module_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for i in range(6):
                 _write(root, f"m{i}.py", "x = 1\n")
             _write(root, "huge.py", "# pad\n" * 3000)
-            god = find_god_modules(root)
-        self.assertEqual([rel for rel, _size in god], ["huge.py"])
+            found = find_outsized_modules(root)
+        self.assertEqual([rel for rel, _size in found], ["huge.py"])
 
-    def test_even_sizes_have_no_god_module(self) -> None:
+    def test_even_sizes_have_no_outsized_module(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for i in range(6):
                 _write(root, f"m{i}.py", "# pad\n" * 2000)
-            self.assertEqual(find_god_modules(root), [])
+            self.assertEqual(find_outsized_modules(root), [])
 
 
 class ReviewTest(unittest.TestCase):

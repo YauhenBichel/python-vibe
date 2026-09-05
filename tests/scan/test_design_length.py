@@ -118,5 +118,83 @@ class TheTwoNumbersTest(unittest.TestCase):
         self.assertLess(LONG_DEF, 80)
 
 
+
+class OneNameOneMeaningTest(unittest.TestCase):
+    """"god module" meant two different things in two different files.
+
+    `scan.design` called a file with four or more top-level functions a
+    god module. `scan.layout` called a file over 6 KB and three times
+    the median one. They disagreed in both directions — a 300-byte file
+    with four functions is one by the first rule and not the second; a
+    7 KB file holding two long functions is one by the second and not
+    the first — and both told the model "god module" with different
+    remedies.
+
+    The size rule is called `outsized` now, which is what it measures.
+    Since the design review started reporting long functions, the case
+    it used to catch has a better answer anyway.
+    """
+
+    def _source(self, name: str) -> str:
+        root = Path(__file__).resolve().parents[2] / "src" / "harness" / "scan"
+        return (root / name).read_text(encoding="utf-8")
+
+    def test_only_the_design_review_reports_a_god_module(self) -> None:
+        """What a finding says, not what a comment explains.
+
+        The first version of this test read the whole file, so the
+        comment in `layout.py` explaining why the two rules are
+        different failed it — and the real bug it did catch was a clean
+        report still promising "no god module" for a check that had
+        stopped existing.
+        """
+        import tempfile
+
+        from harness.scan.layout import render_layout
+
+        self.assertIn("god module", self._source("design.py"))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for n in range(6):
+                (root / f"m{n}.py").write_text("x = 1\n", encoding="utf-8")
+            (root / "huge.py").write_text("# pad\n" * 3000, encoding="utf-8")
+            report = render_layout(root)
+        self.assertNotIn("god module", report)
+        self.assertIn("far larger than its neighbours", report)
+
+    def test_the_finding_is_kinded_by_what_it_measures(self) -> None:
+        """The kind, not just the sentence.
+
+        A mutation that renamed the kind back to "god" passed every
+        test, because the kind never reaches the rendered report — and
+        the kind is what another tool would switch on.
+        """
+        import tempfile
+
+        from harness.scan.layout import review_layout
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for n in range(6):
+                (root / f"m{n}.py").write_text("x = 1\n", encoding="utf-8")
+            (root / "huge.py").write_text("# pad\n" * 3000, encoding="utf-8")
+            kinds = {finding.kind for finding in review_layout(root)}
+        self.assertIn("outsized", kinds)
+        self.assertNotIn("god", kinds)
+
+    def test_the_size_rule_says_what_it_measures(self) -> None:
+        layout = self._source("layout.py")
+        self.assertIn("outsized", layout)
+        self.assertIn("far larger than its neighbours", layout)
+
+    def test_the_two_rules_still_catch_different_things(self) -> None:
+        """Renaming one is not the same as deleting it."""
+        from harness.scan.layout import OUTSIZED_MIN_BYTES
+        from harness.scan.design import GOD_DEFS
+
+        self.assertGreater(OUTSIZED_MIN_BYTES, 0)
+        self.assertGreater(GOD_DEFS, 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -23,8 +23,15 @@ from harness.paths import rel_posix
 from harness.scan.project_scan import SKIP_DIR
 
 FLAT_MAX_MODULES = 12
-GOD_RATIO = 3
-GOD_MIN_BYTES = 6000
+# A module far bigger than the ones beside it. This is not the same
+# thing as a god module and no longer says it is: `scan.design` calls a
+# file with too many top-level functions a god module, and the two
+# disagreed in both directions. A 300-byte file with four functions is
+# one by that rule and not by this; a 7 KB file holding two long
+# functions is one by this and not by that, and since the design review
+# started reporting long functions, that case has a better answer.
+OUTSIZED_RATIO = 3
+OUTSIZED_MIN_BYTES = 6000
 MAX_FINDINGS = 4
 
 
@@ -33,7 +40,7 @@ class Finding:
     """One structural problem found in a project.
 
     Fields:
-        kind: "cycle", "flat", "god" or "no-tests".
+        kind: "cycle", "flat", "outsized" or "no-tests".
         detail: what was found, naming the files involved.
         move: the change to make, written as an instruction.
     """
@@ -161,7 +168,7 @@ def find_flat_packages(project: Path) -> list[tuple[str, int]]:
     )
 
 
-def find_god_modules(project: Path) -> list[tuple[str, int]]:
+def find_outsized_modules(project: Path) -> list[tuple[str, int]]:
     root = project.resolve()
     sizes = []
     for path in _modules(project):
@@ -176,7 +183,7 @@ def find_god_modules(project: Path) -> list[tuple[str, int]]:
         (
             (rel, size)
             for rel, size in sizes
-            if size >= GOD_MIN_BYTES and size > median * GOD_RATIO
+            if size >= OUTSIZED_MIN_BYTES and size > median * OUTSIZED_RATIO
         ),
         key=lambda item: -item[1],
     )
@@ -211,10 +218,10 @@ def review_layout(project: Path) -> list[Finding]:
                 "job, and give each folder an __init__.py that says so.",
             )
         )
-    for rel, size in find_god_modules(project):
+    for rel, size in find_outsized_modules(project):
         out.append(
             Finding(
-                "god",
+                "outsized",
                 f"{rel} is {size // 1024} KB — far larger than its neighbours",
                 f"Action: read Path: {rel} and split the one group of "
                 "functions that does not belong with the rest.",
@@ -236,7 +243,7 @@ def render_layout(project: Path) -> str:
     findings = review_layout(project)
     if not findings:
         return (
-            "layout: no cycles, no oversized package, no god module, tests "
+            "layout: no cycles, no oversized package, no outsized module, tests "
             "present. Nothing to restructure — do the task."
         )
     lines = [f"layout: {len(findings)} finding(s), worst first."]
