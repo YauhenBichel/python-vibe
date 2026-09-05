@@ -6,8 +6,8 @@ date: 2026-08-29
 
 # Architecture
 
-The checkout as a whole is on [This checkout]({{ '/tree/' | relative_url }}).
-This page is only `src/harness/`.
+The folders in this repository are listed on
+[Folders]({{ '/tree/' | relative_url }}). This page is only `src/harness/`.
 
 `src/harness/` is ordered bottom-up. **A module may import a layer strictly
 below it, never one above or beside it.** That rule is enforced by

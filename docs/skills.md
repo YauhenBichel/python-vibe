@@ -110,5 +110,5 @@ Twenty-four skills ship with python-vibe.
 - Not a place to name other editors or chat products. Skills are copy-paste blocks.
 
 [Architecture]({{ '/architecture/' | relative_url }}) describes `skillkit/`
-(catalog, target, style). [Using]({{ '/api/' | relative_url }}) shows the
+(catalog, target, style). [Commands]({{ '/api/' | relative_url }}) shows the
 `skills` field on `AgentOptions`.

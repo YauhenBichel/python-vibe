@@ -1,11 +1,42 @@
 ---
-title: Using python-vibe
-description: Run the agent as a Python library, as one command, or over HTTP on 127.0.0.1. Settings, read-only runs, and the server routes.
-date: 2026-08-29
+title: Commands
+description: Every python-vibe command and flag. The Python API and the local HTTP server on 127.0.0.1.
+date: 2026-09-06
 ---
 
-Three ways to run the same agent: as a Python library, as one command, or
-over HTTP on your own machine.
+# Commands
+
+The usual way is the `python-vibe` command. You can also call the
+Python library, or an HTTP server on `127.0.0.1`.
+
+## Command line
+
+```bash
+python-vibe                  # prints the command list
+python-vibe brief            # no model
+python-vibe ask  "what does compute_total return?"
+python-vibe run  "write tests for apply_discount"
+python-vibe run  "write tests for apply_discount" --dry-run --scope src
+python-vibe serve --project .
+python-vibe editors cursor --allow-writes
+```
+
+`python -m harness …` is the same command if `python-vibe` is not on PATH.
+
+`brief`, `layout`, and `route` never call a model. `ask` never changes
+files. `run` writes unless you pass `--dry-run`. Add `--json` for
+machine-readable output, `-v` for tool results.
+
+### What `run` may do to your project
+
+`run` changes files inside the folder you give it, keeps a `.bak` copy of
+anything it edits, and **runs that project's test suite** to check its own
+work. If you would rather it did nothing, use `ask`, or pass
+`--dry-run`, which refuses every change and never runs anything.
+
+Some fixes need no model at all. A misspelled name that Python cannot
+resolve, or a rename you asked for by name, are corrected directly; the
+tests are then run once, and if they pass the task ends there.
 
 ## Library
 
@@ -86,8 +117,8 @@ source .venv/bin/activate
 
 That creates `.venv` when needed and runs `pip install -e .`. Activate
 it in every new terminal, or the shell says `command not found`.
-Already in a venv: `pip install -e .` is the same install. The planted
-demo is `cd demo/orders` then `python-vibe brief`.
+Already in a virtualenv: `pip install -e .` is the same install. The
+sample project is `cd demo/orders` then `python-vibe brief`.
 
 That gives you a `python-vibe` command. No `PYTHONPATH`, no version-pinned
 interpreter, no script paths:
@@ -138,36 +169,6 @@ Default stays `llama3.1:8b`. See
 
 Paths are always written with forward slashes, on every platform, because
 the model is shown them and copies them back.
-
-### What `run` may do to your project
-
-`run` changes files inside the folder you give it, keeps a `.bak` copy of
-anything it edits, and **runs that project's test suite** to check its own
-work. If you would rather it did nothing, use `ask`, or pass
-`allow_writes=False` and `--dry-run`, which refuse every change and never
-run anything.
-
-Some fixes need no model at all. A misspelled name that Python cannot
-resolve, or a rename you asked for by name, are corrected directly; the
-suite is then run once, and if it passes the task ends there.
-
-## Command line
-
-```bash
-python-vibe                  # the four jobs
-python-vibe brief            # no model
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "write tests for apply_discount"
-python-vibe run  "write tests for apply_discount" --dry-run --scope src
-python-vibe serve --project .
-python-vibe editors cursor --allow-writes
-```
-
-`python -m harness …` is the same command if the install name is not on PATH.
-
-`brief`, `layout`, and `route` never call a model. `ask` is always read-only. `run`
-writes unless you pass `--dry-run`. Add `--json` for machine-readable
-output, `-v` for tool results.
 
 ## HTTP server
 

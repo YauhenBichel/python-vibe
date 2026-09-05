@@ -1,23 +1,23 @@
 ---
-title: This checkout
-description: Three folders to open first. The rest of the tree is the tool, the site, or later work. Do not brief the checkout root.
+title: Folders
+description: What each directory in this repository is. Start in demo/orders. Do not run brief on the repository root.
 permalink: /tree/
-date: 2026-09-05
+date: 2026-09-06
 ---
 
-# This checkout
+# Folders
 
-This repository is two things in one tree: a **small demo app** and the
-**helper** that works on it. Open the demo. Do not run `brief` on the
-checkout root — that briefs hundreds of files.
+This repository is two things: a **sample project** and the **tool**
+that works on it. Open the sample project first. Do not run `brief` on the
+repository root — that scans hundreds of files.
 
-## Open these
+## Start here
 
 | Path | What it is |
 | --- | --- |
-| `demo/orders` | Planted app. `brief` / `ask` / `run` go here. |
+| `demo/orders` | Sample app. Run `brief` / `ask` / `run` here. |
 | `scripts/run/install.py` | Puts `python-vibe` on PATH. Then `source .venv/bin/activate`. |
-| `docs/` | The site. Start, live recording, scores. |
+| `docs/` | This site. |
 
 ```bash
 source .venv/bin/activate
@@ -25,14 +25,14 @@ cd demo/orders
 python-vibe brief
 ```
 
-## The helper
+## The tool
 
 | Path | What it is |
 | --- | --- |
-| `src/harness/` | The tool. Layers, bottom-up. See [Architecture]({{ '/architecture/' | relative_url }}). |
-| `tests/` | Merge gate. No GPU. |
-| `skills/` | Copy-paste `Action:` blocks the 8B can follow. |
-| `editors/` | Drop-in tasks and MCP files. |
+| `src/harness/` | The program. Layers, bottom-up. See [Architecture]({{ '/architecture/' | relative_url }}). |
+| `tests/` | Unit tests. No GPU. |
+| `skills/` | Short `Action:` templates the model can follow. |
+| `editors/` | Task files for VS Code and Cursor. |
 
 A module in `src/harness/` may import a layer below it, never one
 above or beside it.
@@ -42,12 +42,12 @@ above or beside it.
 | Path | When you need it |
 | --- | --- |
 | `scripts/measure/` | Recordings, benches, `validate.py`. |
-| `scripts/weights/` | Train / export. Apple Silicon. |
-| `src/finetune/` | Specs and the Hub card. Not daily work. |
-| `data/` · `eval/` | Train pairs and fixtures. |
-| `adapters/` | Optional 0.5B files. Do not commit weights. |
+| `scripts/weights/` | Train and export. Apple Silicon. |
+| `src/finetune/` | Training specs. Not daily work. |
+| `data/` · `eval/` | Train pairs and test fixtures. |
+| `adapters/` | Optional small-model files. Do not commit weights. |
 | `docs/investigations/` | Every measured score. |
 
 [Start]({{ '/start/' | relative_url }}) ·
 [Architecture]({{ '/architecture/' | relative_url }}) ·
-[Using]({{ '/api/' | relative_url }}).
+[Commands]({{ '/api/' | relative_url }}).

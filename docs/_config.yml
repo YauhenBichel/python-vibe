@@ -1,5 +1,5 @@
 title: python-vibe
-description: Four jobs on a laptop — ask, write a test, fix a bug, add one small function. On your machine. Only the folder you point at.
+description: A local command-line tool for one Python folder. Ask a question, write a test, fix a bug, or add a small function.
 url: https://yauhenbichel.github.io
 baseurl: /python-vibe
 lang: en

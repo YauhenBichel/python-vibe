@@ -26,15 +26,15 @@ python-vibe run  "find the NameError and fix it"
 ```
 
 Activate `.venv` in **every new terminal**. If the shell says
-`command not found: python-vibe`, it is not active. The planted demo is
-`demo/orders` — do not run `brief` on this checkout.
+`command not found: python-vibe`, it is not active. The sample project
+is `demo/orders` — do not run `brief` on this repository.
 
 `ask` never writes. `run` writes, then runs the tests. The NameError
-job is a harness demo (no model). Another folder:
+sample is built into the tool (no model). Another folder:
 `python-vibe ask ~/app "what does add return?"`.
 
 [Start](https://yauhenbichel.github.io/python-vibe/start/) ·
-[Using](https://yauhenbichel.github.io/python-vibe/api/) ·
+[Commands](https://yauhenbichel.github.io/python-vibe/api/) ·
 [Contributing](./CONTRIBUTING.md) ·
 [Security](./SECURITY.md)
 
@@ -80,10 +80,10 @@ Which tags timed out: [Hub models](https://yauhenbichel.github.io/python-vibe/in
 
 | If you want | Go here |
 | --- | --- |
-| What each folder is | [This checkout](https://yauhenbichel.github.io/python-vibe/tree/) |
+| What each folder is | [Folders](https://yauhenbichel.github.io/python-vibe/tree/) |
 | Tests | `PYTHONPATH=src python -m unittest discover -s tests -q` |
 | 0.5B style prior | [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b) |
-| Train / serve / API | [Using](https://yauhenbichel.github.io/python-vibe/api/) |
+| Train / serve / API | [Commands](https://yauhenbichel.github.io/python-vibe/api/) |
 | A first issue | [good first issue](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) |
 
 Vulnerabilities: a **public** GitHub issue. Do not paste live keys.

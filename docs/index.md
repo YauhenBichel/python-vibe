@@ -1,26 +1,31 @@
 ---
-title: Everyday Python on a laptop
-description: Four jobs on your own machine: ask a question, write a test, fix a bug, add one small function. No account. Only the folder you point at.
-date: 2026-09-05
+title: A local tool for one Python folder
+description: A command-line tool for one Python project. Ask a question, write a test, fix a bug, or add a small function. Files stay in the folder you name.
+date: 2026-09-06
 ---
 
-# Everyday Python on a laptop
+# A local tool for one Python folder
 
-A small helper for Python on your own computer. You type a job. It
-reads and writes only inside the folder you point at. Nothing leaves
-the machine unless you ask it to call a remote model.
+`python-vibe` is a command-line tool. You point it at **one Python
+project**. It can answer a question, write a unit test, fix a failing
+test, or add a small function. It only reads and writes files in that
+folder.
 
-<p class="cta">
-  <a href="{{ '/start/' | relative_url }}">Install and run</a>
-  <a href="{{ '/live/' | relative_url }}">See a real session</a>
-  <a href="{{ '/investigations/' | relative_url }}">Read the scores</a>
-  <a href="https://github.com/YauhenBichel/python-vibe" rel="noreferrer">Source on GitHub</a>
-</p>
+<p class="cta"><a href="{{ '/start/' | relative_url }}">Install</a> <a href="{{ '/live/' | relative_url }}">See a demo</a></p>
 
-After [Start]({{ '/start/' | relative_url }}), activate `.venv` in every
-new terminal (`source .venv/bin/activate`). If the shell says
-`command not found`, the venv is not active. The planted demo is
-`demo/orders`:
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `brief` | Lists the files in the folder. No model needed. |
+| `ask` | Answers a question. Does not change files. |
+| `run` | Changes files, then runs the tests. |
+
+## Try it
+
+`demo/orders` is the sample project. Activate the virtualenv first
+(`source .venv/bin/activate`). If the shell says `command not found`,
+the virtualenv is not active.
 
 ```bash
 source .venv/bin/activate
@@ -32,43 +37,29 @@ python-vibe run  "find the NameError and fix it"
 python-vibe run  "add a function total_lines and a test"
 ```
 
-`brief` needs no model. `ask` never writes. `run` writes, then runs the
-tests. The NameError and `total_lines` jobs on `demo/orders` are done
-by the helper, not the model. Do not run `brief` on this checkout. `run` keeps a `.bak` of anything it
-edits. Point at another folder by putting it first:
-`python-vibe ask ~/app "what does compute_total return?"`.
+Do not run `brief` on the python-vibe repository root. That scans
+hundreds of files. Another project:
 
-<div class="stats">
-  <div class="stat"><b>Ask</b><span>A question about one file or function</span></div>
-  <div class="stat"><b>Test</b><span>Cover one named function</span></div>
-  <div class="stat"><b>Fix</b><span>A failing suite, one repair</span></div>
-  <div class="stat"><b>Add</b><span>One small function and a test</span></div>
-</div>
+`python-vibe ask ~/app "what does add return?"`.
 
-## Where to go
+On a large project add `--scope src`. Full install steps:
+[Start]({{ '/start/' | relative_url }}).
 
-<div class="tracks">
-  <div class="track">
-    <h2>Use it</h2>
-    <p><a href="{{ '/start/' | relative_url }}">Start</a> — install, then the four commands.</p>
-    <p><a href="{{ '/scenarios/' | relative_url }}">What you type</a> — the same jobs, and what happened.</p>
-    <p><a href="{{ '/live/' | relative_url }}">Live</a> — a recorded session.</p>
-    <p><a href="{{ '/api/' | relative_url }}">Using</a> — every command and flag.</p>
-    <p><a href="{{ '/skills/' | relative_url }}">Skills</a> — what loads for a given job.</p>
-  </div>
-  <div class="track">
-    <h2>See the work</h2>
-    <p><a href="{{ '/investigations/' | relative_url }}">Results</a> — the map of every score.</p>
-    <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep the 8B.</p>
-    <p><a href="{{ '/vscode/' | relative_url }}">VS Code</a> — Tasks: Run Task. Recorded walkthrough.</p>
-    <p><a href="{{ '/cursor/' | relative_url }}">Cursor</a> — local MCP. Recorded walkthrough.</p>
-    <p><a href="{{ '/tree/' | relative_url }}">This checkout</a> — three folders to open first.</p>
-    <p><a href="{{ '/architecture/' | relative_url }}">Architecture</a> — how the helper is stacked.</p>
-  </div>
-</div>
+## This site
 
-## What it will not do
+| Page | What is on it |
+| --- | --- |
+| [Start]({{ '/start/' | relative_url }}) | Install, then the four commands |
+| [Commands]({{ '/api/' | relative_url }}) | Every flag, the Python API, and the local HTTP server |
+| [Live]({{ '/live/' | relative_url }}) | A recorded session |
+| [Demo]({{ '/demo/' | relative_url }}) | Eleven sample tasks and what happened |
+| [Folders]({{ '/tree/' | relative_url }}) | What each directory in this repository is |
+| [Editors]({{ '/editor-demos/' | relative_url }}) | VS Code and Cursor |
+| [Results]({{ '/investigations/' | relative_url }}) | Measured scores |
+| [Architecture]({{ '/architecture/' | relative_url }}) | How `src/harness/` is layered |
 
-It will not browse the web, run a general shell, or walk a large tree.
-On a big project add `--scope src`. Use a hosted IDE agent when the job
-spans languages, extra tools, or many files at once.
+## Limits
+
+It does not browse the web or run arbitrary shell commands. `run` keeps
+a `.bak` of each file it edits. The NameError and `total_lines` samples
+on `demo/orders` are built into the tool; they do not call a model.
