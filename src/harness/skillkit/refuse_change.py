@@ -540,6 +540,41 @@ _STDLIB = frozenset(sys.stdlib_module_names)
 _SHADOW_ALLOWED = frozenset({"types", "typing", "test", "tests", "config"})
 
 
+# Names that say where a thing was put, not what it is. A reader
+# grepping for the concern finds nothing, because the file name never
+# had one.
+DRAWER_STEMS = frozenset(
+    {"common", "helper", "helpers", "misc", "shared", "tmp", "util", "utils"}
+)
+
+
+def refuse_opaque_module(rel: str, original: str) -> str:
+    """Reject a *new* file whose name names nothing.
+
+    `refuse_opaque_names` reads defs, classes and parameters and never
+    looked at the file name, so `pkg/helpers.py` was always allowed —
+    and an 8B reaches for it constantly.
+
+    Only a new file. An existing `util.py` in somebody's tree is theirs,
+    and refusing to touch it would make the rule about their history
+    rather than about this change. Test files are left alone too: a
+    `tests/test_util.py` beside a `util.py` is named after the thing it
+    tests, which is correct.
+    """
+    if original.strip():
+        return ""
+    path = Path(rel)
+    if path.name.startswith("test_") or "tests" in path.parts:
+        return ""
+    stem = path.stem.lower()
+    if stem not in DRAWER_STEMS:
+        return ""
+    return (
+        f"opaque module {path.name}. Name the concern it holds "
+        "(pricing.py, not helpers.py), so the next reader can find it."
+    )
+
+
 def refuse_stdlib_shadow(rel: str, original: str) -> str:
     """Refuse a new module whose name hides one from the standard library.
 

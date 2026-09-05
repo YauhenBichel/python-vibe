@@ -435,7 +435,7 @@ class EveryRuleIsInTheTableTest(unittest.TestCase):
             f"written but never run: {missing}. Add it to CHANGE_RULES, "
             "or to NOT_ABOUT_A_DRAFT with the reason.",
         )
-        self.assertEqual(len(CHANGE_RULES), 12)
+        self.assertEqual(len(CHANGE_RULES), 13)
 
     def test_each_entry_is_named_and_callable(self) -> None:
         from harness.act.gate import CHANGE_RULES
@@ -651,6 +651,60 @@ class ANameTheTaskAskedForTest(unittest.TestCase):
             names_the_task_asked_for("add retry(action, times)"),
             frozenset({"retry", "action", "times"}),
         )
+
+
+
+class ADrawerIsNotAConcernTest(unittest.TestCase):
+    """`refuse_opaque_names` read defs, classes and parameters, never the
+    file name — so `pkg/helpers.py` was always allowed, and an 8B reaches
+    for it constantly. A name that says where a thing was put instead of
+    what it is leaves the next reader with nothing to grep for.
+    """
+
+    def test_a_new_drawer_file_is_refused(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_module
+
+        for rel in ("pkg/helpers.py", "src/utils.py", "pkg/misc.py", "common.py"):
+            with self.subTest(rel=rel):
+                refused = refuse_opaque_module(rel, "")
+                self.assertIn("opaque module", refused)
+                self.assertIn("pricing.py", refused)
+
+    def test_a_named_concern_is_allowed(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_module
+
+        self.assertEqual(refuse_opaque_module("pkg/pricing.py", ""), "")
+
+    def test_an_existing_file_is_somebody_elses_history(self) -> None:
+        """Refusing to touch it would make the rule about their past."""
+        from harness.skillkit.refuse_change import refuse_opaque_module
+
+        self.assertEqual(refuse_opaque_module("pkg/util.py", "def total():\n    pass\n"), "")
+
+    def test_a_test_named_after_the_thing_it_tests_is_correct(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_module
+
+        self.assertEqual(refuse_opaque_module("tests/test_util.py", ""), "")
+        self.assertEqual(refuse_opaque_module("tests/util.py", ""), "")
+
+    def test_the_case_of_the_name_does_not_save_it(self) -> None:
+        from harness.skillkit.refuse_change import refuse_opaque_module
+
+        self.assertIn("opaque module", refuse_opaque_module("pkg/Helpers.py", ""))
+
+    def test_a_longer_name_containing_one_is_fine(self) -> None:
+        """`util_stats.py` names a concern; `util.py` does not."""
+        from harness.skillkit.refuse_change import refuse_opaque_module
+
+        self.assertEqual(refuse_opaque_module("pkg/util_stats.py", ""), "")
+
+    def test_the_gate_runs_it(self) -> None:
+        from harness.act.gate import first_refusal
+
+        refused = first_refusal(
+            "add a helper", "pkg/helpers.py", "", "def total():\n    return 1\n"
+        )
+        self.assertIn("opaque module", refused)
 
 
 if __name__ == "__main__":
