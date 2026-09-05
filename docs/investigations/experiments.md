@@ -223,18 +223,21 @@ Later the same day, overflow from a runnable list+show tree. Typed:
 | Timed cell (12 steps × 3) | **0 / 3** closed the comment gap. Every repeat hit the cap |
 | After hint tighten | first Action `edit`; `def comment_on` on disk; `done` refused because nothing called it |
 
-After #219 (refuse grep) and the unused-function crash fix (`refuse_unwired_addition`
-takes the task and skips overflow), same script, twelve steps:
+`def comment` now counts. Overflow `done` is allowed once that piece
+exists — argparse wiring is not demanded by the unused-function guard.
+
+Same prompt, twelve steps, after that unused-function skip (#222). Same
+evening. Ollama `llama3.1:8b`. Seeded list+show+mocks tree.
 
 | Repeat | Comment gap | Stopped | Wrote |
 | --- | --- | --- | --- |
-| 1 | closed | steps | `pkg/pr_review.py` |
-| 2 | closed | steps | `pkg/pr_review.py` |
-| 3 | still open | steps | none |
+| 1 | closed | `done` | `pkg/pr_review.py` × 2 |
+| 2 | closed | `done` | `pkg/pr_review.py` |
+| 3 | closed | `done` | `pkg/pr_review.py` |
 
-**2 / 3.** None said `done`. Pagination and config stay later runs.
-`def comment` counts. Overflow `done` is allowed once that piece exists.
-Replay: `python scripts/measure/eval_cli_overflow.py`.
+**3 / 3** closed comment. Pagination and config stayed leftover — later
+typed runs, not `--steps`. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_overflow.py`.
 
 ```bash
 python-vibe run "add the comment subcommand and a mocked test"
