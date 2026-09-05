@@ -164,6 +164,14 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
     """
     if looks_like_new_package(task):
         return "", ""
+    from harness.task import looks_like_app_overflow
+
+    if looks_like_app_overflow(task):
+        return (
+            "Next Action must be edit Path: pkg/pr_review.py with argparse "
+            "subcommand comment and def comment_on(...). Do not grep.\n",
+            "pkg/pr_review.py",
+        )
     for opening in (
         _opening_for_design_loop,
         _opening_for_write_tests,
@@ -419,6 +427,18 @@ def refuse_redundant_locate(
             f"already located. Action: patch{where} Append: the new function."
         )
     return ""
+
+
+def refuse_app_overflow_explore(task: str, action: str) -> str:
+    """Overflow already names pkg/pr_review.py. Live 8B grepped comment for 20 steps."""
+    from harness.task import looks_like_app_overflow
+
+    if not looks_like_app_overflow(task) or action not in {"grep", "locate", "map"}:
+        return ""
+    return (
+        "Do not grep. Action: edit Path: pkg/pr_review.py with argparse "
+        "subcommand comment and def comment_on(...)."
+    )
 
 
 def refuse_app_ask(task: str, action: str) -> str:
