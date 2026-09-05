@@ -36,6 +36,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [First-run four jobs]({{ '/investigations/first-run-four/' | absolute_url }}): The four Start commands. First fail, then mechanical pass. 29 Aug 2026.
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.
+- [Two models, one wall]({{ '/investigations/two-models/' | absolute_url }}): Same score, opposite failures — one writes wrong code, the other writes nothing.
 - [Where the failures are]({{ '/investigations/failures/' | absolute_url }}): A third of runs fail; two thirds of those wrote the wrong code, which no rule can catch.
 - [What the harness cannot fix]({{ '/investigations/limits/' | absolute_url }}): Seven measurements where the harness knew something and it made no difference — and the one refusal that was taught to earn itself.
 - [When a run says done and means nothing]({{ '/investigations/false-finish/' | absolute_url }}): A fifth of failures reported success having written nothing. Measured 5 in 10, then 0 in 10.

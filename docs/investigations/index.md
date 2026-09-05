@@ -47,6 +47,7 @@ What you type:
 | [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. |
 | [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) | Every shipped path against a hosted IDE agent. |
 | [Same jobs, same evening]({{ '/investigations/same-jobs/' | relative_url }}) | Eleven demo tasks. Laptop 8B vs a hosted IDE agent. |
+| [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | Two 7-8B models score 51 and 50 of 75, and fail in almost opposite ways. |
 | [Where the failures are]({{ '/investigations/failures/' | relative_url }}) | Seventy-five runs classified. Two thirds of failures are wrong code, and nothing claims success having written nothing. |
 | [What the harness cannot fix]({{ '/investigations/limits/' | relative_url }}) | A refusal calibrated 0 for 5, a pointer the model ignored 3 of 3, and an excerpt that cut out the very lines the task named. |
 | [When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}) | Five runs in ten claimed work they had not done. After two fixes, none did. |
