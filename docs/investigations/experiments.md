@@ -353,7 +353,18 @@ steps.
 | ≥1 KB logic fix | **0 / 3** (`steps` × 2, `done` × 1; writes `[]` × 3) | **3 / 3** (one-shot) |
 
 Parse moved. The fix did not: still no write to `compute_total`.
-**Not everyday-ready.** Replay:
+
+After #246 (bind a zero return to a sum) and #248 (print turns). Same
+evening, same script, same twelve steps.
+
+| Check | Harness 8B | Clean 8B |
+| --- | --- | --- |
+| Live parse | **9 / 15** | **0 / 15** |
+| ≥1 KB logic fix | **3 / 3** (`done`; `pkg/util_stats.py`; turns `[]`) | **3 / 3** (one-shot) |
+
+The model never ran. The harness wrote the sum and stopped. Parse still
+beats clean. The fix ties clean, so the script's `harness_fix > clean_fix`
+is false. **Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
 
 ## Four jobs, as typed
