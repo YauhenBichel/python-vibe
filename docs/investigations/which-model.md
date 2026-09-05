@@ -69,10 +69,11 @@ model writing the sum. A two-case gap is noise.
 
 Write-tests 3 / 3 on the extra tags does not call the model. Clamp is
 the first generate. A cold load plus one reply burned the 180s Ollama
-cap. A second pass warmed each tag first (`keep_alive` 30 minutes):
-OpenCoder's warmup got 0 bytes in 300s; SWE-agent-LM was in memory
-and still timed out on clamp; DeepSeek got one clamp through, then
-the same cap. That is not a score. **Do not switch.**
+cap. A second pass warmed each tag first (`keep_alive` 30 minutes) and
+finished. OpenCoder and StarCoder2: warmup got 0 bytes in 300s.
+SWE-agent-LM was in memory and still timed out on clamp. CodeLlama's
+warmup returned, then clamp still hit 180s. DeepSeek got one clamp
+through, then the same cap. That is not a score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score

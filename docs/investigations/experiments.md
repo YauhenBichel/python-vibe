@@ -197,12 +197,13 @@ clamp, and a cold 7B–8B load plus one generate burned the 180s Ollama
 cap. DeepSeek got one clamp through, then `steps`, then the same cap.
 
 **Warm remasure, same evening.** Each extra tag was loaded first
-(`keep_alive` 30 minutes). OpenCoder's warmup curl got 0 bytes in
-300s, then clamp hit 180s. SWE-agent-LM was already in memory and
-still hit 180s on the first clamp generate. DeepSeek got one clamp
-through, then the same cap — same shape as the cold pass. So this is
-not only a cold start. Write-tests stayed 3 / 3 (compiler). Not a
-score.
+(`keep_alive` 30 minutes). The pass finished. OpenCoder and
+StarCoder2: warmup curl got 0 bytes in 300s, then clamp hit 180s.
+SWE-agent-LM was already in memory and still hit 180s on the first
+clamp generate. CodeLlama's warmup returned, then clamp still hit
+180s. DeepSeek got one clamp through, then the same cap — same shape
+as the cold pass. So this is not only a cold start. Write-tests
+stayed 3 / 3 (compiler). Not a score.
 
 That is not a nine-cell table. **Do not switch.** Default stays
 `llama3.1:8b`.
