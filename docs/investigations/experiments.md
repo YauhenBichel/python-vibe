@@ -585,6 +585,29 @@ builds its own memory, so every step started from nothing.
 
 Write-up: [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}).
 
+## Two models, one wall
+
+Before training anything, the cheap question: is the base model the
+constraint? The benchmark takes a model name, so it costs one command.
+
+**Result**
+
+| Seventy-five runs each | Worked | Wrote nothing | Wrote the wrong thing |
+| --- | --- | --- | --- |
+| `llama3.1:8b` | 51 of 75 | 8 | **16** |
+| `qwen2.5-coder:7b` | 50 of 75 | **18** | 7 |
+
+One case apart on the score, and almost opposite failures. Two models of
+different lineage meeting the same wall says something about the size
+rather than about either model.
+
+It also moves the bar for a fine-tune. Wrong-code failures can be more
+than halved without a single extra run working — they just become
+refusals to act. Raising the count that works is the target; improving
+the manner of failing is not.
+
+Write-up: [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}).
+
 ## Where the failures are
 
 Seven harness changes measured, six moved nothing. So rather than
