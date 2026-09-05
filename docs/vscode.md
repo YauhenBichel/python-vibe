@@ -53,8 +53,9 @@ PYTHONPATH=src python3 -m harness editors vscode
 ```
 
 `--project` defaults to the folder you are in. The command writes
-`.vscode/tasks.json`. `${workspaceFolder}` is filled by VS Code, so the
-file has no personal path. You can commit it.
+`.vscode/tasks.json`. The project argument is `${workspaceFolder}`.
+The interpreter is the one that ran `editors vscode`, so the file can
+hold a home path. Do not commit that path.
 
 Open that folder in VS Code. If the window was already open:
 
@@ -77,10 +78,15 @@ Do not type `python-vibe: ask` in the shell. The colon is the **task
 label** in the Command Palette. In a terminal the commands are:
 
 ```bash
+source .venv/bin/activate
+cd demo/orders
 python-vibe brief
 python-vibe ask  "what does compute_total return?"
 python-vibe run  "find the NameError and fix it"
 ```
+
+If the shell says `command not found: python-vibe`, the venv is not
+active. Activate it in every new terminal.
 
 `layout` is not a task. In the same terminal:
 
@@ -224,6 +230,7 @@ Do not point a hosted OpenAI-compatible chat at `127.0.0.1`. That
 request often leaves the machine. Tasks stay here.
 
 Related: [In your editor]({{ '/editor-demos/' | relative_url }}) ·
+[Cursor]({{ '/cursor/' | relative_url }}) ·
 [local editor]({{ '/local-editor/' | relative_url }}) ·
 [IDE plugins]({{ '/ide-plugins/' | relative_url }}) ·
 [Live demo (shell)]({{ '/live/' | relative_url }}).

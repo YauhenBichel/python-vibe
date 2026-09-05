@@ -21,6 +21,12 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertIn("asciinema play docs/media/vscode-demo.cast", text)
         self.assertIn("python-vibe editors vscode", text)
 
+    def test_readme_shows_the_cursor_recording(self) -> None:
+        text = README.read_text(encoding="utf-8")
+        self.assertIn("docs/media/cursor-demo.gif", text)
+        self.assertIn("asciinema play docs/media/cursor-demo.cast", text)
+        self.assertIn("python-vibe editors cursor --allow-writes", text)
+
     def test_markers_not_hardcoded_table(self) -> None:
         text = README.read_text(encoding="utf-8")
         self.assertIn(_START, text)

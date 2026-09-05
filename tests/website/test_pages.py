@@ -173,6 +173,8 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("asciinema play docs/media/vscode-demo.cast", text)
         self.assertIn("python scripts/measure/record_vscode.py", text)
         self.assertIn("python-vibe editors vscode", text)
+        self.assertIn("Do not commit that path", text)
+        self.assertNotIn("file has no personal path", text)
         self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
         self.assertIn("subtotl → subtotal", text)
 
@@ -186,6 +188,29 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertNotIn("/Users/", body)
         self.assertNotIn("DevBox/", body)
         self.assertIn("python-vibe editors vscode", body)
+        self.assertIn("python-vibe brief", body)
+        self.assertIn("compute_total", body)
+        self.assertIn("subtotl", body)
+
+    def test_cursor_page_is_a_real_session(self) -> None:
+        text = (DOCS / "cursor.md").read_text(encoding="utf-8")
+        self.assertIn("/media/cursor-demo.gif", text)
+        self.assertIn("asciinema play docs/media/cursor-demo.cast", text)
+        self.assertIn("python scripts/measure/record_cursor.py", text)
+        self.assertIn("python-vibe editors cursor --allow-writes", text)
+        self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
+        self.assertIn("subtotl → subtotal", text)
+
+    def test_cursor_recording_is_checked_in(self) -> None:
+        gif = DOCS / "media" / "cursor-demo.gif"
+        cast = DOCS / "media" / "cursor-demo.cast"
+        self.assertTrue(gif.is_file(), gif)
+        self.assertTrue(cast.is_file(), cast)
+        self.assertLess(gif.stat().st_size, 800_000, "keep the GIF small enough to ship")
+        body = cast.read_text(encoding="utf-8")
+        self.assertNotIn("/Users/", body)
+        self.assertNotIn("DevBox/", body)
+        self.assertIn("python-vibe editors cursor --allow-writes", body)
         self.assertIn("python-vibe brief", body)
         self.assertIn("compute_total", body)
         self.assertIn("subtotl", body)

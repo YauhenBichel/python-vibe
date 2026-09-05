@@ -106,6 +106,7 @@ covered. For anything the model has to reason about, read
 — on a real repository, writing scored one in twelve.
 
 A recorded VS Code session is on [VS Code]({{ '/vscode/' | relative_url }}).
+A recorded Cursor session is on [Cursor]({{ '/cursor/' | relative_url }}).
 
 Set-up detail for each editor: [VS Code]({{ '/vscode/' | relative_url }})
 · [Cursor]({{ '/cursor/' | relative_url }})

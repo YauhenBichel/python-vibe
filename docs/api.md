@@ -81,10 +81,13 @@ the same three commands work on macOS, Linux and Windows.
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
 python3 scripts/run/install.py
+source .venv/bin/activate
 ```
 
-That creates `.venv` when needed and runs `pip install -e .`. Already in
-a venv: `pip install -e .` is the same install.
+That creates `.venv` when needed and runs `pip install -e .`. Activate
+it in every new terminal, or the shell says `command not found`.
+Already in a venv: `pip install -e .` is the same install. The planted
+demo is `cd demo/orders` then `python-vibe brief`.
 
 That gives you a `python-vibe` command. No `PYTHONPATH`, no version-pinned
 interpreter, no script paths:

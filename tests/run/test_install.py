@@ -91,9 +91,30 @@ class InstallScriptTest(unittest.TestCase):
         self.assertNotIn("curl |", text)
         self.assertIn("Do not pipe a download", text)
 
+    def test_activate_hint_is_relative(self) -> None:
+        """An absolute hint is a home path. Print `.venv`, not /Users/…."""
+        posix = self.mod.activate_hint(Path("/Users/you/app/.venv"), windows=False)
+        win = self.mod.activate_hint(Path(r"C:\app\.venv"), windows=True)
+        self.assertEqual(posix, "source .venv/bin/activate")
+        self.assertEqual(win, r".venv\Scripts\Activate.ps1")
+        self.assertNotIn("/Users/", posix)
+        self.assertNotIn("C:\\", win)
+
+    def test_next_steps_name_activate_and_the_demo(self) -> None:
+        text = self.mod.next_steps(system=False, already_in_venv=False, windows=False)
+        self.assertIn("source .venv/bin/activate", text)
+        self.assertIn("every new terminal", text)
+        self.assertIn("command not found", text)
+        self.assertIn("cd demo/orders", text)
+        self.assertIn("python-vibe brief", text)
+        self.assertNotIn("/Users/", text)
+
     def test_start_page_names_the_script(self) -> None:
         start = (ROOT / "docs" / "start.md").read_text(encoding="utf-8")
         self.assertIn("scripts/run/install.py", start)
+        self.assertIn("source .venv/bin/activate", start)
+        self.assertIn("demo/orders", start)
+        self.assertIn("command not found", start)
         self.assertNotIn("curl", start)
 
 

@@ -32,10 +32,13 @@ PYTHONPATH=src python scripts/measure/record_live.py
 The same jobs from **Tasks: Run Task** are on
 [VS Code]({{ '/vscode/' | relative_url }})
 (`docs/media/vscode-demo.gif`).
+From Cursor chat or Tasks: [Cursor]({{ '/cursor/' | relative_url }})
+(`docs/media/cursor-demo.gif`).
 
 Type the same thing after [Start]({{ '/start/' | relative_url }}):
 
 ```bash
+source .venv/bin/activate
 cd demo/orders
 python-vibe brief
 python-vibe layout
@@ -43,6 +46,9 @@ python-vibe ask  "what does compute_total return?"
 python-vibe run  "find the NameError and fix it"
 python-vibe run  "add a function total_lines and a test"
 ```
+
+If the shell says `command not found: python-vibe`, the venv is not
+active. Activate it in every new terminal.
 
 A second recording, same day, is a **daily** `run`: an 8B write on a
 logic bug, then the suite. That is not a harness demo.
