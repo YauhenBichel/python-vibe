@@ -254,6 +254,28 @@ class MechanicalFinishTest(unittest.TestCase):
         self.assertIn("Path.home()", body)
         self.assertIn("Tests passed", result.summary)
 
+    def test_everyday_zero_return_ends_before_the_engine_loads(self) -> None:
+        """0/3 after #245: the 8B wrote nothing. return 0.0 is a compiler job."""
+        import shutil
+
+        fixture = Path(__file__).resolve().parents[2] / "eval" / "fixtures" / "everyday_fix"
+        task = "fix compute_total in pkg/util_stats.py so it sums the rows"
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp)
+            shutil.copytree(fixture, dest, dirs_exist_ok=True)
+            options = AgentOptions(project=dest, task=task)
+            with mock.patch(
+                "harness.agent.loop.make_generate",
+                side_effect=AssertionError("model must not load after a sum pass"),
+            ):
+                result = Agent(options).run()
+            body = (dest / "pkg" / "util_stats.py").read_text(encoding="utf-8")
+        self.assertTrue(result.ok)
+        self.assertEqual(result.stopped, "done")
+        self.assertIn("pkg/util_stats.py", result.writes)
+        self.assertIn("return float(sum(cleaned))", body)
+        self.assertIn("Tests passed", result.summary)
+
 
 class MechanicalFastPathTest(unittest.TestCase):
     """A fix the harness can make itself should not need the model at all.

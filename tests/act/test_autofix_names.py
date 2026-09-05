@@ -10,6 +10,7 @@ from harness.act.autofix import (
     apply_mechanical,
     apply_person_bind,
     apply_typo_fixes,
+    apply_zero_return_sum,
     levenshtein,
     replacement_from_answer,
     typo_pairs,
@@ -445,6 +446,25 @@ class MethodNameIsNotInScopeTest(unittest.TestCase):
                 ),
                 None,
             )
+
+
+class ZeroReturnSumTest(unittest.TestCase):
+    TASK = "fix compute_total in pkg/util_stats.py so it sums the rows"
+
+    def test_literal_zero_in_compute_total_becomes_a_sum(self) -> None:
+        fixture = ROOT / "eval" / "fixtures" / "everyday_fix" / "pkg" / "util_stats.py"
+        source = fixture.read_text(encoding="utf-8")
+        got = apply_zero_return_sum(source, self.TASK)
+        self.assertIn("return float(sum(cleaned))", got)
+        self.assertNotIn("return 0.0", got.split("def compute_total")[1].split("def ranked")[0])
+        self.assertIn('"mean": 0.0', got)
+
+    def test_a_task_that_does_not_say_sum_is_left_alone(self) -> None:
+        source = "def compute_total(rows):\n    return 0.0\n"
+        self.assertEqual(
+            apply_zero_return_sum(source, "fix compute_total in pkg/util_stats.py"),
+            source,
+        )
 
 
 if __name__ == "__main__":
