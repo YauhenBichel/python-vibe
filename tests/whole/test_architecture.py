@@ -491,7 +491,7 @@ class TestsSitBesideWhatTheyTestTest(unittest.TestCase):
             d.name for d in (ROOT / "scripts").iterdir()
             if d.is_dir() and not d.name.startswith(("_", "."))
         )
-        self.assertEqual(folders, ["measure", "run", "weights"])
+        self.assertEqual(folders, ["measure", "run", "website", "weights"])
 
 
 if __name__ == "__main__":

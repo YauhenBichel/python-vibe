@@ -39,7 +39,7 @@ and Windows:
 ollama pull llama3.1:8b
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
-pip install -e .
+python3 scripts/run/install.py
 cd /path/to/your/app
 python-vibe brief
 python-vibe ask  "what does compute_total return?"

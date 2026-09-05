@@ -16,6 +16,7 @@ from harness.task import (
     everyday_example_path,
     everyday_skill_name,
     looks_like_add_feature,
+    looks_like_app_overflow,
     looks_like_everyday_code,
     looks_like_fix_smell,
     looks_like_merge,
@@ -246,6 +247,12 @@ def start_hint(brief: ProjectBrief, task: str, *, located: bool = False) -> str:
             f"pkg/{noun}.py with {shape}.{http} "
             f"Then tests/test_{noun}.py. Do not put logic in scripts/. "
             "pkg/__init__.py is already exports-only. Do not locate. Do not ask."
+        )
+    if looks_like_app_overflow(task):
+        from harness.scan.app_spec import overflow_edit_line
+
+        return (
+            f"{overflow_edit_line(task)} Do not locate. Do not grep. Do not ask."
         )
     if looks_like_fix_smell(task):
         return (

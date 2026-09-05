@@ -252,7 +252,9 @@ def _anything_calls(project: Path, name: str, skip: Path) -> bool:
     return False
 
 
-def refuse_unwired_addition(project: Path, last_path: str) -> str:
+def refuse_unwired_addition(
+    project: Path, last_path: str, task: str = ""
+) -> str:
     """A function added, and nobody left to call it.
 
     Asked to add a check that refuses to send when a prompt carries a
@@ -262,7 +264,13 @@ def refuse_unwired_addition(project: Path, last_path: str) -> str:
 
     Whether the body is any good needs a reader. Whether anything will
     ever run it does not, so that much is checked here.
+
+    Overflow comment/pagination/config is a later typed run. The 8B
+    writes ``def comment_on`` and the unused-function guard then
+    burns the step budget. That cell is not this rule.
     """
+    if looks_like_app_overflow(task):
+        return ""
     if not last_path:
         return ""
     path = Path(project) / last_path

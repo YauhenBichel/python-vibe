@@ -24,7 +24,7 @@ Vulnerabilities: open a **public** GitHub issue. Do not paste live keys.
 
 ## Use it
 
-From your project folder, after `pip install -e .` and `ollama pull llama3.1:8b`:
+From your project folder, after `python3 scripts/run/install.py` and `ollama pull llama3.1:8b`:
 
 ```bash
 python-vibe brief

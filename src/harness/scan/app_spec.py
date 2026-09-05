@@ -197,8 +197,8 @@ def app_gaps(project: Path, task: str, *, include_overflow: bool = True) -> list
             gaps.append(
                 Gap(
                     "pagination",
-                    f"Next Action must be patch Path: {module} to follow a "
-                    "Link next header or page= .",
+                    f"Next Action must be patch Path: {module} so the list URL "
+                    "includes page=. Do not rename list_pulls.",
                 )
             )
         if not _has_home_config(impl):
@@ -242,6 +242,31 @@ def next_overflow_action(project: Path, task: str) -> str:
         if gap.key in wanted:
             return gap.next_action + "\n"
     return ""
+
+
+def overflow_edit_line(task: str, project: Path | None = None) -> str:
+    """Dictator Action for this overflow run. Comment-only copy burned pagination."""
+    if project is not None:
+        leftover = next_overflow_action(project, task).strip()
+        if leftover:
+            return leftover
+    wanted = requested_overflow(task)
+    key = wanted[0] if wanted else "comment"
+    noun = package_noun(task)
+    if key == "pagination":
+        return (
+            f"Next Action must be patch Path: pkg/{noun}.py so the list URL "
+            "includes page=. Do not rename list_pulls."
+        )
+    if key == "config":
+        return (
+            "Next Action must be edit Path: pkg/config.py with "
+            "Path.home() for the config file. No hardcoded home."
+        )
+    return (
+        f"Next Action must be edit Path: pkg/{noun}.py with argparse "
+        "subcommand comment and def comment_on(...)."
+    )
 
 
 def render_app_review(project: Path, task: str) -> str:

@@ -164,14 +164,18 @@ def prelude(project: Path, task: str, scope: str = "") -> tuple[str, str]:
     """
     if looks_like_new_package(task):
         return "", ""
-    from harness.task import looks_like_app_overflow
+    from harness.task import looks_like_app_overflow, package_noun
 
     if looks_like_app_overflow(task):
-        return (
-            "Next Action must be edit Path: pkg/pr_review.py with argparse "
-            "subcommand comment and def comment_on(...). Do not grep.\n",
-            "pkg/pr_review.py",
+        from harness.scan.app_spec import overflow_edit_line
+
+        line = overflow_edit_line(task, project).rstrip(".")
+        dest = (
+            "pkg/config.py"
+            if "pkg/config.py" in line
+            else f"pkg/{package_noun(task)}.py"
         )
+        return (f"{line}. Do not grep.\n", dest)
     for opening in (
         _opening_for_design_loop,
         _opening_for_write_tests,
@@ -378,19 +382,9 @@ def refuse_redundant_locate(
     from harness.task import looks_like_app_overflow
 
     if looks_like_app_overflow(task):
-        from harness.scan.app_spec import next_overflow_action
-        from harness.task import package_noun
+        from harness.scan.app_spec import overflow_edit_line
 
-        noun = package_noun(task)
-        line = (
-            next_overflow_action(project, task)
-            if project is not None
-            else (
-                f"Next Action must be edit Path: pkg/{noun}.py "
-                "with argparse subcommand comment.\n"
-            )
-        )
-        return "already located. " + line.strip()
+        return "already located. " + overflow_edit_line(task, project)
     if looks_like_new_package(task):
         from harness.task import looks_like_app_loop, package_noun
 
@@ -435,10 +429,9 @@ def refuse_app_overflow_explore(task: str, action: str) -> str:
 
     if not looks_like_app_overflow(task) or action not in {"grep", "locate", "map"}:
         return ""
-    return (
-        "Do not grep. Action: edit Path: pkg/pr_review.py with argparse "
-        "subcommand comment and def comment_on(...)."
-    )
+    from harness.scan.app_spec import overflow_edit_line
+
+    return f"Do not grep. {overflow_edit_line(task)}"
 
 
 def refuse_app_ask(task: str, action: str) -> str:
@@ -450,11 +443,9 @@ def refuse_app_ask(task: str, action: str) -> str:
     from harness.task import looks_like_app_overflow
 
     if looks_like_app_overflow(task):
-        noun = package_noun(task)
-        return (
-            f"Do not ask. Action: edit Path: pkg/{noun}.py with argparse "
-            "subcommand comment."
-        )
+        from harness.scan.app_spec import overflow_edit_line
+
+        return f"Do not ask. {overflow_edit_line(task)}"
     if not looks_like_app_loop(task):
         return ""
     noun = package_noun(task)

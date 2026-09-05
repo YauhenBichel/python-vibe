@@ -170,6 +170,10 @@ class AppOverflowTest(unittest.TestCase):
     def test_a_plain_add_is_not_overflow(self) -> None:
         self.assertFalse(looks_like_app_overflow("add a function multiply"))
 
+    def test_pagination_and_home_config_are_overflow(self) -> None:
+        self.assertTrue(looks_like_app_overflow("add pagination to the GitHub PR CLI"))
+        self.assertTrue(looks_like_app_overflow("add a config file via Path.home"))
+
 
 if __name__ == "__main__":
     unittest.main()

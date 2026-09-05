@@ -588,7 +588,9 @@ def refuse_done(state: LoopState, turn) -> str:
             state.thin_done_refused += 1
             blocked = thin
     if not blocked:
-        blocked = refuse_unwired_addition(state.project, state.last_path)
+        blocked = refuse_unwired_addition(
+            state.project, state.last_path, state.task
+        )
     if not blocked:
         blocked = refuse_design_dirty(state.task, state.design_report)
     if not blocked:

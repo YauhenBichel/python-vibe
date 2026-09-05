@@ -22,8 +22,13 @@ Four steps. Most of the time is one download. No graphics card.
 ```bash
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
-pip install -e .
+python3 scripts/run/install.py
 ```
+
+That creates `.venv` when you are not already in one, then
+`pip install -e .`. Activate it (`source .venv/bin/activate`, or
+`.venv\Scripts\Activate.ps1` on Windows) so `python-vibe` is on PATH.
+Already in a venv: `pip install -e .` is the same install.
 
 ## 2. Check it works
 
@@ -66,6 +71,11 @@ not a higher `--steps`:
 ```bash
 python-vibe run "add the comment subcommand and a mocked test"
 ```
+
+After `scripts/run/install.py`, `python-vibe` is the command. From a
+source checkout without that install: `PYTHONPATH=src python3 -m harness`.
+One overflow prompt at a time, against the CLI project folder (not this
+repo).
 
 To try a change without writing: add `--dry-run`.
 

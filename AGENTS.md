@@ -51,6 +51,7 @@ PYTHONPATH=src python scripts/measure/smoke.py --mlx
 | `src/harness/model/` | Talking to weights (the only non-deterministic layer) |
 | `src/harness/observe/` | Traces, report, offline eval gate |
 | `src/finetune/` | Specs, splits, Hub card, agent system prompt |
+| `scripts/run/install.py` | Put `python-vibe` on PATH (`.venv` + `pip install -e .`) |
 | `scripts/run/vibe.py` | Laptop REPL (`/run`, `--then`, `--project`) |
 | `scripts/run/serve.py` | Local HTTP sidecar |
 | `scripts/run/agent.py` | Everyday explore / edit / run / ship (use a **larger** Ollama model) |

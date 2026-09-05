@@ -602,6 +602,23 @@ class NothingCallsItTest(unittest.TestCase):
             (root / "app.py").write_text("def lonely(x):\n    return x\n", encoding="utf-8")
             self.assertEqual(refuse_unwired_addition(root, "app.py"), "")
 
+    def test_overflow_comment_on_is_not_an_unwired_addition(self) -> None:
+        from harness.skillkit.refuse_finish import refuse_unwired_addition
+
+        overflow = "add the comment subcommand and a mocked test"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._project(
+                tmp,
+                "def list_pulls(o, r):\n    return []\n",
+                "def list_pulls(o, r):\n    return []\n\n\n"
+                "def comment_on(o, r, n):\n    return None\n",
+            )
+            self.assertEqual(
+                refuse_unwired_addition(root, "app.py", overflow),
+                "",
+            )
+            self.assertIn("comment_on", refuse_unwired_addition(root, "app.py"))
+
 
 
 class ANameTheTaskAskedForTest(unittest.TestCase):
