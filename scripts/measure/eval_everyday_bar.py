@@ -7,6 +7,8 @@ Live parse is the fifteen action_prompts.jsonl rows. The fix is
 compute_total returning 0 in a ≥1 KB file — not a planted NameError.
 Clean 8B means the same Ollama model with no AGENT_SYSTEM and no
 agent loop (one-shot draft). Default twelve steps on the harness fix.
+Each harness_fix row includes the turns (action, path, refusal) so a
+0/3 is diagnosable. The eval still does not record traces.
 """
 
 from __future__ import annotations
@@ -98,6 +100,24 @@ def _suite_and_sum(project: Path) -> bool:
                 del sys.modules[name]
 
 
+def _turns(result) -> list[dict]:
+    """Action, path, and refusal for each loop turn. No drafts."""
+    found = []
+    for step in result.steps:
+        refused = step.refused or ""
+        if len(refused) > 200:
+            refused = refused[:200]
+        found.append(
+            {
+                "n": step.number,
+                "action": step.action,
+                "path": step.path,
+                "refused": refused,
+            }
+        )
+    return found
+
+
 def _harness_fix(model: str) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         dest = Path(tmp)
@@ -116,6 +136,7 @@ def _harness_fix(model: str) -> dict:
             "ok": ok,
             "stopped": result.stopped,
             "writes": list(result.writes),
+            "turns": _turns(result),
         }
 
 
