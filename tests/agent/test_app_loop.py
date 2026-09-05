@@ -5,7 +5,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from harness.act.autofix.scaffold import apply_cli_mock_test, apply_package_scaffold
+from harness.act.autofix.scaffold import (
+    apply_cli_mock_test,
+    apply_list_page_query,
+    apply_package_scaffold,
+)
 from harness.agent.policy import (
     LoopState,
     next_prompt,
@@ -458,6 +462,61 @@ class AppLoopTest(unittest.TestCase):
             still_unwired = refuse_unwired_addition(root, "pkg/pr_review.py")
         self.assertEqual(blocked, "")
         self.assertIn("comment_on", still_unwired)
+
+    def test_mechanical_page_query_closes_pagination(self) -> None:
+        overflow = "add pagination to the GitHub PR CLI"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen(\n"
+                "        f'https://api.github.com/repos/{owner}/{repository}"
+                "/pulls'\n"
+                "    )\n"
+                "def show_pull(owner, repository, number):\n"
+                "    urllib.request.urlopen(\n"
+                "        f'https://api.github.com/repos/{owner}/{repository}"
+                "/pulls/{number}'\n"
+                "    )\n"
+                "def comment_on(o, r, n):\n"
+                "    return None\n",
+                encoding="utf-8",
+            )
+            from harness.scan.app_spec import overflow_gaps
+
+            note = apply_list_page_query(root, overflow)
+            body = (root / "pkg" / "pr_review.py").read_text(encoding="utf-8")
+            extra = [gap.key for gap in overflow_gaps(root, overflow)]
+            again = apply_list_page_query(root, overflow)
+        self.assertIn("pkg/pr_review.py", note)
+        self.assertIn("/pulls?page=1'", body)
+        self.assertIn("/pulls/{number}'", body)
+        self.assertNotIn("pagination", extra)
+        self.assertEqual(again, "")
+
+    def test_mechanical_page_query_skips_comment_overflow(self) -> None:
+        comment = "add the comment subcommand and a mocked test"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            (root / "pkg" / "pr_review.py").write_text(
+                "import os\n"
+                "import urllib.request\n"
+                "TOKEN = os.environ['GITHUB_TOKEN']\n"
+                "def list_pulls(owner, repository):\n"
+                "    urllib.request.urlopen(\n"
+                "        f'https://api.github.com/repos/{owner}/{repository}"
+                "/pulls'\n"
+                "    )\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(apply_list_page_query(root, comment), "")
+            body = (root / "pkg" / "pr_review.py").read_text(encoding="utf-8")
+        self.assertNotIn("page=", body)
 
 
 if __name__ == "__main__":

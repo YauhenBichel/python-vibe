@@ -13,6 +13,7 @@ from pathlib import Path
 from harness.act.code import apply_source
 from harness.task import (
     looks_like_add_feature,
+    looks_like_app_overflow,
     looks_like_bugfix,
     looks_like_fix_smell,
     looks_like_write_tests,
@@ -29,6 +30,7 @@ from harness.act.autofix.moves import apply_file_move, apply_function_move
 from harness.act.autofix.conflicts import _resolve_conflict, looks_like_conflict
 from harness.act.autofix.cover import apply_cover_test
 from harness.act.autofix.names import apply_typo_fixes, typo_pairs
+from harness.act.autofix.scaffold import apply_list_page_query
 
 
 def apply_mechanical(
@@ -97,6 +99,10 @@ def apply_mechanical(
         cover = apply_cover_test(project, task, write=write)
         if cover:
             notes.append(cover)
+    if looks_like_app_overflow(task):
+        paged = apply_list_page_query(project, task, write=write)
+        if paged:
+            notes.append(paged)
     if not notes:
         return ""
     verb = "applied" if write else "would apply (read-only)"
