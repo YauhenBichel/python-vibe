@@ -196,6 +196,14 @@ test. The model is not called. The first job that does call it is
 clamp, and a cold 7B–8B load plus one generate burned the 180s Ollama
 cap. DeepSeek got one clamp through, then `steps`, then the same cap.
 
+**Warm remasure, same evening.** Each extra tag was loaded first
+(`keep_alive` 30 minutes). OpenCoder's warmup curl got 0 bytes in
+300s, then clamp hit 180s. SWE-agent-LM was already in memory and
+still hit 180s on the first clamp generate. DeepSeek got one clamp
+through, then the same cap — same shape as the cold pass. So this is
+not only a cold start. Write-tests stayed 3 / 3 (compiler). Not a
+score.
+
 That is not a nine-cell table. **Do not switch.** Default stays
 `llama3.1:8b`.
 
@@ -571,11 +579,12 @@ python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
 python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
-**Result.** Both tags are on disk. The first daily pass timed out at
-the 180s Ollama cap on clamp (write-tests 3 / 3 is the compiler bind,
-no model). That is not a score. Default stays `llama3.1:8b`. Other
-7B–8B weights that fit this laptop, and the ones that do not, are
-listed on [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
+**Result.** Both tags are on disk. Clamp timed out at the 180s Ollama
+cap on the first pass and again after a warm load (write-tests 3 / 3
+is the compiler bind, no model). That is not a score. Default stays
+`llama3.1:8b`. Other 7B–8B weights that fit this laptop, and the ones
+that do not, are listed on
+[Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 

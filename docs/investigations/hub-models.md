@@ -50,8 +50,8 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `deepseek-coder:6.7b` | 3.8 GB | On disk. Clamp: 1 pass, 1 `steps`, then 180s timeout. Incomplete. |
 | `starcoder2:7b` | 4.0 GB | On disk. Often a completion model. First daily pass timed out on clamp. |
 | `codellama:7b-python` | 3.8 GB | On disk. First daily pass timed out on clamp. |
-| `opencoder:8b` | 4.7 GB | On disk. Import landed. First daily pass timed out on clamp. |
-| `swe-agent-lm:7b` | 4.7 GB | On disk. Import landed. First daily pass timed out on clamp. |
+| `opencoder:8b` | 4.7 GB | On disk. Import landed. Clamp timed out at 180s, including after a 300s warmup. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Import landed. Clamp timed out at 180s while the tag was loaded. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -83,8 +83,10 @@ repeat it.
 
 **Result.** Both tags are on this laptop: `opencoder:8b` and
 `swe-agent-lm:7b`. The first daily pass timed out at the 180s Ollama
-cap on clamp. Write-tests was 3 / 3 with no model (harness AAA bind).
-That is not a score. Do not switch the default.
+cap on clamp. A warm remasure did the same: OpenCoder's warmup curl
+got 0 bytes in 300s; SWE-agent-LM was in memory and still timed out
+on the first clamp generate. Write-tests was 3 / 3 with no model
+(harness AAA bind). That is not a score. Do not switch the default.
 
 ## What else fits this laptop
 
@@ -107,8 +109,8 @@ These write Python. None of them were trained on python-vibe
 | [deepseek-ai/deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) | 6.7B | `ollama pull deepseek-coder:6.7b` | On disk. Daily not in yet. |
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. Completion-style. May miss `Action:`. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | Same daily table. |
-| [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. First daily pass timed out on clamp. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Their agent traces, not this loop. |
+| [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. Clamp timed out at 180s, including after warmup. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Clamp timed out while loaded. Their traces, not this loop. |
 
 ### Fits, measure later
 
