@@ -190,6 +190,19 @@ writing. Once list and show exist, the harness now writes the mocked
 idea as the add-feature cover test. Overflow (comment / pagination /
 config) is a later typed `run`, not more `--steps`.
 
+Same prompt, twelve steps, after that mock-test write (#214). 5
+September 2026. Ollama `llama3.1:8b`.
+
+| Repeat | Checklist | Suite | Stopped | Wrote |
+| --- | --- | --- | --- | --- |
+| 1 | no (`mocked_tests`) | red | steps | `pkg/pr_review.py` × 4 |
+| 2 | no (`show`, `mocked_tests`) | red | steps | `pkg/pr_review.py` |
+| 3 | yes | green | `done` | `pkg/pr_review.py`, tests |
+
+**1 / 3** checklist. **1 / 3** suite green. **1 / 3** `done`. Two of
+three stayed red after one repair, so I stopped adding product copy.
+Replay: `PYTHONPATH=src python scripts/measure/eval_cli_app.py`.
+
 Everyday-ready is still the older bar.
 
 ## Four jobs, as typed
