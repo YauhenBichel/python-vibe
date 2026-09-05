@@ -234,9 +234,24 @@ harness system prompt. Cap 180s. No file write.
 | `swe-agent-lm:7b` | 450 | **39.6 s** |
 
 Those four finish a short clamp ask. Daily clamp still timed out.
-The wall is the helper prompt, not a hung generate on this text.
-That is not a nine-cell table. **Do not switch.** Default stays
-`llama3.1:8b`.
+
+**First helper chat, same night.** The real first daily clamp
+request: system 897 characters, user 5,935 characters, about 1,700
+tokens (`num_ctx` 8,192). Same builder as `eval_daily.py`. Cap 180s.
+
+| Model | Prompt tokens | Reply tokens | Wall |
+| --- | --- | --- | --- |
+| `llama3.1:8b` | 1,698 | 40 | **16.6 s** |
+| `qwen2.5-coder:7b` | 1,706 | 53 | **12.4 s** |
+| `deepseek-coder:6.7b` | 2,059 | 334 | **39.1 s** |
+| `swe-agent-lm:7b` | 1,706 | 66 | **33.4 s** |
+
+The 8B and the 7B coder opened with `Action: patch`. DeepSeek opened
+with `Action: skill` then a patch. SWE-agent-LM opened with prose.
+The helper first turn is not too big to finish once a generate has
+already succeeded on the machine. Daily clamp still timed out on a
+load that did not return in 180s. That is not a nine-cell table.
+**Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
@@ -611,12 +626,12 @@ python-vibe --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 **Result.** Both tags are on disk. A one-word generate hit 180s on
-OpenCoder and finished in 19.6 s on SWE-agent-LM. The daily clamp
-*text* (no helper) finished in 40 s on SWE-agent-LM. Daily clamp
-timed out on both (write-tests 3 / 3 is the compiler bind, no
-model). That is not a score. Default stays `llama3.1:8b`. Other
-7B–8B weights that fit this laptop, and the ones that do not, are
-listed on
+OpenCoder and finished in 19.6 s on SWE-agent-LM. The first helper
+clamp chat (~1,700 tokens) finished in 33 s on SWE-agent-LM. Daily
+clamp timed out on a load that did not return in 180s (write-tests
+3 / 3 is the compiler bind, no model). That is not a score. Default
+stays `llama3.1:8b`. Other 7B–8B weights that fit this laptop, and
+the ones that do not, are listed on
 [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).

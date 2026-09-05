@@ -43,10 +43,10 @@ Public pages do not name other editors or chat products.
 
 | Note | In one sentence |
 | --- | --- |
-| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. Bare clamp prompt 22–40s; daily clamp still timed out. Keep the 8B. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. First helper clamp chat 12–39s; daily still timed out on a cold load. Keep the 8B. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
-| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | SWE-agent writes a bare clamp in 40s. Daily clamp still timed out. Do not switch. |
+| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | SWE-agent finishes the first helper clamp chat in 33s. Daily still timed out on a cold load. Do not switch. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The helper stays on this machine. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B adapter is a demo, not daily work. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and the runs behind the numbers. |

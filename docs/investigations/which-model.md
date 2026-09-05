@@ -77,8 +77,10 @@ through, then the same cap. A one-word generate (`Reply with the
 single word ok.`) finished on the 8B (3.9 s), 7B coder (11.5 s),
 DeepSeek (3.8 s), and SWE-agent-LM (19.6 s). StarCoder2, CodeLlama,
 and OpenCoder hit 180s. The same four then finished the daily clamp
-*text* (no helper prompt) in 22–40 s. Daily clamp still timed out.
-A reply is not a daily score. **Do not switch.**
+*text* (no helper prompt) in 22–40 s. The real first helper chat is
+about 1,700 tokens and finished in 12–39 s on those four. Daily
+clamp still timed out on a load that did not return in 180s. A reply
+is not a daily score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score
