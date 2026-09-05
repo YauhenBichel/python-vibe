@@ -39,6 +39,7 @@ GitHub thread:
   <li><a href="#exact-stdout-on-the-05b">Exact stdout on the 0.5B</a></li>
   <li><a href="#sample-four-drafts-then-greedy">Sample four drafts, then greedy</a></li>
   <li><a href="#8b-daily-jobs">8B daily jobs</a></li>
+  <li><a href="#same-night-daily-jobs-7b-coder">Same-night daily jobs, 7B coder</a></li>
   <li><a href="#8b-greenfield-cli">8B greenfield CLI</a></li>
   <li><a href="#everyday-ready-bar">Everyday-ready bar</a></li>
   <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
@@ -134,6 +135,38 @@ a green suite. Replay one of the wins:
 Everyday-ready is still the older bar: beat a clean 8B on parse **and**
 a real ≥1 KB fix the model wrote. This table is the daily loop on small
 fixtures, not that bar. The first ≥1 KB cell is retired below.
+
+## Same-night daily jobs, 7B coder
+
+**Example.** 5 September 2026, evening. Same script
+(`scripts/measure/eval_daily.py`), same twelve steps, same fixtures.
+`llama3.1:8b` remasured, then `qwen2.5-coder:7b`.
+
+| Model | Write tests | Add clamp | Logic bug | Passed |
+| --- | --- | --- | --- | --- |
+| `llama3.1:8b` | 3 / 3 | 3 / 3 | 3 / 3 | **9 / 9** |
+| `qwen2.5-coder:7b` | 3 / 3 | **1 / 3** (two `ask` stops) | 3 / 3 | **7 / 9** |
+
+The two-case gap is inside the noise this page already named. I did not
+switch the default.
+
+The logic-bug 3 / 3 on both sides is the compiler bind: a whole-line
+`return 0` on a named sum. Same class as the retired ≥1 KB cell. It is
+not a model writing `return sum(rows)`.
+
+Replay:
+`PYTHONPATH=src python3 scripts/measure/eval_daily.py --model qwen2.5-coder:7b`.
+
+The 7B clip bar the same evening:
+
+| Check | Harness 7B | Clean 7B |
+| --- | --- | --- |
+| Live parse | **10 / 15** | **1 / 15** |
+| ≥1 KB clip fix | **0 / 3** (`steps`; writes `[]` × 3; turns non-empty) | **3 / 3** (one-shot) |
+
+`everyday_ready` stayed false. The 7B coder speaks more first Actions
+than a clean 7B and still does not write `clip`. Same wall as the 8B
+clip remasure.
 
 ## 8B greenfield CLI
 
@@ -390,6 +423,11 @@ twelve steps.
 The model ran. It did not write `clip`. Parse still beats clean. Clean
 still one-shots the file. **Not everyday-ready.** Replay:
 `PYTHONPATH=src python scripts/measure/eval_everyday_bar.py`.
+
+Same evening, same script, `qwen2.5-coder:7b`: harness parse **10 / 15**
+vs clean **1 / 15**; harness fix **0 / 3** vs clean **3 / 3**. Not
+everyday-ready. Detail under
+[same-night daily jobs](#same-night-daily-jobs-7b-coder).
 
 ## Four jobs, as typed
 
