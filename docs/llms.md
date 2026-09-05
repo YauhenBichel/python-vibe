@@ -47,7 +47,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | absolute_url }}): When new weights help. Not another 0.5B run. Not 30 seed traces.
 - [Which model to run]({{ '/investigations/which-model/' | absolute_url }}): Three local models, the same eleven jobs, each checked by running the code. Same-night daily: 8B 9/9, 7B coder 7/9. 8B stays.
 - [Model lanes]({{ '/investigations/model-lanes/' | absolute_url }}): Which local weight for which job. Default stays 8B.
-- [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights to run or tune. 1.5B and 1B miss Action:. OpenCoder 8B and SWE-agent-LM 7B import from GGUF (`import_hf_ollama.py`).
+- [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights that fit 18 GB. 1.5B and 1B miss Action:. OpenCoder 8B and SWE-agent-LM 7B import from GGUF (`import_hf_ollama.py`).
 - [Cloud weights]({{ '/investigations/cloud-weights/' | absolute_url }}): Larger models on a rented GPU. Same write limit. No 0.5B retrain.
 - [Platform engineering]({{ '/investigations/platform-engineering/' | absolute_url }}): pathlib, both venv layouts, config files, every OS.
 - [Everyday laptop]({{ '/investigations/everyday-laptop/' | absolute_url }}): Why the 0.5B LoRA is not daily work.

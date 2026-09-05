@@ -29,7 +29,7 @@ Public pages do not name other editors or chat products.
     <h2>The scores</h2>
     <p><a href="{{ '/investigations/experiments/' | relative_url }}">Experiments</a> — every measured run, with what I typed.</p>
     <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep <code>llama3.1:8b</code>. A 7B coder is close, not better.</p>
-    <p><a href="{{ '/investigations/hub-models/' | relative_url }}">Hub models</a> — which Hugging Face weights to run, and how to import two that Ollama does not ship.</p>
+    <p><a href="{{ '/investigations/hub-models/' | relative_url }}">Hub models</a> — which Hugging Face weights fit 18 GB, and how to import two that Ollama does not ship.</p>
   </div>
   <div class="track">
     <h2>How to use the tool</h2>
@@ -46,7 +46,7 @@ Public pages do not name other editors or chat products.
 | [Which model]({{ '/investigations/which-model/' | relative_url }}) | 8B vs a 7B coder vs a 30B that timed out. Evening daily jobs: 8B 9/9, 7B 7/9. Keep the 8B. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
-| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Tiny models miss the first line of the protocol. OpenCoder and SWE-agent-LM import as a file, then a local tag. |
+| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Tiny models miss the first line. A 7B–8B Q4 fits 18 GB. OpenCoder and SWE-agent-LM import as a file. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The helper stays on this machine. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B adapter is a demo, not daily work. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and the runs behind the numbers. |
