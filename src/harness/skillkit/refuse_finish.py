@@ -268,12 +268,13 @@ def refuse_unwired_addition(
     Whether the body is any good needs a reader. Whether anything will
     ever run it does not, so that much is checked here.
 
-    Overflow comment is the piece the later run asked for. Live 8B wrote
-    comment_on and done was refused because argparse never called it.
+    Overflow comment/pagination/config is a later typed run. The 8B
+    writes ``def comment_on`` and the unused-function guard then
+    burns the step budget. That cell is not this rule.
     """
-    if not last_path:
+    if looks_like_app_overflow(task):
         return ""
-    if task and looks_like_app_overflow(task):
+    if not last_path:
         return ""
     path = Path(project) / last_path
     for name in _added_functions(path):

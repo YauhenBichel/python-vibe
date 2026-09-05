@@ -248,6 +248,12 @@ def start_hint(brief: ProjectBrief, task: str, *, located: bool = False) -> str:
             f"Then tests/test_{noun}.py. Do not put logic in scripts/. "
             "pkg/__init__.py is already exports-only. Do not locate. Do not ask."
         )
+    if looks_like_app_overflow(task):
+        from harness.scan.app_spec import overflow_edit_line
+
+        return (
+            f"{overflow_edit_line(task)} Do not locate. Do not grep. Do not ask."
+        )
     if looks_like_fix_smell(task):
         return (
             "This is a smell/rename task. Patch one opaque name to readable "

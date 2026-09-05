@@ -13,7 +13,13 @@ from harness.agent.policy import (
     refuse_done,
     should_run_suite_after_write,
 )
-from harness.locate import refuse_app_ask, refuse_app_wrong_path, refuse_redundant_locate
+from harness.locate import (
+    prelude,
+    refuse_app_ask,
+    refuse_app_overflow_explore,
+    refuse_app_wrong_path,
+    refuse_redundant_locate,
+)
 from harness.scan.project_brief import classify_project, start_hint
 from harness.task import looks_like_app_loop
 
@@ -58,6 +64,31 @@ class AppLoopTest(unittest.TestCase):
         )
         self.assertIn("Do not ask", refuse_app_ask(overflow, "ask"))
         self.assertIn("comment", refuse_app_ask(overflow, "ask"))
+
+    def test_pagination_hint_names_page_not_comment(self) -> None:
+        overflow = "add pagination to the GitHub PR CLI"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            apply_package_scaffold(root, CLI)
+            hint = start_hint(classify_project(root), overflow)
+            text, dest = prelude(root, overflow)
+        self.assertIn("page=", hint)
+        self.assertNotIn("comment", hint)
+        self.assertIn("page=", text)
+        self.assertNotIn("comment", text)
+        self.assertEqual(dest, "pkg/pr_review.py")
+        self.assertIn("page=", refuse_app_overflow_explore(overflow, "grep"))
+        self.assertNotIn("comment", refuse_app_overflow_explore(overflow, "grep"))
+
+    def test_config_hint_names_path_home(self) -> None:
+        overflow = "add a config file via Path.home"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            text, dest = prelude(root, overflow)
+            hint = start_hint(classify_project(root), overflow)
+        self.assertIn("Path.home()", hint)
+        self.assertIn("pkg/config.py", text)
+        self.assertEqual(dest, "pkg/config.py")
 
     def test_hint_names_the_module_not_weekday(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

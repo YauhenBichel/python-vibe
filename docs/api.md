@@ -80,8 +80,11 @@ the same three commands work on macOS, Linux and Windows.
 ```bash
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
-pip install -e .
+python3 scripts/run/install.py
 ```
+
+That creates `.venv` when needed and runs `pip install -e .`. Already in
+a venv: `pip install -e .` is the same install.
 
 That gives you a `python-vibe` command. No `PYTHONPATH`, no version-pinned
 interpreter, no script paths:
