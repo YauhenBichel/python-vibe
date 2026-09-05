@@ -244,6 +244,27 @@ typed runs, not `--steps`. Replay:
 python-vibe run "add the comment subcommand and a mocked test"
 ```
 
+Same evening, pagination from a list+show+comment tree. Typed:
+`add pagination to the GitHub PR CLI`. After #228 (indented `page=`
+counts; a module-level `pulls?page=` NameErrors on import). Twelve
+steps × 3. Seeded list+show+comment tree.
+
+| Repeat | Pagination gap | Stopped | Wrote |
+| --- | --- | --- | --- |
+| 1 | open | steps | none |
+| 2 | open | steps | none |
+| 3 | open | steps | none |
+
+**0 / 3** closed pagination. Config stayed leftover. An earlier
+twenty-step try on a leftover comment tree wrote `pkg/pagination.py`
+and a module-level `?page=`, then drifted. The timed cell wrote
+nothing. Replay:
+`PYTHONPATH=src python scripts/measure/eval_cli_overflow_page.py`.
+
+```bash
+python-vibe run "add pagination to the GitHub PR CLI"
+```
+
 Everyday-ready is still the older bar.
 
 ## Everyday-ready bar
