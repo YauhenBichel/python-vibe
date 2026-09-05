@@ -24,6 +24,7 @@ class HowToTest(unittest.TestCase):
         self.assertIn("NameError", text)
         self.assertIn("harness demos", text)
         self.assertIn("no model", text)
+        self.assertIn("demo/orders", text)
         self.assertEqual(text, how_to())
 
 

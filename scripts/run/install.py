@@ -82,10 +82,26 @@ def console_script(python: Path, *, windows: bool | None = None) -> Path:
 
 
 def activate_hint(venv_dir: Path, *, windows: bool | None = None) -> str:
+    """Relative to the checkout. An absolute path would be a home path."""
+    del venv_dir  # always `.venv` next to install.py; ignore a host path
     on_windows = os.name == "nt" if windows is None else windows
     if on_windows:
-        return str(venv_dir / "Scripts" / "Activate.ps1")
-    return f"source {venv_dir.as_posix()}/bin/activate"
+        return ".venv\\Scripts\\Activate.ps1"
+    return "source .venv/bin/activate"
+
+
+def next_steps(*, system: bool, already_in_venv: bool, windows: bool | None = None) -> str:
+    """What to type after install. The command is not on PATH until activate."""
+    lines: list[str] = []
+    if not system and not already_in_venv:
+        lines.append("Activate in every new terminal:")
+        lines.append(f"  {activate_hint(Path('.venv'), windows=windows)}")
+        lines.append("If the shell says command not found, the venv is not active.")
+    lines.append("Demo (planted NameError):")
+    lines.append("  cd demo/orders")
+    lines.append("  python-vibe brief")
+    lines.append("From the checkout, without cd: python-vibe brief demo/orders")
+    return "\n".join(lines)
 
 
 def pip_argv(python: Path, spec: list[str]) -> list[str]:
@@ -154,9 +170,13 @@ def main(argv: list[str] | None = None) -> int:
     if ran.returncode != 0:
         return ran.returncode
     print(f"installed python-vibe -> {script}")
-    if not args.system and not in_venv():
-        print(f"Activate once: {activate_hint(root / '.venv')}")
-    print("Then from your project folder: python-vibe brief")
+    print(
+        next_steps(
+            system=args.system,
+            already_in_venv=in_venv(),
+            windows=os.name == "nt",
+        )
+    )
     return 0
 
 

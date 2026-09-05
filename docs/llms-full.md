@@ -40,11 +40,16 @@ ollama pull llama3.1:8b
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
 python3 scripts/run/install.py
-cd /path/to/your/app
+source .venv/bin/activate
+cd demo/orders
 python-vibe brief
 python-vibe ask  "what does compute_total return?"
-python-vibe run  "find a real NameError and fix it"
+python-vibe run  "find the NameError and fix it"
 ```
+
+If the shell says command not found, the venv is not active. Activate
+it in every new terminal. `brief` on this checkout briefs the whole
+tree; the planted demo is `demo/orders`.
 
 Training on Apple Silicon needs MLX, which does not install on Linux or
 Windows: `pip install -e ".[train]"`.
@@ -52,6 +57,7 @@ Windows: `pip install -e ".[train]"`.
 What you type, and what happened on demo/orders: {{ '/scenarios/' | absolute_url }}
 A typed session and asciinema recording: {{ '/live/' | absolute_url }}
 VS Code tasks, same day, same folder: {{ '/vscode/' | absolute_url }}
+Local MCP, same day, same folder: {{ '/cursor/' | absolute_url }}
 
 --tiny is the 0.5B sidecar. Do not use it for daily work. Large trees: pass --scope and start with Action: map.
 

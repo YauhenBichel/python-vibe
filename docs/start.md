@@ -23,22 +23,27 @@ Four steps. Most of the time is one download. No graphics card.
 git clone https://github.com/YauhenBichel/python-vibe.git
 cd python-vibe
 python3 scripts/run/install.py
+source .venv/bin/activate
 ```
 
 That creates `.venv` when you are not already in one, then
-`pip install -e .`. Activate it (`source .venv/bin/activate`, or
-`.venv\Scripts\Activate.ps1` on Windows) so `python-vibe` is on PATH.
+`pip install -e .`. Activate it in **every new terminal**
+(`source .venv/bin/activate`, or `.venv\Scripts\Activate.ps1` on
+Windows) or the shell says `command not found: python-vibe`.
 Already in a venv: `pip install -e .` is the same install.
 
 ## 2. Check it works
 
-No model yet. From **your** project folder:
+No model yet. The planted demo is `demo/orders`. Do not run `brief`
+on this checkout — that briefs the whole tree.
 
 ```bash
+cd demo/orders
 python-vibe brief
 ```
 
-You should see the project's size and a list of files.
+From the checkout, without `cd`: `python-vibe brief demo/orders`.
+You should see about 10 files and 2.9 KB.
 
 ## 3. Download the model (once)
 
@@ -47,6 +52,8 @@ ollama pull llama3.1:8b
 ```
 
 ## 4. Use it
+
+Still in `demo/orders`, with the venv active:
 
 ```bash
 python-vibe ask  "what does compute_total return?"
@@ -72,8 +79,9 @@ not a higher `--steps`:
 python-vibe run "add the comment subcommand and a mocked test"
 ```
 
-After `scripts/run/install.py`, `python-vibe` is the command. From a
-source checkout without that install: `PYTHONPATH=src python3 -m harness`.
+After `scripts/run/install.py` and `source .venv/bin/activate`,
+`python-vibe` is the command. From a source checkout without that
+install: `PYTHONPATH=src python3 -m harness`.
 One overflow prompt at a time, against the CLI project folder (not this
 repo).
 
@@ -90,7 +98,7 @@ The map of every score:
 
 - Last recorded turns: `python-vibe last`
 - [Add to VS Code]({{ '/vscode/' | relative_url }}) — `python-vibe editors vscode`, plus a recorded session
-- [Add to Cursor]({{ '/cursor/' | relative_url }}) — `python-vibe editors cursor --allow-writes`
+- [Add to Cursor]({{ '/cursor/' | relative_url }}) — `python-vibe editors cursor --allow-writes`, plus a recorded session
 - [Skills]({{ '/skills/' | relative_url }}) — picked from the wording of your task
 - Tests for this repo: `python -m unittest discover -s tests -q`
 - Tiny 0.5B sidecar (not daily work): see [research]({{ '/research-vibe-review/' | relative_url }})

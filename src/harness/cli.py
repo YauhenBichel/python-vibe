@@ -46,8 +46,9 @@ Run those inside your project folder. To point at another folder:
 
 ask never writes. Daily run writes, then runs the suite; a failing
 traceback goes back to the model once. Unique-typo NameError and a
-template add are harness demos — they finish with no model. More
-commands: {prog} --help
+template add are harness demos on demo/orders — they finish with no model.
+From this checkout: {prog} brief demo/orders
+More commands: {prog} --help
 """
 
 
