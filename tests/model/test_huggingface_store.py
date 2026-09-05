@@ -42,6 +42,10 @@ class HuggingFaceStoreTest(unittest.TestCase):
         self.assertIn("YauhenBichel/python-vibe-0.5b", text)
         self.assertIn("hf download YauhenBichel/python-vibe-0.5b", text)
         self.assertIn("github.com/YauhenBichel/python-vibe", text)
+        self.assertIn("## Experiments", text)
+        self.assertIn("Not everyday-ready", text)
+        self.assertIn("8 / 9", text)
+        self.assertIn("0 / 54", text)
 
     def test_stage_adapter_bundle_drops_local_paths(self) -> None:
         spec = SPECS["python-vibe"]
