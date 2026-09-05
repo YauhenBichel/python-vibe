@@ -73,7 +73,10 @@ cap. A second pass warmed each tag first (`keep_alive` 30 minutes) and
 finished. OpenCoder and StarCoder2: warmup got 0 bytes in 300s.
 SWE-agent-LM was in memory and still timed out on clamp. CodeLlama's
 warmup returned, then clamp still hit 180s. DeepSeek got one clamp
-through, then the same cap. That is not a score. **Do not switch.**
+through, then the same cap. A one-word generate (`Reply with the
+single word ok.`) finished in 3.9 s on the loaded 8B and 11.5 s on
+the 7B coder after a swap; CodeLlama and OpenCoder hit 180s. That is
+not a score. **Do not switch.**
 See [Hub models](./hub-models.md).
 
 ## One run is not a score
