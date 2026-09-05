@@ -157,26 +157,38 @@ pagination, and `Path.home()` config are overflow — a later typed
 | 3 | `edit` tests first | stub `pkg/pr_review.py` (37 B) | http, list, show, tests missing | — | steps |
 
 **1 / 3** list/show checklist. **0 / 3** suite green. **0 / 3** `done`.
-Two of three stayed red after one repair, so I stopped adding skill
-copy. The harness now writes the mocked `urlopen` test once list/show
-exist. One later live verify (same prompt, twenty steps): four steps,
-suite green, `done`.
 
-Overflow from that tree, same twenty-step budget. Typed:
-`add the comment subcommand and a mocked test`.
+Then three repeats at twelve steps, same budget as the daily jobs,
+after the harness started scaffolding `pkg/` and refusing locate /
+ask:
 
-| Check | Result |
-| --- | --- |
-| First try | `grep` `comment` (add-feature hint). 20 steps. No comment |
-| After hint tighten | first Action `edit`; `def comment_on` on disk; `done` refused because nothing called it; burned the rest of the budget |
+| Repeat | list + show + mocks | Stopped | What it wrote |
+| --- | --- | --- | --- |
+| 1 | yes | steps | `pkg/pr_review.py`, `pkg.py`, tests |
+| 2 | yes | steps | `pkg/pr_review.py`, tests |
+| 3 | no (`show`, `mocked_tests`) | steps | `pkg/pr_review.py`, `pkg/pull_viewer.py` |
 
-`def comment` now counts. Overflow `done` is allowed once that piece
-exists — argparse wiring is not demanded by the unused-function guard.
-Pagination and config stay later runs, not `--steps`.
+**2 / 3.** The miss spent the budget on a second module.
 
-```bash
-python-vibe run "add the comment subcommand and a mocked test"
-```
+Later the same day, after #206 (refuse locate until list and show
+exist), twelve steps again:
+
+| Repeat | list + show + mocks | Stopped | What it wrote |
+| --- | --- | --- | --- |
+| 1 | yes | steps | `pkg/pr_review.py`, tests |
+| 2 | yes | steps | `pkg/pr_review.py`, tests |
+| 3 | yes | steps | `pkg/pr_review.py`, tests |
+
+**3 / 3** on the checklist. **0 / 3** said `done`. Every run hit the
+step cap with the files already on disk. Replay:
+`python scripts/measure/eval_cli_app.py` (twelve steps; pass
+`--steps 20` for the first cell).
+
+Finish was the gap: the files were on disk and the model kept
+writing. Once list and show exist, the harness now writes the mocked
+`urlopen` test (token via `patch.dict`) and runs the suite — the same
+idea as the add-feature cover test. Overflow (comment / pagination /
+config) is a later typed `run`, not more `--steps`.
 
 Same prompt, twelve steps, after that mock-test write (#214). 5
 September 2026. Ollama `llama3.1:8b`.
