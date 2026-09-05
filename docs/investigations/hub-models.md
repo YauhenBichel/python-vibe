@@ -47,11 +47,11 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `llama3.2:1b` → [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 1.3 GB | On disk. **No `Action:` parse.** |
 | `qwen3coder` 30B-class | 18 GB | Already timed out at the 180s Ollama cap. |
 | `qwen2.5-coder:7b` | 4.7 GB | On disk. Same-night daily **7 / 9**. Do not switch. |
-| `deepseek-coder:6.7b` | 3.8 GB | On disk. Daily table not in yet. |
-| `starcoder2:7b` | 4.0 GB | On disk. Often a completion model. May miss `Action:`. |
-| `codellama:7b-python` | ~3.8 GB | Same daily table as the 8B / 7B coder. |
-| `opencoder:8b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
-| `swe-agent-lm:7b` | ~4.7 GB | Not in the Ollama library. Import below. Not measured. |
+| `deepseek-coder:6.7b` | 3.8 GB | On disk. Clamp: 1 pass, 1 `steps`, then 180s timeout. Incomplete. |
+| `starcoder2:7b` | 4.0 GB | On disk. Often a completion model. First daily pass timed out on clamp. |
+| `codellama:7b-python` | 3.8 GB | On disk. First daily pass timed out on clamp. |
+| `opencoder:8b` | 4.7 GB | On disk. Import landed. First daily pass timed out on clamp. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Import landed. First daily pass timed out on clamp. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -81,8 +81,10 @@ writes `FROM` the file and calls `ollama create`. The harness still
 sends the agent system prompt on each turn; the Modelfile does not
 repeat it.
 
-**Result.** The catalog and the Modelfile are in-tree. No daily score
-yet. Do not switch the default on a missing table.
+**Result.** Both tags are on this laptop: `opencoder:8b` and
+`swe-agent-lm:7b`. The first daily pass timed out at the 180s Ollama
+cap on clamp. Write-tests was 3 / 3 with no model (harness AAA bind).
+That is not a score. Do not switch the default.
 
 ## What else fits this laptop
 
@@ -105,8 +107,8 @@ These write Python. None of them were trained on python-vibe
 | [deepseek-ai/deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) | 6.7B | `ollama pull deepseek-coder:6.7b` | On disk. Daily not in yet. |
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. Completion-style. May miss `Action:`. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | Same daily table. |
-| [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | Import, then measure. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | Qwen2.5-Coder plus 5k traces from **their** agent. |
+| [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. First daily pass timed out on clamp. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Their agent traces, not this loop. |
 
 ### Fits, measure later
 

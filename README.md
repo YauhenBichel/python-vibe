@@ -115,13 +115,16 @@ Full page: [VS Code](https://yauhenbichel.github.io/python-vibe/vscode/).
 ## Experiments
 
 I tried a small open LLM for daily Python: ask, write a test, fix a bug,
-add one function. One laptop. 29–30 August 2026. **Not everyday-ready.**
+add one function. One laptop. 29–30 August and 5 September 2026.
+**Not everyday-ready.**
 
 | Experiment | Example | Result |
 | --- | --- | --- |
 | 0.5B as daily work | weekday helper, count-md, `Action:` | **0 / 4** vibe, **0 / 2** parse |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | **0 / 4**, then **4 / 4** after the harness |
 | Which open model | same bench, code must run | 8B **6–9 / 9** over six runs; 7B coder 7 / 9 once; 30B timeout |
+| Same-night daily | write tests, clamp, sum × 3 | 8B **9 / 9**, 7B coder **7 / 9**. Keep the 8B |
+| Extra 7B–8B on disk | DeepSeek, StarCoder2, CodeLlama, OpenCoder, SWE-agent-LM | Write-tests 3 / 3 is the compiler (no model). Clamp hit the 180s cap. Not a score |
 | Train more? | 35 pairs, 30 traces | No. Later ~2k clean turns |
 | Larger model on a GPU | `--engine openai` | No live 14B / 32B number yet |
 | Does a 14B fit? | 9 GB of weights, 18 GB machine | **No.** 12–13 GB of swap, no run finished |
@@ -160,8 +163,13 @@ running, so the practical ceiling is about **11–12 GB of model**, not 18.
 
 | Model | On disk | Usable here |
 | --- | --- | --- |
-| `llama3.1:8b` | 4.9 GB | yes, the default |
-| `qwen2.5-coder:7b` | 4.7 GB | yes |
+| `llama3.1:8b` | 4.9 GB | yes, the default. Daily **9 / 9** |
+| `qwen2.5-coder:7b` | 4.7 GB | yes. Daily **7 / 9**. Do not switch |
+| `deepseek-coder:6.7b` | 3.8 GB | on disk. First daily pass timed out on clamp |
+| `starcoder2:7b` | 4.0 GB | on disk. First daily pass timed out on clamp |
+| `codellama:7b-python` | 3.8 GB | on disk. First daily pass timed out on clamp |
+| `opencoder:8b` | 4.7 GB | imported from Hub. First daily pass timed out on clamp |
+| `swe-agent-lm:7b` | 4.7 GB | imported from Hub. First daily pass timed out on clamp |
 | `qwen2.5-coder:14b` | 9.0 GB | no — pages to disk |
 | 30B-class MoE | 18.6 GB | no — times out |
 
