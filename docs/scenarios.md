@@ -90,6 +90,7 @@ table is what someone actually types, which is why it is on this page.
 Write-up of the same evening:
 [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}).
 Every measured run:
+[Results]({{ '/investigations/' | relative_url }}) ·
 [Experiments]({{ '/investigations/experiments/' | relative_url }}).
 
 The older eleven-case table, including review and dry-run, is on

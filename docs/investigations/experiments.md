@@ -8,28 +8,30 @@ type: article
 
 # Experiments
 
-I tried to use a small open LLM for daily Python: ask, write a test, fix
-a bug, add one function. One laptop. 29–30 August and 5 September 2026.
+I asked a small local model to do daily Python: answer a question, write
+a test, fix a bug, add one function. One laptop. 29–30 August and
+5 September 2026.
 
-**Not everyday-ready.** Everyday-ready still means beating an untuned
-`llama3.1:8b` on live parse **and** a real ≥1 KB fix the model wrote.
-The first ≥1 KB cell was a whole-line `return 0.0` on a named sum. That
-is compiler-class. It is retired as a model job.
+**Not everyday-ready.** That phrase means: beat a plain 8B at reading
+the next step, **and** at fixing a real bug the helper cannot do
+itself. It does not. The first “real bug” cell was a whole-line
+`return 0.0` on a named sum — the helper can write that, so it is no
+longer a model job.
+
+How to read the numbers: one run unless the table says otherwise. A
+gap of one or two cases is noise. Open [Results]({{ '/investigations/' | relative_url }})
+if you want the map, not this long list.
 
 <div class="stats">
-  <div class="stat"><b>12 / 18</b><span>0.5B four drafts + later loop</span></div>
-  <div class="stat"><b>0 / 54</b><span>greedy 0.5B LoRA</span></div>
-  <div class="stat"><b>8 / 15</b><span>8B live first Action</span></div>
-  <div class="stat"><b>8 / 9</b><span>8B daily jobs, 5 Sep 2026</span></div>
+  <div class="stat"><b>12 / 18</b><span>0.5B, four drafts then a later loop</span></div>
+  <div class="stat"><b>0 / 54</b><span>0.5B adapter, one greedy try each</span></div>
+  <div class="stat"><b>8 / 15</b><span>8B picked the right first step</span></div>
+  <div class="stat"><b>9 / 9</b><span>8B daily jobs, evening of 5 Sep</span></div>
 </div>
 
-The four commands as typed:
-[Scenarios]({{ '/scenarios/' | relative_url }}).
-The machine, and every run behind these numbers:
-[Bench record]({{ '/investigations/bench-record/' | relative_url }}).
-Other notes:
-[Research]({{ '/investigations/' | relative_url }}).
-GitHub thread:
+[What you type]({{ '/scenarios/' | relative_url }}) ·
+[The machine]({{ '/investigations/bench-record/' | relative_url }}) ·
+[Results map]({{ '/investigations/' | relative_url }}) ·
 [discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
 
 <nav class="toc" aria-label="On this page">
