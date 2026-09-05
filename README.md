@@ -34,8 +34,10 @@ python-vibe run  "find the NameError and fix it"
 python-vibe run  "add a function total_lines and a test"
 ```
 
-`python-vibe` with no arguments reprints that list. After a write, `run`
-executes the suite and sends a failing traceback back to the model once.
+`python-vibe` with no arguments reprints that list. Daily `run` writes,
+then runs the suite and sends a failing traceback back once.
+`find the NameError` and `add a function total_lines` are harness demos
+on `demo/orders` (unique typo and a template add, no model).
 Point at another folder by putting it first:
 `python-vibe ask ~/app "what does add return?"`.
 
@@ -55,8 +57,9 @@ Every measured run: [Experiments](https://yauhenbichel.github.io/python-vibe/inv
 ## Live demo
 
 5 September 2026. Fresh copy of `demo/orders`. Only `ask` called
-`llama3.1:8b`. The rest needed no model. This is a real asciinema
-recording, not a mock.
+`llama3.1:8b`. The two writes are harness demos (no model). This is a
+real asciinema recording, not a mock. Daily `run` is 8B: write, run the
+suite, send a failing traceback back once.
 
 ![python-vibe on demo/orders](docs/media/live-demo.gif)
 

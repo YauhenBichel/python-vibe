@@ -9,7 +9,10 @@ date: 2026-09-05
 
 A real shell recording. 5 September 2026. One laptop. A fresh copy of
 `demo/orders`. Daily model: Ollama `llama3.1:8b`. Only **ask** called
-it. The other four commands finished without a model.
+it. The two writes are **harness demos** — a unique typo and a template
+add, no model. They stay on the recording because they are the same
+every time. Daily `run` is 8B: write, run the suite, send a failing
+traceback back once.
 
 ![python-vibe on demo/orders — brief, layout, ask, fix, add]({{ '/media/live-demo.gif' | relative_url }})
 
@@ -118,7 +121,9 @@ Nothing was written.
 
 ## Fix the NameError
 
-No model. 0.2 s. `src/orders.py` had `subtotl` on the tax line.
+Harness demo. No model. 0.2 s. `src/orders.py` had `subtotl` on the tax
+line. A unique in-scope name is bound without calling weights. That is
+not daily work.
 
 ```
 $ python-vibe run "find the NameError and fix it"
@@ -139,7 +144,8 @@ A `.bak` of the file sits next to it.
 
 ## Add a function
 
-No model. 0.2 s.
+Harness demo. No model. 0.2 s. A template wrote `total_lines` next to
+`prices`. Daily add-a-function goes through the 8B and the suite.
 
 ```
 $ python-vibe run "add a function total_lines and a test"
@@ -162,5 +168,6 @@ def test_total_lines_returns_the_expected_result(self) -> None:
 ```
 
 The suite stayed green. `ask` is the slow step because it is the one
-that talks to weights. The two writes are the same every time, which is
-why they are the ones on [Start]({{ '/start/' | relative_url }}).
+that talks to weights. The two writes are harness demos, which is why
+they look instant on [Start]({{ '/start/' | relative_url }}). Daily
+`run` is write, then the suite, then one repair.

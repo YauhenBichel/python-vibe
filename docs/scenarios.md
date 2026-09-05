@@ -22,6 +22,10 @@ already written code that broke the project's tests.
 
 ## The four commands on Start
 
+The NameError and `total_lines` rows are harness demos: a unique typo
+and a template add, no model. Daily `run` writes, then runs the suite;
+a failing traceback goes back once.
+
 | You type | What happened | Checked | Time |
 | --- | --- | --- | --- |
 | `python-vibe brief` | Listed 10 files, 2.9 KB. No model. | — | instant |

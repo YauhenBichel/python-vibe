@@ -44,8 +44,10 @@ Run those inside your project folder. To point at another folder:
 
   {prog} ask /path/to/project "what does compute_total return?"
 
-ask never writes. run only changes files inside that folder, and keeps a
-.bak of anything it edits. More commands: {prog} --help
+ask never writes. Daily run writes, then runs the suite; a failing
+traceback goes back to the model once. Unique-typo NameError and a
+template add are harness demos — they finish with no model. More
+commands: {prog} --help
 """
 
 
