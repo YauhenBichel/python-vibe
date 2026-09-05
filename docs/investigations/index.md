@@ -12,7 +12,7 @@ Dates are the day of the measurement. Public pages do not name other
 editors or chat products.
 
 <div class="stats">
-  <div class="stat"><b>9 / 18</b><span>0.5B four drafts + repair</span></div>
+  <div class="stat"><b>12 / 18</b><span>0.5B four drafts + later loop</span></div>
   <div class="stat"><b>0 / 54</b><span>greedy 0.5B LoRA</span></div>
   <div class="stat"><b>8 / 15</b><span>8B live parse</span></div>
   <div class="stat"><b>8 / 9</b><span>8B daily jobs, 5 Sep 2026</span></div>
@@ -22,7 +22,7 @@ editors or chat products.
 | --- | --- | --- |
 | 0.5B as daily work | weekday helper, count-md, `Action:` | 0 / 4 vibe, 0 / 2 parse |
 | 0.5B exact stdout | 18 held-out scripts, 3 repeats, Ollama | **7 / 54** base, **12 / 54** with repair |
-| 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** best cell; greedy LoRA **0 / 54** |
+| 0.5B sample-and-run | same 18, MLX, four drafts then greedy | **9 / 18** then **12 / 18** with later loop; 0 hint-repairs; greedy LoRA **0 / 54** |
 | 8B daily jobs | write-tests, clamp, logic bug, 3 repeats | **8 / 9** |
 | Four Start commands | `demo/orders`, `subtotl` / `stauts` | 0 / 4 then 4 / 4 |
 | Which open model | same bench, code must run | 8B 6–9 / 9 over six runs; 30B timeout |
@@ -39,7 +39,7 @@ What you type:
 | --- | --- |
 | [Experiments]({{ '/investigations/experiments/' | relative_url }}) | Every measured run, with the example and the score. |
 | [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 7 / 54 base, 12 / 54 after one repair. Ollama. 5 Sep 2026. |
-| [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}) | Four drafts 6 / 18 then 9 / 18. Greedy LoRA 0 / 54. 5 Sep 2026. |
+| [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}) | Four drafts 9 / 18. Later loop 12 / 18, 0 hint-repairs. Greedy LoRA 0 / 54. 5 Sep 2026. |
 | [Cite]({{ '/cite/' | relative_url }}) | APA and BibTeX for the software and that measurement. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and all six runs behind the numbers. |
 | [First-run four jobs]({{ '/investigations/first-run-four/' | relative_url }}) | The four Start commands on `demo/orders`. |

@@ -95,7 +95,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 0.5B / --tiny parsed Actions that day: 0/2 (echoed the skill, no Action parse).
 - 0.5B held-out vibe (weekday, count-md, jsonl, docstring): 0/4.
 - 0.5B exact-stdout (18 scripts × 3, 5 Sep 2026, Ollama): 7/54 base, 12/54 after one traceback repair.
-- 0.5B sample-and-run (same 18, 5 Sep 2026, MLX): four drafts at 0.7 scored 6/18 base, 9/18 with one repair, 2/18 LoRA, 6/18 LoRA+repair. Greedy (temp 0, 3 repeats): 2/18 unique on base, 3/18 with repair, 0/54 LoRA. Sampling found a different set. Only one of +3 is self-debug.
+- 0.5B sample-and-run (same 18, 5 Sep 2026, MLX): four drafts at 0.7 scored 6/18 base, 9/18 with one repair, 2/18 LoRA, 6/18 LoRA+repair. Greedy (temp 0, 3 repeats): 2/18 unique on base, 3/18 with repair, 0/54 LoRA. Later loop (datetime prepend + 8B hint): 12/18, 0 hint-repairs. Sampling found a different set. Only one of the first +3 is self-debug.
 - qwen2.5-coder:1.5b first Action on add-feature_pkg (question + add multiply): 0/2 (prose or `# patch`, no Action:).
 - llama3.2:1b on the same two tasks: 0/2.
 - OpenSRE-style 100 smallest files: 100× "no issues". That is not a review.

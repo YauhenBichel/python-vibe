@@ -15,7 +15,7 @@ a bug, add one function. One laptop. 29–30 August and 5 September 2026.
 `llama3.1:8b` on live parse **and** a real ≥1 KB fix.
 
 <div class="stats">
-  <div class="stat"><b>9 / 18</b><span>0.5B four drafts + repair</span></div>
+  <div class="stat"><b>12 / 18</b><span>0.5B four drafts + later loop</span></div>
   <div class="stat"><b>0 / 54</b><span>greedy 0.5B LoRA</span></div>
   <div class="stat"><b>8 / 15</b><span>8B live first Action</span></div>
   <div class="stat"><b>8 / 9</b><span>8B daily jobs, 5 Sep 2026</span></div>
@@ -104,8 +104,9 @@ greedy draft, three repeats, with and without the step-100 LoRA.
 
 Sampling found a different set, not a superset. Only one of the +3
 from 6 to 9 is a traceback fix; the rest is a new draw. Greedy LoRA
-printed style notes, not scripts. Next measured hour is an 8B
-one-line hint on extra words / ISO / argv, not more 0.5B pairs.
+printed style notes, not scripts. A later loop (prepend `datetime`,
+say when stdout is wrong, one 8B hint) scored **12 / 18**. Zero of
+those twelve were a hint-repair. Stop spending hours on this board.
 
 Write-up: [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}).
 
