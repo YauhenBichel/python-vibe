@@ -17,7 +17,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Scenarios]({{ '/scenarios/' | absolute_url }}): What you type, and what happened on demo/orders. Includes misses.
 - [Using]({{ '/api/' | absolute_url }}): Every command and flag, the Python API, and the read-only HTTP routes.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
-- [Live demo]({{ '/live/' | absolute_url }}): Typed session on demo/orders. 5 Sep 2026. Only ask called the 8B.
+- [Live demo]({{ '/live/' | absolute_url }}): Asciinema recording on demo/orders. 5 Sep 2026. Only ask called the 8B.
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty kit skills and when the harness loads each one.
 - [Architecture]({{ '/architecture/' | absolute_url }}): Bottom-up harness layers. Imports only point downward.
 - [In your editor]({{ '/editor-demos/' | absolute_url }}): Four things it does from Cursor or VS Code, with real answers and times. Two need no model.

@@ -53,14 +53,17 @@ Every measured run: [Experiments](https://yauhenbichel.github.io/python-vibe/inv
 ## Live demo
 
 5 September 2026. Fresh copy of `demo/orders`. Only `ask` called
-`llama3.1:8b` (8.5 s). The rest needed no model.
+`llama3.1:8b`. The rest needed no model. This is a real asciinema
+recording, not a mock.
+
+![python-vibe on demo/orders](docs/media/live-demo.gif)
 
 ```
 $ python-vibe brief
 10 Python and Markdown files, 2.9 KB in total.
 
 $ python-vibe ask "what does compute_total return?"
-int, which computes the sum of the line prices of one order.
+"int", which computes the sum of the line prices of one order.
 
 $ python-vibe run "find the NameError and fix it"
 bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
@@ -69,9 +72,8 @@ $ python-vibe run "add a function total_lines and a test"
 added def total_lines(prices) in src/orders.py. Tests passed.
 ```
 
-The first `ask` draft was only `"int"`. The harness sent it back; the
-second draft named what the function computes. Full transcript:
-[Live demo](https://yauhenbichel.github.io/python-vibe/live/).
+Replay: `asciinema play docs/media/live-demo.cast`.
+Full page: [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
 
 ## Experiments
 
