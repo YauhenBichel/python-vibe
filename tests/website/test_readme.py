@@ -27,6 +27,14 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertIn("asciinema play docs/media/cursor-demo.cast", text)
         self.assertIn("python-vibe editors cursor --allow-writes", text)
 
+    def test_readme_stays_short(self) -> None:
+        """The GitHub front page was a second site. Keep the how-to first."""
+        text = README.read_text(encoding="utf-8")
+        body = text.split(_START, 1)[0]
+        self.assertLess(len(body.splitlines()), 120, len(body.splitlines()))
+        self.assertIn("source .venv/bin/activate", body)
+        self.assertIn("cd demo/orders", body)
+
     def test_markers_not_hardcoded_table(self) -> None:
         text = README.read_text(encoding="utf-8")
         self.assertIn(_START, text)
