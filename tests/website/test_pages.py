@@ -204,6 +204,27 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertNotIn(">Using<", nav)
         self.assertNotIn(">Cite<", nav)
 
+    def test_experiments_page_is_a_paper_and_defines_05b(self) -> None:
+        text = (DOCS / "investigations" / "experiments.md").read_text(
+            encoding="utf-8"
+        )
+        for heading in (
+            "## Abstract",
+            "## Introduction",
+            "## Related work",
+            "## Methods",
+            "## Results",
+            "## Discussion",
+            "## Limitations",
+            "## Conclusion",
+            "## References",
+        ):
+            self.assertIn(heading, text)
+        self.assertIn("500 million weights", text)
+        self.assertIn("8 billion weights", text)
+        self.assertIn("does **not** report a SWE-bench score", text)
+        self.assertNotIn("sidecar", text.lower())
+
     def test_references_page_lists_what_runs_and_related_work(self) -> None:
         text = (DOCS / "references.md").read_text(encoding="utf-8")
         self.assertIn("permalink: /references/", text)

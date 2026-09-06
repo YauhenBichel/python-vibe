@@ -1,59 +1,137 @@
 ---
 title: Experiments
-description: Small open models for daily Python. What I typed, what the file looked like, and the score. One laptop, 29–30 August and 5 September 2026.
+description: Laptop measurements of a local Python helper. Abstract, methods, results, and related work. One machine, 29 August–5 September 2026.
 permalink: /investigations/experiments/
-date: 2026-09-05
+date: 2026-09-06
 type: article
 ---
 
 # Experiments
 
-I asked a small local model to do daily Python: answer a question, write
-a test, fix a bug, add one function. One laptop. 29–30 August and
-5 September 2026.
-
-**Not everyday-ready.** That phrase means: beat a plain 8B at reading
-the next step, **and** at fixing a real bug the helper cannot do
-itself. It does not. The first “real bug” cell was a whole-line
-`return 0.0` on a named sum — the helper can write that, so it is no
-longer a model job.
-
-How to read the numbers: one run unless the table says otherwise. A
-gap of one or two cases is noise. Open [Results]({{ '/investigations/' | relative_url }})
-if you want the map, not this long list.
-
-<div class="stats">
-  <div class="stat"><b>12 / 18</b><span>0.5B, four drafts then a later loop</span></div>
-  <div class="stat"><b>0 / 54</b><span>0.5B adapter, one greedy try each</span></div>
-  <div class="stat"><b>8 / 15</b><span>8B picked the right first step</span></div>
-  <div class="stat"><b>9 / 9</b><span>8B daily jobs, evening of 5 Sep</span></div>
-</div>
-
-[What you type]({{ '/scenarios/' | relative_url }}) ·
-[The machine]({{ '/investigations/bench-record/' | relative_url }}) ·
-[Results map]({{ '/investigations/' | relative_url }}) ·
-[discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
+Yauhen Bichel  
+6 September 2026
 
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
 <ol>
-  <li><a href="#the-05b-as-daily-work">The 0.5B as daily work</a></li>
-  <li><a href="#exact-stdout-on-the-05b">Exact stdout on the 0.5B</a></li>
-  <li><a href="#sample-four-drafts-then-greedy">Sample four drafts, then greedy</a></li>
-  <li><a href="#8b-daily-jobs">8B daily jobs</a></li>
-  <li><a href="#same-night-daily-jobs-7b-coder">Same-night daily jobs, 7B coder</a></li>
-  <li><a href="#more-7b8b-on-disk-5-september-2026">More 7B–8B on disk</a></li>
-  <li><a href="#8b-greenfield-cli">8B greenfield CLI</a></li>
-  <li><a href="#everyday-ready-bar">Everyday-ready bar</a></li>
-  <li><a href="#four-jobs-as-typed">Four jobs, as typed</a></li>
-  <li><a href="#which-small-open-model">Which small open model</a></li>
-  <li><a href="#hub-ggufs-that-ollama-does-not-ship">Hub GGUFs that Ollama does not ship</a></li>
-  <li><a href="#train-more-or-not">Train more, or not</a></li>
-  <li><a href="#a-larger-open-model">A larger open model</a></li>
+  <li><a href="#abstract">Abstract</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#related-work">Related work</a></li>
+  <li><a href="#methods">Methods</a></li>
+  <li><a href="#results">Results</a></li>
+  <li><a href="#discussion">Discussion</a></li>
+  <li><a href="#limitations">Limitations</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
 </ol>
 </nav>
 
-## The 0.5B as daily work
+## Abstract
+
+A local helper plus a small open model was asked to do four daily
+Python jobs on one laptop: answer a question, write a test, fix a
+bug, add one function. Dates: 29–30 August and 5 September 2026.
+
+**0.5B** here means a model with about **500 million weights** —
+Qwen2.5-Coder-0.5B, plus an optional public LoRA on top. It is the
+tiny Hub demo, not daily work. **8B** means about **8 billion
+weights** — Ollama `llama3.1:8b`, the default. **7B** is the
+on-disk coder comparison (`qwen2.5-coder:7b`).
+
+The 0.5B adapter is a style prior, not an agent (held-out vibe
+**0 / 4**; greedy LoRA **0 / 54**). One traceback repair lifts
+exact-stdout from **7 / 54** to **12 / 54**. Daily jobs on the 8B
+reached **9 / 9** the same evening the 7B coder scored **7 / 9**.
+The helper moved the four Start commands from **0 / 4** to
+**4 / 4** by doing compiler jobs itself. The everyday-ready bar —
+beat a plain 8B at the next step **and** at a real bug the helper
+cannot write — is not met. This project does not report a
+SWE-bench score.
+
+<div class="stats">
+  <div class="stat"><b>12 / 18</b><span>tiny 0.5B (500M weights), four drafts then a later loop</span></div>
+  <div class="stat"><b>0 / 54</b><span>same 0.5B + LoRA, one greedy try each</span></div>
+  <div class="stat"><b>8 / 15</b><span>daily 8B (8 billion weights) picked the right first step</span></div>
+  <div class="stat"><b>9 / 9</b><span>daily 8B jobs, evening of 5 Sep</span></div>
+</div>
+
+## Introduction
+
+The question is whether a laptop helper and a small open model can
+do everyday Python without a hosted agent. Two sizes are easy to
+mix up: the **public 0.5B** (500 million weights, a style prior)
+and the **daily 8B** (8 billion weights, what `ask` / `run` call).
+“Everyday-ready” here means: beat a plain 8B at reading the next
+step, **and** at fixing a real bug the helper cannot do itself.
+The first “real bug” cell was a whole-line `return 0.0` on a named
+sum — the helper can write that, so it is no longer a model job.
+
+Each table below is one question, what I typed, and what happened.
+The map of every note is [Results]({{ '/investigations/' | relative_url }}).
+How to cite a score: [Cite]({{ '/cite/' | relative_url }}).
+
+[What you type]({{ '/scenarios/' | relative_url }}) ·
+[The machine]({{ '/investigations/bench-record/' | relative_url }}) ·
+[discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
+
+## Related work
+
+The loop is one `Action:` block, then tools — a tight read-act
+loop, not a free shell (Yao et al., 2023). SWE-agent showed that
+the interface around the same model moves the score (Yang et al.,
+2024): previous best retrieval-only 3.8%, agent 12.5%, same model
+1.3% → 12.5%. python-vibe’s first-run four jobs were **0 / 4**
+then **4 / 4** after the helper. Same shape, smaller tree.
+
+A green suite that never called the bug is not done (Liu et al.,
+2023). `run` may send **one** traceback back (Shinn et al., 2023;
+McAndrews, 2026). Small models can be workers at 7–8B; that is not
+a claim that a 0.5B style adapter is an agent (Belcak et al.,
+2025). SWE-bench is the field’s ruler (Jimenez et al., 2024). It
+is the wrong ruler for a one-folder laptop helper. This project
+does **not** report a SWE-bench score.
+
+Full citations: [References]({{ '/references/' | relative_url }}).
+
+## Methods
+
+**Machine.** One Apple M3 Pro laptop, 18 GB unified memory. Ollama
+and, for the 0.5B sample-and-run cell, MLX. Detail:
+[Bench record]({{ '/investigations/bench-record/' | relative_url }}).
+
+**Models.** Size names are weight counts, not versions.
+
+| Name on this page | About how many weights | What it is | Role |
+| --- | --- | --- | --- |
+| **0.5B** | 500 million | Qwen2.5-Coder-0.5B (Hui et al., 2024), Ollama `qwen2.5-coder:0.5b` or MLX 4-bit. Optional public LoRA [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b) (Hu et al., 2022), step 100 | Style prior. Smoke and Hub demo. Not daily `ask` / `run` |
+| **7B** | 7 billion | `qwen2.5-coder:7b` unless a table names another tag | Same-night comparison |
+| **8B** | 8 billion | Ollama `llama3.1:8b` (Grattafiori et al., 2024) | Daily default |
+
+A “clean” 8B is the same 8 billion weights with no agent system
+prompt and no loop. Other 7B–8B tags appear only where a table
+names them. The 0.5B file on disk is about 400 MB; the 8B is about
+4.9 GB.
+
+**Tasks.** Four daily jobs on `demo/orders` unless a table names
+another fixture. A case counts only if the function runs and does
+the job — not if a file appeared, and not if the run said `done`.
+Writes stay inside the named folder. There is no general shell.
+
+**Scoring.** One run unless the table says otherwise. A gap of one
+or two cases is noise. Ten of fifteen bench cases changed verdict
+across three unchanged reruns; a single parse pass is not a score.
+Compiler-bound cells (NameError `subtotl`, whole-line `return 0`
+on a named sum, `page=` on a list URL) finish with no model. They
+are not model scores.
+
+Replay commands sit under each table. Scripts live in
+`scripts/measure/`.
+
+## Results
+
+### The 0.5B as daily work
+
+The tiny model: **500 million weights**, not the daily 8B.
 
 **Example.** Public adapter
 [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b)
@@ -69,13 +147,15 @@ file counter, a jsonl line, a docstring. Ask it to emit `Action:`.
 | Walk a hundred stub files | A hundred “no issues”. Not a review |
 | 400-step QLoRA | Overfit after step 100. Hub file is that checkpoint |
 
-The 0.5B is a style prior. It is not daily work. I am not training more
-0.5B steps.
+That 500-million-weight model is a style prior. It is not daily
+work. I am not training more 0.5B steps.
 
 Write-up: [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }})
 · [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}).
 
-## Exact stdout on the 0.5B
+### Exact stdout on the 0.5B
+
+Same tiny Qwen2.5-Coder (**500 million weights**). Not `llama3.1:8b`.
 
 **Example.** Eighteen held-out scripts. None of the 45 train prompts.
 Extract the Python block, run it, demand an exact line. Repeat each
@@ -96,7 +176,7 @@ Unit tests for the checkers passed.
 Write-up: [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}).
 Cite: [Cite]({{ '/cite/' | relative_url }}). Related work: [References]({{ '/references/' | relative_url }}).
 
-## Sample four drafts, then greedy
+### Sample four drafts, then greedy
 
 **Example.** Same 18 scripts on MLX Qwen2.5-Coder-0.5B-Instruct-4bit.
 First, up to four independent drafts at temperature 0.7. Then one
@@ -119,10 +199,10 @@ those twelve were a hint-repair. Stop spending hours on this board.
 
 Write-up: [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}).
 
-## 8B daily jobs
+### 8B daily jobs
 
 **Example.** 5 September 2026. Ollama `llama3.1:8b`. Three jobs that
-are not planted NameErrors, each three times, after the harness started
+are not the built-in NameErrors, each three times, after the harness started
 running the suite following a write.
 
 | Job | What I asked | Passed |
@@ -139,7 +219,7 @@ Everyday-ready is still the older bar: beat a clean 8B on parse **and**
 a real ≥1 KB fix the model wrote. This table is the daily loop on small
 fixtures, not that bar. The first ≥1 KB cell is retired below.
 
-## Same-night daily jobs, 7B coder
+### Same-night daily jobs, 7B coder
 
 **Example.** 5 September 2026, evening. Same script
 (`scripts/measure/eval_daily.py`), same twelve steps, same fixtures.
@@ -171,7 +251,7 @@ The 7B clip bar the same evening:
 than a clean 7B and still does not write `clip`. Same wall as the 8B
 clip remasure.
 
-## More 7B–8B on disk, 5 September 2026
+### More 7B–8B on disk, 5 September 2026
 
 **Example.** Same script (`scripts/measure/eval_daily.py`), same twelve
 steps, same fixtures. Tags now on this laptop: DeepSeek-Coder 6.7B,
@@ -304,7 +384,7 @@ Replay one finished table:
 Write-up: [Which model]({{ '/investigations/which-model/' | relative_url }})
 · [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
-## 8B greenfield CLI
+### 8B greenfield CLI
 
 **Example.** 5 September 2026. Ollama `llama3.1:8b`. Empty folder.
 Typed: `design and develop a small cli app for reviewing github PRs`.
@@ -480,7 +560,7 @@ python-vibe run "add a config file via Path.home"
 
 Everyday-ready is still the older bar.
 
-## Everyday-ready bar
+### Everyday-ready bar
 
 **Example.** Same evening, 5 September 2026. Ollama `llama3.1:8b`.
 Fifteen `action_prompts.jsonl` rows for first Action. Then
@@ -565,9 +645,9 @@ vs clean **1 / 15**; harness fix **0 / 3** vs clean **3 / 3**. Not
 everyday-ready. Detail under
 [same-night daily jobs](#same-night-daily-jobs-7b-coder).
 
-## Four jobs, as typed
+### Four jobs, as typed
 
-**Example.** Planted tree `demo/orders`. Two NameErrors sit in the code:
+**Example.** Sample tree `demo/orders`. Two NameErrors sit in the code:
 
 ```python
 # src/orders.py
@@ -610,7 +690,7 @@ three unchanged reruns. A single parse pass is not a score.
 Write-up: [First-run four]({{ '/investigations/first-run-four/' | relative_url }})
 · [Scenarios]({{ '/scenarios/' | relative_url }}).
 
-## Which small open model
+### Which small open model
 
 **Example.** `scripts/measure/bench.py`. A case counts only if the function
 runs and does the job — not if a file appeared.
@@ -652,7 +732,7 @@ tree.
 Write-up: [Which model]({{ '/investigations/which-model/' | relative_url }})
 · [Same jobs]({{ '/investigations/same-jobs/' | relative_url }}).
 
-## Hub GGUFs that Ollama does not ship
+### Hub GGUFs that Ollama does not ship
 
 **Example.** 5 September 2026. Two small code models on Hugging Face
 that this laptop can hold and that `ollama pull` cannot see.
@@ -681,7 +761,7 @@ this laptop, and the ones that do not, are listed on
 
 Write-up: [Hub models]({{ '/investigations/hub-models/' | relative_url }}).
 
-## Train more, or not
+### Train more, or not
 
 **Example.** 35 short train pairs. 30 handwritten Action traces.
 `train.py --everyday` is a 7B-class LoRA config. It has not been run.
@@ -701,10 +781,10 @@ is a harness job. That is what moved the four Start commands from
 Write-up: [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }}).
 
 
-## On a real repository
+### On a real repository
 
 **Example.** Everything above uses `demo/orders`, a fixture with two
-planted bugs. This is the same tool pointed at a working repository of
+built-in bugs. This is the same tool pointed at a working repository of
 4,580 first-party files that nobody wrote for this benchmark. Nothing
 was written inside it: reads ran against it directly, writes against a
 fresh copy of one module.
@@ -723,7 +803,7 @@ tasks pass on the fixture, which is worth knowing about the fixture.
 
 Detail: [Bench record]({{ '/investigations/bench-record/' | relative_url }}).
 
-## When a run says done and means nothing
+### When a run says done and means nothing
 
 The worst outcome is not a failure. It is a run that finishes, reports
 success, and leaves the file exactly as it was — because the only way to
@@ -747,7 +827,7 @@ finished. The word is in 17 of this project's test files and called in 5.
 
 Write-up: [When a run says done and means nothing]({{ '/investigations/false-finish/' | relative_url }}).
 
-## Asking a bigger model, rarely
+### Asking a bigger model, rarely
 
 If the harness could put a question to a larger model the user has
 registered, when should it? The call is easy; knowing when to make it is
@@ -769,7 +849,7 @@ tool, which sending them away would hide.
 
 Write-up: [Asking a bigger model, rarely]({{ '/investigations/asking-a-bigger-model/' | relative_url }}).
 
-## A chain of easy tasks
+### A chain of easy tasks
 
 If the model is not very good, is it better to give it several small
 instructions than one composite one?
@@ -789,7 +869,7 @@ builds its own memory, so every step started from nothing.
 
 Write-up: [Small steps, measured]({{ '/investigations/small-steps/' | relative_url }}).
 
-## The instrument was broken
+### The instrument was broken
 
 A day spent asking whether a bigger model breaks the wall found two
 faults in the benchmark instead. Both were invisible while only local
@@ -817,7 +897,7 @@ number published before this is unsafe.
 
 Write-up: [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}).
 
-## Two models, one wall
+### Two models, one wall
 
 Before training anything, the cheap question: is the base model the
 constraint? The benchmark takes a model name, so it costs one command.
@@ -847,7 +927,7 @@ few to compare two models per tier at all.
 
 Write-up: [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}).
 
-## Where the failures are
+### Where the failures are
 
 Seven harness changes measured, six moved nothing. So rather than
 measure an eighth, seventy-five runs were classified by what they left
@@ -879,7 +959,7 @@ refusal or a nudge, most often "run the tests before finishing" (58),
 
 Write-up: [Where the failures are]({{ '/investigations/failures/' | relative_url }}).
 
-## What the harness cannot fix
+### What the harness cannot fix
 
 Most gaps here close when the harness stops guessing and starts
 checking. Four did not, and they are more informative than the ones that
@@ -906,7 +986,7 @@ What closes a gap is an oracle. What does not is telling the model more.
 
 Write-up: [What the harness cannot fix]({{ '/investigations/limits/' | relative_url }}).
 
-## A larger open model
+### A larger open model
 
 **Example.** The 30B already timed out on this laptop. `--engine openai`
 sends only the generate call to a GPU. The write limit stays here.
@@ -927,3 +1007,118 @@ the size of the model you mean to run.
 
 Write-up: [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }})
 · [Bench record]({{ '/investigations/bench-record/' | relative_url }}).
+
+## Discussion
+
+The helper is the load-bearing part for the jobs it can finish
+without a model. First-run four went **0 / 4** to **4 / 4** once
+the compiler wrote the NameError, the test, and `total_lines`.
+Greenfield overflow (comment, pagination, config) closed the same
+way. That is the SWE-agent lesson at a smaller tree: the interface
+moves the score.
+
+The model still has to do the rest. Daily `llama3.1:8b` is **9 / 9**
+on small fixtures and **8 / 15** on first-step parse. The
+everyday-ready bar asks for a ≥1 KB logic fix the helper cannot
+write (`clip`). Harness **0 / 3**, clean 8B **3 / 3**. So the loop
+helps the model pick an Action and hurts it on the one cell that
+still counts.
+
+The 0.5B (500 million weights) is a style prior. Exact-stdout **7 / 54** base,
+**12 / 54** after one repair; greedy LoRA **0 / 54**. Sampling
+finds a different set, not a superset. That matches Feedback Over
+Form: a traceback fixes `NameError` and `SyntaxError`, not logic.
+
+A 7B coder is close (**7 / 9**) and not better. Extra 7B–8B tags
+timed out on the first daily generate that calls the model. Default
+stays `llama3.1:8b`. Writing on a 4,580-file tree is **1 / 12**.
+Do not treat the fixture scores as a real-repo review.
+
+Two models of different lineage hit the same wall (51 vs 50 of 75).
+Wrong-code failures can become refusals without the pass count
+moving. Raising the count that works is the target.
+
+## Limitations
+
+One laptop, 18 GB unified memory. One run unless a table says
+otherwise; gaps of one or two cases are noise. Several published
+cells are compiler binds, not model writes. The instrument was
+wrong for part of the month: unanswered `ask` stops, and markdown
+fences reaching the file. Every model number from before that note
+is unsafe.
+
+This project does **not** report a SWE-bench score. The public
+numbers are four jobs on `demo/orders` and a 4,580-file write rate
+of **1 / 12**. No hosted chat product is named. No claim that the
+0.5B LoRA audited a real repository.
+
+## Conclusion
+
+Keep `llama3.1:8b`. Do not train more 0.5B steps. Do not switch
+the default to a 7B coder or a Hub GGUF that misses the 180s
+generate cap. The helper should keep finishing compiler jobs. The
+everyday-ready bar stays: beat a plain 8B at the next step **and**
+at a real bug the helper cannot write. It does not, yet.
+
+## References
+
+Bichel, Y. (2026). *python-vibe* [Computer software].
+<https://github.com/YauhenBichel/python-vibe>
+
+Bichel, Y. (2026, September 5). 0.5B exact-stdout eval. In
+*python-vibe* experiments.
+<https://yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/>
+
+Bichel, Y. (2026, September 5). 0.5B sample-and-run. In
+*python-vibe* experiments.
+<https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/>
+
+Belcak, P., Heinrich, G., Diao, S., Fu, Y., Dong, X.,
+Muralidharan, S., Lin, Y. C., & Molchanov, P. (2025). Small
+language models are the future of agentic AI.
+<https://arxiv.org/abs/2506.02153>
+
+Grattafiori, A., et al. (2024). *The Llama 3 herd of models*.
+<https://arxiv.org/abs/2407.21783>
+
+Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S.,
+Wang, L., & Chen, W. (2022). LoRA: Low-rank adaptation of large
+language models. *ICLR*.
+<https://arxiv.org/abs/2106.09685>
+
+Hui, B., Yang, J., Cui, Z., Yang, J., et al. (2024).
+*Qwen2.5-Coder technical report*.
+<https://arxiv.org/abs/2409.12186>
+
+Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O.,
+& Narasimhan, K. (2024). SWE-bench: Can language models resolve
+real-world GitHub issues? *ICLR* (oral).
+<https://arxiv.org/abs/2310.06770>
+
+Liu, J., Xia, C. S., Wang, Y., & Zhang, L. (2023). Is your code
+generated really correct? Rigorous evaluation of large language
+models for code generation. *NeurIPS* (EvalPlus / HumanEval+).
+<https://arxiv.org/abs/2305.01210>
+
+McAndrews, C. J. (2026). Feedback over form: Why execution
+feedback matters more than pipeline topology in 1–3B code
+generation.
+<https://arxiv.org/abs/2604.21950>
+
+Shinn, N., Cassano, F., Labash, B., Gopinath, A., Narasimhan, K.,
+& Yao, S. (2023). Reflexion: Language agents with verbal
+reinforcement learning. *NeurIPS*.
+<https://arxiv.org/abs/2303.11366>
+
+Yang, J., Jimenez, C. E., Wettig, A., Lieret, K., Yao, S.,
+Narasimhan, K., & Press, O. (2024). SWE-agent: Agent-computer
+interfaces enable automated software engineering. *NeurIPS*.
+<https://arxiv.org/abs/2405.15793>
+
+Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., &
+Cao, Y. (2023). ReAct: Synergizing reasoning and acting in language
+models. *ICLR*.
+<https://arxiv.org/abs/2210.03629>
+
+APA and BibTeX for this software: [Cite]({{ '/cite/' | relative_url }}).
+The longer related-work list: [References]({{ '/references/' | relative_url }}).
