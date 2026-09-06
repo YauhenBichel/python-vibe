@@ -491,6 +491,40 @@ def refuse_undefined_draft(task: str, rel: str, original: str, draft: str) -> st
     return ""
 
 
+def refuse_dropped_definition(task: str, rel: str, original: str, draft: str) -> str:
+    """Refuse a write that removes the function the task named.
+
+    Asked to fix the bug in `last_price`, a run rewrote `src/orders.py`
+    without it. The file still imported, the suite still passed — there
+    was nothing left to fail — and the benchmark reported the function
+    missing. One run in five ended that way.
+
+    Deleting the subject is never the fix for "fix the bug in X", so this
+    is narrow on purpose: only the one name the task is about, and not
+    when the task asks for a rename or a move, where the old name is
+    supposed to go.
+
+    It covers what `question_symbol` can name, which is lower case. A
+    class called `Ledger` is answered as `ledger` and so is not matched.
+    Comparing case-insensitively instead would refuse honest edits to a
+    differently-cased name, which is the worse trade.
+    """
+    symbol = question_symbol(task)
+    if not symbol or not rel.endswith(".py"):
+        return ""
+    # A rename, a move or a removal is entitled to take the name away.
+    if any(word in task.lower() for word in ("move ", "rename", "delete", "remove")):
+        return ""
+    here = rf"(?m)^(?:def|class)\s+{re.escape(symbol)}\b"
+    if not re.search(here, original) or re.search(here, draft):
+        return ""
+    return (
+        f"that draft drops {symbol} from {rel}, and the task is about "
+        f"{symbol}. Action: patch Path: {rel} Find: a unique line inside "
+        f"{symbol} Replace: the corrected line."
+    )
+
+
 def refuse_rename_incomplete(task: str, rel: str, draft: str) -> str:
     """A rename is not done if the old def is still there."""
     if not looks_like_fix_smell(task) or "test" in (rel or "").replace("\\", "/").lower():

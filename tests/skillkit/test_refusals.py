@@ -435,7 +435,7 @@ class EveryRuleIsInTheTableTest(unittest.TestCase):
             f"written but never run: {missing}. Add it to CHANGE_RULES, "
             "or to NOT_ABOUT_A_DRAFT with the reason.",
         )
-        self.assertEqual(len(CHANGE_RULES), 13)
+        self.assertEqual(len(CHANGE_RULES), 14)
 
     def test_each_entry_is_named_and_callable(self) -> None:
         from harness.act.gate import CHANGE_RULES
