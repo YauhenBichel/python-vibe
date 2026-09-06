@@ -7,9 +7,26 @@ from dataclasses import dataclass
 
 from harness.act.code import extract_python
 
+# A chat model decorates the line the harness is trying to read. It
+# emboldens the label (`**Action:** patch`), numbers its steps
+# (`1. Action: patch`), or explains the verb in the same breath
+# (`Action: patch to add slugify`). Local weights write the bare line,
+# so an anchored pattern was enough until the harness was pointed at a
+# model it does not run itself — and then the turn parsed to nothing.
+#
+# Only `*`, `#`, `>` and list numbering are allowed as decoration, and
+# never `_`, because a value may legitimately start with one and
+# `Name: _helpers` must keep its underscore.
+_DECOR = r"[ \t>*#-]{0,6}(?:\d{1,2}[.)][ \t]*)?[ \t>*]{0,4}"
+_AFTER_KEY = r"[* \t]*"
+
 # Hyphens are allowed so a skill name works as an action: every kit
-# skill is hyphenated, and `\w+` could not match one.
-_ACTION = re.compile(r"^Action:\s*([\w-]+)\s*$", re.MULTILINE | re.IGNORECASE)
+# skill is hyphenated, and `\w+` could not match one. There is no `$`:
+# anything after the verb is the model thinking aloud, and an unknown
+# verb is still rejected by KNOWN_ACTIONS below.
+_ACTION = re.compile(
+    rf"^{_DECOR}Action:{_AFTER_KEY}([\w-]+)", re.MULTILINE | re.IGNORECASE
+)
 # Every verb the loop can carry out. A model that writes `Action: find`
 # has put a field name on the Action line; that block is skipped so the
 # turn is not spent on an unknown verb.
@@ -21,11 +38,13 @@ KNOWN_ACTIONS = frozenset(
     }
 )
 _FIELD = re.compile(
-    r"^(Path|File|Query|Pattern|Argv|Summary|Scope|Name|Number|Title):\s*(.+)$",
+    rf"^{_DECOR}(Path|File|Query|Pattern|Argv|Summary|Scope|Name|Number|Title):"
+    rf"{_AFTER_KEY}(.+?)[ \t*]*$",
     re.MULTILINE,
 )
 _STOP = re.compile(
-    r"^(Action|Path|File|Query|Pattern|Argv|Summary|Scope|Name|Number|Title|Body|Find|Replace|Append|Add):\s*",
+    rf"^{_DECOR}(Action|Path|File|Query|Pattern|Argv|Summary|Scope|Name|Number"
+    rf"|Title|Body|Find|Replace|Append|Add):{_AFTER_KEY}",
     re.IGNORECASE,
 )
 
@@ -33,6 +52,10 @@ _STOP = re.compile(
 # A model that answers in chat wraps code in a fence. Local weights
 # happen not to; every hosted one does, so this only bites the moment
 # the harness is pointed at a model it does not run itself.
+# A fence marker alone on the last line, with or without a language:
+# a whole-reply fence closing, or a second block the model opened
+# and never filled. Either way it is not Python.
+_CLOSING = re.compile(r"^[ \t]*```[\w+-]*[ \t]*$")
 _FENCED = re.compile(
     r"^[^\S\n]*```[\w+-]*[^\S\n]*\n(.*?)\n[^\S\n]*```",
     re.DOTALL,
@@ -53,11 +76,24 @@ def unfenced(body: str) -> str:
     file otherwise, which fails exactly the same way the backticks do.
     """
     found = _FENCED.match(body)
-    return found.group(1) if found else body
+    if found:
+        return found.group(1)
+    # The model fenced its whole reply rather than the code, so the
+    # block never opened with a fence and the closing one is left
+    # trailing on the end of it. That reaches the file and is the same
+    # SyntaxError, arriving by a different route.
+    lines = body.splitlines()
+    if lines and _CLOSING.match(lines[-1]):
+        return "\n".join(lines[:-1]).rstrip()
+    return body
 
 
 def _block(text: str, key: str) -> str:
-    match = re.search(rf"^{key}:\s*(.*)$", text, re.MULTILINE | re.IGNORECASE)
+    match = re.search(
+        rf"^{_DECOR}{key}:{_AFTER_KEY}(.*?)[ \t*]*$",
+        text,
+        re.MULTILINE | re.IGNORECASE,
+    )
     if not match:
         return ""
     lines: list[str] = []
