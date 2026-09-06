@@ -65,6 +65,19 @@ behaviour the policy was built for: asking is discouraged, capped, and
 refused outright after a write, so a model that asks anyway has pushed
 through three separate reasons not to.
 
+> **Correction, 6 September 2026.** That three-out-of-three could not
+> have come out any other way. This benchmark supplied nobody to answer
+> a question, so a run that asked one stopped there and was scored a
+> failure — by construction, whatever it had asked. The row was not
+> evidence about the signal; it was a description of the instrument.
+>
+> With an answerer in place, runs that ask succeed **3 of 7**, against
+> **59 of 86** for runs that never ask. So asking is still the weaker
+> outcome, and the case for treating it as a signal survives — but it is
+> a 42% signal, not a 100% one, and the difference matters for a feature
+> whose whole argument is that the trigger is precise. See
+> [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}).
+
 Running out of steps is a much weaker signal. It fired on 18% of runs and
 was wrong half the time: four of those eight runs had produced working
 code and simply had not said so.
@@ -91,6 +104,20 @@ ran out usually is not.
 
 So the narrow trigger is not a compromise forced by cost. It is the more
 accurate one.
+
+> **Correction, 6 September 2026.** The paragraph above is half right.
+> Harness work really did move tier six from 37% to 70% without touching
+> the model. But if that tier were *only* a gap in the tool, a different
+> model driving the same tool would score alike. On the same four cases
+> at five passes, a hosted 32B scores **18 of 20** where this default 8B
+> scores **8 of 20** and `qwen2.5-coder:7b` scores 11 of 20 — the two
+> local models level with each other, the larger one more than twice as
+> good as either.
+>
+> So sending tier-six work to a bigger model would not only hide a tool
+> gap. Part of that tier is a gap no further rule reaches, which makes it
+> the tier where a remote call buys the most rather than the least. See
+> [The wall two local models share]({{ '/investigations/the-wall/' | relative_url }}).
 
 ## What has to be built first
 

@@ -1091,6 +1091,33 @@ the fix cannot move them, and it does not:
 
 Write-up: [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}).
 
+### The wall two local models share
+
+**Example.** Tier six is platform and operations work: environment
+flags, virtualenv paths, `KEY=VALUE` files, retries. It is the tier two
+local models were said to stop at together. Same harness, same four
+cases, five passes each, measured after the benchmark was repaired.
+
+**Result**
+
+| tier six, twenty runs each | worked |
+| --- | --- |
+| `Qwen2.5-Coder-32B-Instruct` (hosted) | **18 of 20** |
+| `qwen2.5-coder:7b` (local) | 11 of 20 |
+| `llama3.1:8b` (local, the default) | 8 of 20 |
+
+Applying this project's own rule — under about four cases is noise — the
+two local models are **not** distinguishable from each other, and the
+larger model's lead over both is. So the wall is real, shared, and the
+part of it that harness work did not reach is not reachable by another
+rule: the tool holding all three models is the same tool.
+
+That inverts which stuck moments are worth a remote call. Tier six was
+the tier to keep local, because sending it away would hide tool gaps.
+It is the tier where the local ceiling is lowest.
+
+Write-up: [The wall two local models share]({{ '/investigations/the-wall/' | relative_url }}).
+
 ### Two models, one wall
 
 Before training anything, the cheap question: is the base model the
