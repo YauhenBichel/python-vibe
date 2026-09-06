@@ -295,8 +295,15 @@ clamp chat finished in **14.5 s** (load 4.9 s, 1,708 prompt tokens,
 prose). Then `eval_daily.py` on that same loaded tag: write-tests
 3 / 3 (compiler), first clamp generate 180s timeout. The isolated
 chat answers; the daily first generate did not return in 180s.
-Still not a nine-cell table. **Do not switch.** Default stays
-`llama3.1:8b`.
+
+**Agent body, same night.** `OllamaGenerate.body()` sends `model`,
+`stream`, `messages`, and `options.num_ctx`. It does not send
+`keep_alive`. Two identical first-turn POSTs of that body (about
+6,800 characters, 8,192 context) both hit 180s. The same body with
+`keep_alive` 30 minutes added finished in **115.7 s** (load 105.6 s,
+1,709 prompt tokens, prose). After that reply, `/api/ps` listed
+`llama3.1:8b`, not SWE. Still not a nine-cell table. **Do not
+switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.

@@ -89,7 +89,9 @@ the 7B coder. `ollama stop` did: DeepSeek first clamp **passed**
 follow-up `ok` generate while it was still listed hit 60s. After
 `/api/ps` was empty again, the same prompt finished in 6.8 s. The
 real first helper chat then finished in 14.5 s; daily first clamp
-on that loaded tag hit 180s. A reply is not a daily score.
+on that loaded tag hit 180s. Two copies of the Agent body (no
+`keep_alive`) then hit 180s; the same body with `keep_alive` 30
+minutes finished in 115.7 s (load 105.6 s). A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
