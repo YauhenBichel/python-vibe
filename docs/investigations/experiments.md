@@ -580,7 +580,11 @@ the long reply, not the load. Still not a nine-cell table.
 
 **Later.** A local Python client was holding `/api/chat`.
 `/api/ps` listed `llama3.1:8b`. An empty-VRAM helper remasure
-was not run. **Do not switch.** Default stays `llama3.1:8b`.
+was not run.
+
+**Still later.** A second local Python client was holding
+`/api/chat`. `/api/ps` still listed the 8B. Empty helper still
+not remasured. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
