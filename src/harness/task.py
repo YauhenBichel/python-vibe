@@ -25,6 +25,12 @@ QUESTION_PREFIXES = (
 )
 _SYMBOL = re.compile(r"\b([a-z_][a-z0-9_]{4,})\b")
 _DOES_SYMBOL = re.compile(r"\bdoes\s+([a-z_][a-z0-9_]*)\b")
+# A name written with brackets was typed on purpose. Eleven of the
+# fifteen benchmark tasks spell the subject that way — `word_count(text)`
+# — and taking it is right every time, where reading left to right takes
+# `module` out of "create a new module with a function word_count(text)".
+# A run then wrote a function literally called `module` and said so.
+_CALLED = re.compile(r"\b([a-z_][a-z0-9_]*)\s*\(")
 _SYMBOL_SKIP = frozenset(
     {
         # The word a task opens with is what to do, not what to do it to.
@@ -160,6 +166,13 @@ def looks_like_file_operation(task: str) -> bool:
 
 def question_symbol(task: str) -> str:
     """The first word in the task that could be a symbol name."""
+    called = [
+        name
+        for name in _CALLED.findall(task.lower())
+        if name not in _SYMBOL_SKIP
+    ]
+    if called:
+        return called[0]
     does = _DOES_SYMBOL.search(task.lower())
     if does:
         name = does.group(1)

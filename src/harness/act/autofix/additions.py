@@ -155,6 +155,27 @@ def usual_first_arg(source: str) -> tuple[str, str]:
     return name, hint
 
 
+def _spells_another_argument(task: str, symbol: str, neighbor: str) -> bool:
+    """True when the task wrote the signature and it is not this one.
+
+    `word_count(text)` says the argument is text. Guessing `prices` from
+    the neighbours then writes `return len(prices)`, a word counter that
+    counts list items — and this path writes the test too, so the suite
+    agrees with it and the run reports success having done the wrong
+    thing in zero model steps.
+
+    A task that spells its own arguments has already answered the
+    question this function guesses at, so when the two disagree there is
+    nothing to add mechanically and the model should do the work.
+    """
+    spelled = re.search(rf"\b{re.escape(symbol)}\s*\(([^)]*)\)", task)
+    if not spelled:
+        return False
+    written = [a.strip().split(":")[0].strip() for a in spelled.group(1).split(",")]
+    written = [a for a in written if a]
+    return bool(written) and neighbor not in written
+
+
 def apply_add_function(project: Path, task: str, *, write: bool = True) -> str:
     """Add a count function that matches its neighbors. Empty if unsure.
 
@@ -182,6 +203,8 @@ def apply_add_function(project: Path, task: str, *, write: bool = True) -> str:
         return ""
     name, hint = usual_first_arg(body)
     if name != "prices" or "list" not in hint.lower():
+        return ""
+    if _spells_another_argument(task, symbol, name):
         return ""
     stub = f"\n\ndef {symbol}({name}: {hint}) -> int:\n    return len({name})\n"
     merged = body.rstrip() + stub
