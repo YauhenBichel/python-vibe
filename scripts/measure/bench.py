@@ -68,7 +68,8 @@ def load(name):
                 defines = False
             if defines:
                 broken.append(
-                    str(path) + " defines " + name + " but does not import: "
+                    path.as_posix() + " defines " + name
+                    + " but does not import: "
                     + type(exc).__name__ + ": " + str(exc)
                 )
             continue

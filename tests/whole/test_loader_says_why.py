@@ -61,7 +61,16 @@ class WhatTheLoaderSaysTest(unittest.TestCase):
             return proc.returncode, out.splitlines()[-1] if out else ""
 
     def test_a_broken_import_is_named_as_one(self) -> None:
+        """The path is written with forward slashes on every platform.
+
+        `str(path)` gave `src\\orders.py` on Windows, which broke all
+        three Windows jobs. Every other path this project prints goes
+        through `rel_posix` for the same reason: a message a person
+        reads, and a test asserts on, should not change shape with the
+        machine it ran on.
+        """
         code, said = self._check(DEFINED_BUT_BROKEN)
+        self.assertNotIn("\\", said)
         self.assertNotEqual(code, 0)
         self.assertIn("does not import", said)
         self.assertIn("src/orders.py", said)
