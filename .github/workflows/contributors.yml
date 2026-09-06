@@ -18,10 +18,18 @@ name: Contributors
 # the list never actually reached the README. It opens a pull request
 # now: still one click to land, but visible and landable.
 
+# `push` is limited to the default branch on purpose. A feature branch
+# fires both events for the same ref, both resolve `github.head_ref ||
+# github.ref_name` to that same branch, and both do identical work — so
+# the concurrency group below cancels one of them and the pull request
+# shows a red X that means nothing. It hit three branches in one evening.
+# The pull_request run covers a branch; this covers main.
 on:
   pull_request:
   workflow_dispatch:
   push:
+    branches:
+      - main
 
 permissions:
   contents: write
