@@ -103,7 +103,8 @@ out and `/api/ps` stayed empty. After that a new
 `bench.py --tier 3` on the 8B held `/api/chat` again. Once that
 ended, an idle one-word generate finished in 7.42 s (load 5.09 s).
 A later helper-sized Agent chat while the 8B was listed finished
-in 36.69 s. A reply is not a daily score.
+in 36.69 s. A second helper chat while SWE was still listed
+finished in 74.83 s (load 0.02 s, 1,700 eval tokens). A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
