@@ -615,6 +615,18 @@ client on port 11434. Same add-function job, twelve steps.
 First generate timed out at **180 s**. After that `/api/ps`
 was empty. No `def clamp`. Listing the tag is not enough for
 the helper-sized first turn. Still not a nine-cell table.
+
+**8192-listed daily clamp, later.** A local
+`bench.py --tier 4 --tier 5 --tier 6` on the 8B then held
+`/api/chat`. After two idle checks, unloaded the 8B. `/api/ps`
+empty. One Agent body (`OllamaGenerate.body()`, 6,832
+characters, `num_ctx` 8192, no `keep_alive`): **29.76 s**
+(load 5.35 s, 1,713 prompt tokens, 388 eval tokens, prose).
+`/api/ps` listed SWE. No client on port 11434. Same
+add-function job, twelve steps. First generate timed out at
+**180 s**. After that `/api/ps` still listed SWE. No
+`def clamp`. A successful 8192 helper load is not enough for
+the daily first turn. Stop SWE. Still not a nine-cell table.
 **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
