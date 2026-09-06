@@ -390,7 +390,15 @@ body with `keep_alive` 30 minutes: first POST **180s** timeout
 18.0 s, 1,708 prompt tokens, prose). After that reply `/api/ps`
 was empty again; a later check listed `llama3.1:8b`. One 115.7 s
 finish does not make `keep_alive` a first-turn fix. Still not a
-nine-cell table. **Do not switch.** Default stays `llama3.1:8b`.
+nine-cell table.
+
+**Concurrent 8B bench, same night.** `lsof` on port 11434 showed
+`scripts/measure/bench.py --tier 3 --model llama3.1:8b --repeat 10`
+holding `/api/chat`. That is why `/api/ps` listed the 8B after SWE
+chats. The same-night SWE first-turn 180s walls were taken while
+that generate was in flight. Do not treat `keep_alive` as the
+cause. Do not remasure SWE until that bench is idle. **Do not
+switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.

@@ -92,7 +92,8 @@ real first helper chat then finished in 14.5 s; daily first clamp
 on that loaded tag hit 180s. Two copies of the Agent body (no
 `keep_alive`) then hit 180s; one copy with `keep_alive` finished
 in 115.7 s. A remasure of two `keep_alive` POSTs from empty VRAM:
-first 180s, second 44.8 s. A reply is not a daily score.
+first 180s, second 44.8 s. A concurrent `bench.py --tier 3` on
+the 8B was holding `/api/chat` during those walls. A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
