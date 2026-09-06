@@ -46,6 +46,7 @@ Public pages do not name other editors or chat products.
 | --- | --- |
 | [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. SWE Agent body 180s without `keep_alive`; 116s with it. Keep the 8B. |
 | [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}) | A day comparing models found two faults in the benchmark instead. Every model number before this is unsafe. |
+| [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}) | The hosted 32B was never the problem. 1 of 10 became 9 of 10 once four backticks stopped reaching the Python parser. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | SWE Agent body 180s without `keep_alive`; 116s with it. Do not switch. |

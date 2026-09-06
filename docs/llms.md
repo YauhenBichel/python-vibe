@@ -40,6 +40,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [Local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | absolute_url }}): Every shipped path against a hosted IDE agent. Same jobs. 29 Aug 2026.
 - [Same jobs, same evening]({{ '/investigations/same-jobs/' | absolute_url }}): Eleven demo tasks. Laptop 8B vs a hosted IDE agent. 29 Aug 2026 evening.
 - [The instrument was broken]({{ '/investigations/measuring/' | absolute_url }}): The benchmark punished asking a question, and fed markdown fences to the Python parser.
+- [The fence was the whole story]({{ '/investigations/the-fence/' | absolute_url }}): A hosted 32B went from 1 of 10 to 9 of 10 once the markdown fence was stripped. The local models it was compared against do not move.
 - [Two models, one wall]({{ '/investigations/two-models/' | absolute_url }}): Same score, opposite failures — one writes wrong code, the other writes nothing.
 - [Where the failures are]({{ '/investigations/failures/' | absolute_url }}): A third of runs fail; two thirds of those wrote the wrong code, which no rule can catch.
 - [What the harness cannot fix]({{ '/investigations/limits/' | absolute_url }}): Seven measurements where the harness knew something and it made no difference — and the one refusal that was taught to earn itself.
