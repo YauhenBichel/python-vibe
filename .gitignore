@@ -19,6 +19,10 @@ wandb/
 hf_token
 *.pem
 .coverage
+dist/
+build/
+*.egg-info/
+src/harness/kit_skills/
 
 # Turns recorded by a run, for measuring it later.
 .python-vibe/

@@ -15,6 +15,14 @@ _END = "<!-- readme: contributors,bots/- -end -->"
 
 
 class ReadmeContributorsTest(unittest.TestCase):
+    def test_readme_shows_the_pip_install(self) -> None:
+        text = README.read_text(encoding="utf-8")
+        self.assertIn("pip install py-harness-cli", text)
+        self.assertIn("docs/media/pip-demo.gif", text)
+        self.assertIn("asciinema play docs/media/pip-demo.cast", text)
+        self.assertIn("pypi.org/project/py-harness-cli", text)
+        self.assertNotIn("pip install py-harness\n", text)
+
     def test_readme_shows_the_vscode_recording(self) -> None:
         text = README.read_text(encoding="utf-8")
         self.assertIn("docs/media/vscode-demo.gif", text)

@@ -13,11 +13,11 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 ## Docs
 
 - [Home]({{ '/' | absolute_url }}): A local tool for one Python folder. Ask, test, fix, add.
-- [Start]({{ '/start/' | absolute_url }}): Install, activate .venv, then py-harness brief / ask / run. Demo is demo/orders.
+- [Start]({{ '/start/' | absolute_url }}): pip install py-harness-cli, activate .venv, then py-harness brief / ask / run. Demo is demo/orders.
 - [Scenarios]({{ '/scenarios/' | absolute_url }}): What you type, and what happened on demo/orders. Includes misses.
 - [Commands]({{ '/api/' | absolute_url }}): Every command and flag, the Python API, and the local HTTP server.
 - [Demo]({{ '/demo/' | absolute_url }}): Eleven everyday tasks on one small tree. Includes misses.
-- [Live demo]({{ '/live/' | absolute_url }}): Asciinema recording on demo/orders. 5 Sep 2026. Only ask called the 8B.
+- [Live demo]({{ '/live/' | absolute_url }}): pip install session, then the 5 Sep 2026 recording on demo/orders. Only ask called the 8B.
 - [Skills]({{ '/skills/' | absolute_url }}): The twenty-four kit skills and when the harness loads each one.
 - [Architecture]({{ '/architecture/' | absolute_url }}): Bottom-up harness layers. Imports only point downward.
 - [Folders]({{ '/tree/' | absolute_url }}): What each directory is. Demo is demo/orders. Do not run brief on the repository root.

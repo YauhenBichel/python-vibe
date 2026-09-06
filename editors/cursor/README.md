@@ -3,7 +3,7 @@
 Three steps. No tunnel. No Override OpenAI Base URL.
 
 ```bash
-pip install -e .          # from a py-harness clone, once
+pip install py-harness-cli   # or pip install -e . from a clone
 ollama pull llama3.1:8b
 py-harness editors cursor --allow-writes
 ```

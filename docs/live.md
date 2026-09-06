@@ -1,11 +1,38 @@
 ---
 title: Live demo
-description: A real asciinema recording of py-harness on demo/orders, plus a same-day 8B daily run on a logic bug. 5 September 2026.
+description: pip install py-harness-cli, then a real asciinema session on demo/orders, plus a same-day 8B daily run. 6 September 2026.
 permalink: /live/
-date: 2026-09-05
+date: 2026-09-06
 ---
 
 # Live demo
+
+## Install from PyPI
+
+6 September 2026. A real shell recording. `pip install py-harness-cli`
+(0.3.1, which ships the 24 skills), then two no-model jobs on a fresh
+copy of `demo/orders`. No Ollama. The command is `py-harness`. The PyPI
+name is `py-harness-cli` because `py-harness` collides with another
+package.
+
+![pip install py-harness-cli, then brief and a NameError fix]({{ '/media/pip-demo.gif' | relative_url }})
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
+cd demo/orders
+py-harness brief
+py-harness run "find the NameError and fix it"
+```
+
+Replay: `asciinema play docs/media/pip-demo.cast`.
+Re-record (needs network, no Ollama):
+
+```bash
+PYTHONPATH=src python scripts/measure/record_pip.py
+```
+
+## Longer session (8B ask)
 
 A real shell recording. 5 September 2026. One laptop. A fresh copy of
 `demo/orders`. Daily model: Ollama `llama3.1:8b`. Only **ask** called
@@ -72,6 +99,8 @@ The eleven-case table, including misses, is still on
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
 <ol>
+  <li><a href="#install-from-pypi">Install from PyPI</a></li>
+  <li><a href="#longer-session-8b-ask">Longer session</a></li>
   <li><a href="#size-the-folder">Size the folder</a></li>
   <li><a href="#what-is-tangled">What is tangled</a></li>
   <li><a href="#ask-a-question">Ask a question</a></li>

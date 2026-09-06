@@ -36,17 +36,26 @@ harness uses only the standard library, so this is the same on macOS, Linux
 and Windows:
 
 ```
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
 ollama pull llama3.1:8b
+```
+
+The command is py-harness. The PyPI name is py-harness-cli because
+py-harness collides with another package. Do not pip install py-harness
+or pip install pyharness.
+
+Sample project (clone, then stay in demo/orders):
+
+```
 git clone https://github.com/YauhenBichel/py-harness.git
-cd py-harness
-python3 scripts/run/install.py
-source .venv/bin/activate
-cd demo/orders
+cd py-harness/demo/orders
 py-harness brief
 py-harness ask  "what does compute_total return?"
 py-harness run  "find the NameError and fix it"
 ```
 
+From a clone, `python3 scripts/run/install.py` is the editable install.
 If the shell says command not found, the venv is not active. Activate
 it in every new terminal. `brief` on this checkout briefs the whole
 tree; the planted demo is `demo/orders`.

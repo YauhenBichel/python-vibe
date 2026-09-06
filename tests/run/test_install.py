@@ -111,11 +111,13 @@ class InstallScriptTest(unittest.TestCase):
 
     def test_start_page_names_the_script(self) -> None:
         start = (ROOT / "docs" / "start.md").read_text(encoding="utf-8")
+        self.assertIn("pip install py-harness-cli", start)
         self.assertIn("scripts/run/install.py", start)
         self.assertIn("source .venv/bin/activate", start)
         self.assertIn("demo/orders", start)
         self.assertIn("command not found", start)
         self.assertNotIn("curl", start)
+        self.assertIn("Do not `pip install py-harness`", start)
 
 
 if __name__ == "__main__":

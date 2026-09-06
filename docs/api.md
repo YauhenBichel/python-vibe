@@ -109,16 +109,27 @@ The harness uses only the standard library, so there is nothing to build and
 the same three commands work on macOS, Linux and Windows.
 
 ```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
+```
+
+The command is `py-harness`. The PyPI name is `py-harness-cli` because
+`py-harness` collides with another package. Do not `pip install
+py-harness` or `pip install pyharness`. Activate the virtualenv in
+every new terminal, or the shell says `command not found`.
+
+From a clone (sample project and extras):
+
+```bash
 git clone https://github.com/YauhenBichel/py-harness.git
 cd py-harness
 python3 scripts/run/install.py
 source .venv/bin/activate
 ```
 
-That creates `.venv` when needed and runs `pip install -e .`. Activate
-it in every new terminal, or the shell says `command not found`.
-Already in a virtualenv: `pip install -e .` is the same install. The
-sample project is `cd demo/orders` then `py-harness brief`.
+That creates `.venv` when needed and runs `pip install -e .`. Already
+in a virtualenv: `pip install -e .` is the same install. The sample
+project is `cd demo/orders` then `py-harness brief`.
 
 That gives you a `py-harness` command. No `PYTHONPATH`, no version-pinned
 interpreter, no script paths:

@@ -1,6 +1,7 @@
 # py-harness
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/py-harness-cli.svg)](https://pypi.org/project/py-harness-cli/)
 [![CI](https://github.com/YauhenBichel/py-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/YauhenBichel/py-harness/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-2F6FED)](https://yauhenbichel.github.io/py-harness/)
 [![Pages](https://github.com/YauhenBichel/py-harness/actions/workflows/pages.yml/badge.svg)](https://yauhenbichel.github.io/py-harness/)
@@ -14,20 +15,29 @@ Site: [yauhenbichel.github.io/py-harness](https://yauhenbichel.github.io/py-harn
 ## Run it
 
 ```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
+```
+
+The command is `py-harness`. The PyPI name is `py-harness-cli` because
+`py-harness` collides with another package. Do not `pip install
+py-harness` or `pip install pyharness`.
+
+Sample project — clone, then `cd demo/orders`. Do not `brief` this
+repository.
+
+```bash
 git clone https://github.com/YauhenBichel/py-harness.git
-cd py-harness
-python3 scripts/run/install.py
-source .venv/bin/activate
-ollama pull llama3.1:8b
-cd demo/orders
+cd py-harness/demo/orders
 py-harness brief
 py-harness ask  "what does compute_total return?"
 py-harness run  "find the NameError and fix it"
 ```
 
 Activate `.venv` in **every new terminal**. If the shell says
-`command not found: py-harness`, it is not active. The sample project
-is `demo/orders` — do not run `brief` on this repository.
+`command not found: py-harness`, it is not active. Daily work needs
+`ollama pull llama3.1:8b`. From a clone,
+`python3 scripts/run/install.py` is the editable install.
 
 `ask` never writes. `run` writes, then runs the tests. The NameError
 sample is built into the tool (no model). Another folder:
@@ -40,9 +50,10 @@ sample is built into the tool (no model). Another folder:
 
 ## What it looks like
 
-![py-harness on demo/orders](docs/media/live-demo.gif)
+![pip install py-harness-cli, then brief and a NameError fix](docs/media/pip-demo.gif)
 
-Replay: `asciinema play docs/media/live-demo.cast`.
+Replay: `asciinema play docs/media/pip-demo.cast`.
+A longer session (8B ask): `docs/media/live-demo.gif`.
 Full log: [Live demo](https://yauhenbichel.github.io/py-harness/live/).
 
 **VS Code** — `py-harness editors vscode`, then Tasks: Run Task.
