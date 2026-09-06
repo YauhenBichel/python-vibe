@@ -1,27 +1,27 @@
 ---
 title: Commands
-description: Every python-vibe command and flag. The Python API and the local HTTP server on 127.0.0.1.
+description: Every py-harness command and flag. The Python API and the local HTTP server on 127.0.0.1.
 date: 2026-09-06
 ---
 
 # Commands
 
-The usual way is the `python-vibe` command. You can also call the
+The usual way is the `py-harness` command. You can also call the
 Python library, or an HTTP server on `127.0.0.1`.
 
 ## Command line
 
 ```bash
-python-vibe                  # prints the command list
-python-vibe brief            # no model
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "write tests for apply_discount"
-python-vibe run  "write tests for apply_discount" --dry-run --scope src
-python-vibe serve --project .
-python-vibe editors cursor --allow-writes
+py-harness                  # prints the command list
+py-harness brief            # no model
+py-harness ask  "what does compute_total return?"
+py-harness run  "write tests for apply_discount"
+py-harness run  "write tests for apply_discount" --dry-run --scope src
+py-harness serve --project .
+py-harness editors cursor --allow-writes
 ```
 
-`python -m harness …` is the same command if `python-vibe` is not on PATH.
+`python -m harness …` is the same command if `py-harness` is not on PATH.
 
 `brief`, `layout`, and `route` never call a model. `ask` never changes
 files. `run` writes unless you pass `--dry-run`. Add `--json` for
@@ -109,8 +109,8 @@ The harness uses only the standard library, so there is nothing to build and
 the same three commands work on macOS, Linux and Windows.
 
 ```bash
-git clone https://github.com/YauhenBichel/python-vibe.git
-cd python-vibe
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness
 python3 scripts/run/install.py
 source .venv/bin/activate
 ```
@@ -118,15 +118,15 @@ source .venv/bin/activate
 That creates `.venv` when needed and runs `pip install -e .`. Activate
 it in every new terminal, or the shell says `command not found`.
 Already in a virtualenv: `pip install -e .` is the same install. The
-sample project is `cd demo/orders` then `python-vibe brief`.
+sample project is `cd demo/orders` then `py-harness brief`.
 
-That gives you a `python-vibe` command. No `PYTHONPATH`, no version-pinned
+That gives you a `py-harness` command. No `PYTHONPATH`, no version-pinned
 interpreter, no script paths:
 
 | | Before | After |
 | --- | --- | --- |
-| macOS / Linux | `PYTHONPATH=src python3.13 scripts/run/agent.py --project ~/app "..."` | `python-vibe run "…"` in that folder |
-| Windows | did not work: `PYTHONPATH=src` is not valid in cmd or PowerShell | `python-vibe run "…"` in that folder |
+| macOS / Linux | `PYTHONPATH=src python3.13 scripts/run/agent.py --project ~/app "..."` | `py-harness run "…"` in that folder |
+| Windows | did not work: `PYTHONPATH=src` is not valid in cmd or PowerShell | `py-harness run "…"` in that folder |
 
 Training on Apple Silicon needs extras: `pip install -e ".[train]"`.
 Publishing to the Hub needs `pip install -e ".[hub]"`.
@@ -160,7 +160,7 @@ library. From a clone of this repo:
 ```bash
 python3 scripts/weights/import_hf_ollama.py --name opencoder
 python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
-python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+py-harness --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 That downloads the Q4_K_M GGUF (~4.7 GB each) and runs `ollama create`.
@@ -173,7 +173,7 @@ the model is shown them and copies them back.
 ## HTTP server
 
 ```bash
-python-vibe serve --project ~/app --port 8090
+py-harness serve --project ~/app --port 8090
 ```
 
 Binds `127.0.0.1` only. **File changes are off by default**, because an
@@ -201,7 +201,7 @@ curl -s localhost:8090/v1/models
 returns an OpenAI-shaped reply. `stream` is refused. A write task on a
 read-only server is `403`. Point VS Code and other OpenAI-compatible
 editors at `http://127.0.0.1:8090/v1`, or copy drop-in files with
-`python-vibe editors cursor --allow-writes`. Details:
+`py-harness editors cursor --allow-writes`. Details:
 [Cursor]({{ '/cursor/' | relative_url }}) ·
 [local editor]({{ '/local-editor/' | relative_url }}).
 

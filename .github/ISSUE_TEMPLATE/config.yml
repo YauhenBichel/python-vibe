@@ -1,11 +1,11 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/YauhenBichel/python-vibe/issues/new?labels=security
+    url: https://github.com/YauhenBichel/py-harness/issues/new?labels=security
     about: Open a public issue. Do not paste live keys.
   - name: Ideas and research
-    url: https://github.com/YauhenBichel/python-vibe/discussions
+    url: https://github.com/YauhenBichel/py-harness/discussions
     about: Design questions and research threads belong in Discussions.
   - name: How to pick an issue
-    url: https://github.com/YauhenBichel/python-vibe/discussions/10
+    url: https://github.com/YauhenBichel/py-harness/discussions/10
     about: Junior → intermediate → research. Start here if you are new.

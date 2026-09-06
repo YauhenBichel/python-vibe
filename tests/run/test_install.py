@@ -35,7 +35,7 @@ class InstallScriptTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(SystemExit) as raised:
                 self.mod.repo_root(Path(tmp))
-        self.assertIn("not a python-vibe checkout", str(raised.exception))
+        self.assertIn("not a py-harness checkout", str(raised.exception))
 
     def test_a_foreign_pyproject_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -44,7 +44,7 @@ class InstallScriptTest(unittest.TestCase):
             )
             with self.assertRaises(SystemExit) as raised:
                 self.mod.repo_root(Path(tmp))
-        self.assertIn("not a python-vibe checkout", str(raised.exception))
+        self.assertIn("not a py-harness checkout", str(raised.exception))
 
     def test_old_python_is_refused(self) -> None:
         self.assertIn("3.11", self.mod.require_python((3, 10)))
@@ -65,10 +65,10 @@ class InstallScriptTest(unittest.TestCase):
         win = Path("app") / ".venv" / "Scripts" / "python.exe"
         self.assertEqual(
             self.mod.console_script(posix, windows=False),
-            Path("/tmp/.venv/bin/python-vibe"),
+            Path("/tmp/.venv/bin/py-harness"),
         )
         got = self.mod.console_script(win, windows=True)
-        self.assertEqual(got.name, "python-vibe.exe")
+        self.assertEqual(got.name, "py-harness.exe")
         self.assertEqual(got.parent.name, "Scripts")
 
     def test_dry_run_prints_pip_and_does_not_install(self) -> None:
@@ -84,7 +84,7 @@ class InstallScriptTest(unittest.TestCase):
         self.assertIn("-m pip install", text)
         self.assertIn("-e .", text)
         self.assertIn("would install", text)
-        self.assertIn("python-vibe", text)
+        self.assertIn("py-harness", text)
 
     def test_the_file_is_not_a_curl_pipe(self) -> None:
         text = INSTALL.read_text(encoding="utf-8")
@@ -106,7 +106,7 @@ class InstallScriptTest(unittest.TestCase):
         self.assertIn("every new terminal", text)
         self.assertIn("command not found", text)
         self.assertIn("cd demo/orders", text)
-        self.assertIn("python-vibe brief", text)
+        self.assertIn("py-harness brief", text)
         self.assertNotIn("/Users/", text)
 
     def test_start_page_names_the_script(self) -> None:

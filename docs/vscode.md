@@ -1,13 +1,13 @@
 ---
-title: Use python-vibe in VS Code
+title: Use py-harness in VS Code
 description: A real recording. Install the tasks, then brief, ask, and run from the Command Palette. Same commands the tasks execute, captured on demo/orders.
 permalink: /vscode/
 date: 2026-09-05
 ---
 
-# Use python-vibe in VS Code
+# Use py-harness in VS Code
 
-VS Code talks to python-vibe through **Tasks**. Each task opens the
+VS Code talks to py-harness through **Tasks**. Each task opens the
 integrated terminal, runs the same command as [Start]({{ '/start/' | relative_url }}),
 and stays inside the folder you have open. There is no chat plugin to
 install and no tunnel.
@@ -16,7 +16,7 @@ This page is a live walkthrough on `demo/orders`. 5 September 2026.
 `brief` needs no model. `ask` calls `llama3.1:8b`. The NameError repair
 is a harness demo — no model.
 
-![python-vibe VS Code tasks on demo/orders]({{ '/media/vscode-demo.gif' | relative_url }})
+![py-harness VS Code tasks on demo/orders]({{ '/media/vscode-demo.gif' | relative_url }})
 
 Recorded with asciinema. The GIF is what **Tasks: Run Task** runs in
 the integrated terminal, not a screenshot of the editor window. Replay:
@@ -39,12 +39,12 @@ From a clone (same installer as [Start]({{ '/start/' | relative_url }})):
 python3 scripts/run/install.py
 source .venv/bin/activate
 ollama pull llama3.1:8b
-python-vibe editors vscode
+py-harness editors vscode
 ```
 
 macOS often has no `pip` on PATH. The installer creates `.venv` and
 runs `python -m pip` for you. Activate that venv in every new terminal
-or `python-vibe` will still be missing.
+or `py-harness` will still be missing.
 
 Without installing, from the checkout:
 
@@ -66,32 +66,32 @@ Open that folder in VS Code. If the window was already open:
 
 1. Command Palette → **Tasks: Run Task**
 2. Pick one of:
-   - `python-vibe: brief`
-   - `python-vibe: ask`
-   - `python-vibe: run`
+   - `py-harness: brief`
+   - `py-harness: ask`
+   - `py-harness: run`
 3. For **ask** and **run**, type the job in the box. The default in the
    box is `add multiply(a, b) and a unit test`. Replace it.
 
 The answer appears in the **Terminal** panel. That is the whole demo.
 
-Do not type `python-vibe: ask` in the shell. The colon is the **task
+Do not type `py-harness: ask` in the shell. The colon is the **task
 label** in the Command Palette. In a terminal the commands are:
 
 ```bash
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "find the NameError and fix it"
+py-harness brief
+py-harness ask  "what does compute_total return?"
+py-harness run  "find the NameError and fix it"
 ```
 
-If the shell says `command not found: python-vibe`, the venv is not
+If the shell says `command not found: py-harness`, the venv is not
 active. Activate it in every new terminal.
 
 `layout` is not a task. In the same terminal:
 
 ```bash
-python-vibe layout
+py-harness layout
 ```
 
 ## Live: this folder, those tasks
@@ -101,26 +101,26 @@ Open `demo/orders` (or this repo and stay in that folder). Run Task.
 `layout` and the already-covered test are the same folder, not on the
 recording.
 
-### `python-vibe editors vscode`
+### `py-harness editors vscode`
 
 Writes `.vscode/tasks.json`. No model.
 
 ```
-$ python-vibe editors vscode
+$ py-harness editors vscode
 /private/tmp/vscode/.vscode/tasks.json
 
-Reload the window, then Command Palette → Tasks: Run Task → python-vibe: ask
+Reload the window, then Command Palette → Tasks: Run Task → py-harness: ask
 ```
 
-### `python-vibe: brief`
+### `py-harness: brief`
 
 No prompt. Instant. No model.
 
 ```
-$ python-vibe brief
+$ py-harness brief
 
 10 Python and Markdown files, 2.9 KB in total.
-Small enough that python-vibe can read all of it, so you can ask about any part.
+Small enough that py-harness can read all of it, so you can ask about any part.
 
 Files:
   README.md  685 B
@@ -134,11 +134,11 @@ Files:
   tests/__init__.py  0 B
   tests/test_orders.py  511 B
 
-python-vibe has 24 skills it can apply. It picks them from the wording of
+py-harness has 24 skills it can apply. It picks them from the wording of
 your task; you do not choose them.
 ```
 
-### `python-vibe layout` (terminal)
+### `py-harness layout` (terminal)
 
 ```
 layout: 1 finding(s), worst first.
@@ -151,7 +151,7 @@ module both import.
 Also instant, also no model. That cycle is in the tree:
 `render.py` imports `build_report`, `report.py` imports `render_line`.
 
-### `python-vibe: ask`
+### `py-harness: ask`
 
 Type: `what does compute_total return?`
 
@@ -160,7 +160,7 @@ only `int`. The helper sent that back. The second draft named what
 the function computes.
 
 ```
-$ python-vibe ask "what does compute_total return?"
+$ py-harness ask "what does compute_total return?"
 ollama:llama3.1:8b  project /private/tmp/vscode  mode small
 
 --- step 1 ---
@@ -179,7 +179,7 @@ Summary: "int" - it computes the sum of the line prices of one order.
 
 `ask` never writes a file.
 
-### `python-vibe: run`
+### `py-harness: run`
 
 Type: `write tests for apply_discount`
 
@@ -195,13 +195,13 @@ The planted typo is `subtotl` next to `subtotal =`. One candidate. No
 model. About a tenth of a second.
 
 ```
-$ python-vibe run "find the NameError and fix it"
+$ py-harness run "find the NameError and fix it"
 
 bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
 ```
 
 `run` only writes when you pass `--allow-writes` to a server, or when
-you use the task (the task is a real `python-vibe run` in the project
+you use the task (the task is a real `py-harness run` in the project
 folder, so it may write). It keeps a `.bak` of anything it edits.
 
 ## What to reach for
@@ -219,11 +219,11 @@ For jobs the model has to reason about, read
 ## Optional: chat through Continue
 
 ```bash
-python-vibe editors continue
+py-harness editors continue
 ```
 
 That writes a Continue config aimed at local Ollama. Chat then uses the
-**editor’s** tools, not the python-vibe write limit. For a change that
+**editor’s** tools, not the py-harness write limit. For a change that
 must stay in one folder, use **Run Task**.
 
 Do not point a hosted OpenAI-compatible chat at `127.0.0.1`. That

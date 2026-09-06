@@ -1,7 +1,7 @@
 # orders — the demo project
 
 A deliberately imperfect little app, used by `scripts/run/demo.py` to show what
-python-vibe does on ordinary daily tasks. Every problem here is planted:
+py-harness does on ordinary daily tasks. Every problem here is planted:
 
 - `src/orders.py` has a latent `NameError` in `total_with_tax`, which no
   test covers.
@@ -14,16 +14,16 @@ python-vibe does on ordinary daily tasks. Every problem here is planted:
 
 The demo copies this directory before each case, so a run never changes it.
 
-From the python-vibe checkout:
+From the py-harness checkout:
 
 ```bash
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "find the NameError and fix it"
+py-harness brief
+py-harness ask  "what does compute_total return?"
+py-harness run  "find the NameError and fix it"
 ```
 
-If the shell says `command not found: python-vibe`, the venv is not
+If the shell says `command not found: py-harness`, the venv is not
 active. Activate it in every new terminal. Do not run `brief` on the
 checkout root — that briefs the whole tree.

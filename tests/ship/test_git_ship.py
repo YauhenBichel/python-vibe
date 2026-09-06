@@ -97,7 +97,7 @@ class AttributionTest(unittest.TestCase):
     def test_a_pull_request_says_what_opened_it(self) -> None:
         from harness.ship.git_ship import PR_FOOTER
 
-        self.assertIn("python-vibe", PR_FOOTER)
+        self.assertIn("YauhenBichel/py-harness", PR_FOOTER)
         self.assertIn("Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>", PR_FOOTER)
 
     def test_a_real_commit_carries_both(self) -> None:

@@ -16,13 +16,13 @@ repository root — that scans hundreds of files.
 | Path | What it is |
 | --- | --- |
 | `demo/orders` | Sample app. Run `brief` / `ask` / `run` here. |
-| `scripts/run/install.py` | Puts `python-vibe` on PATH. Then `source .venv/bin/activate`. |
+| `scripts/run/install.py` | Puts `py-harness` on PATH. Then `source .venv/bin/activate`. |
 | `docs/` | This site. |
 
 ```bash
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
+py-harness brief
 ```
 
 ## The tool

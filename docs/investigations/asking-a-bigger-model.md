@@ -6,7 +6,7 @@ date: 2026-08-30
 type: article
 ---
 
-The idea under test: when python-vibe is bad at something, let it put a
+The idea under test: when py-harness is bad at something, let it put a
 question to a larger model the user has registered, and let that happen
 rarely enough that the tool is still a local tool.
 

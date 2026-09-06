@@ -23,10 +23,10 @@ Python drafts. Owned by [YauhenBichel](https://huggingface.co/YauhenBichel).
 draft is written. They do not plan, explore a repository, or use tools well.
 Read the measurements below before choosing them for anything.
 
-The code is at
-[github.com/YauhenBichel/python-vibe](https://github.com/YauhenBichel/python-vibe).
+The code is
+[py-harness](https://github.com/YauhenBichel/py-harness) (formerly python-vibe).
 
-## What python-vibe is
+## What py-harness is
 
 A deterministic harness around a small local model. The model proposes; the
 harness decides what is allowed to happen. Everything except the model call
@@ -65,16 +65,16 @@ Works the same on macOS, Linux and Windows. The harness needs only the
 standard library.
 
 ```bash
-git clone https://github.com/YauhenBichel/python-vibe.git
-cd python-vibe
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness
 pip install -e .
 ```
 
 ```bash
-python-vibe brief  ./your-project      # summary, no model
-python-vibe layout ./your-project      # structure report, no model
-python-vibe ask    ./your-project "what does compute_total return?"
-python-vibe run    ./your-project "add multiply(a, b) and a unit test"
+py-harness brief  ./your-project      # summary, no model
+py-harness layout ./your-project      # structure report, no model
+py-harness ask    ./your-project "what does compute_total return?"
+py-harness run    ./your-project "add multiply(a, b) and a unit test"
 ```
 
 ```python
@@ -116,7 +116,7 @@ Base weights: `Qwen/Qwen2.5-Coder-0.5B-Instruct`, Apache-2.0.
 One laptop. 29–30 August and 5 September 2026. **Not everyday-ready.**
 Everyday-ready still means beating an untuned `llama3.1:8b` on live parse
 **and** a real ≥1 KB fix the model wrote. Full write-up:
-[Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+[Experiments](https://yauhenbichel.github.io/py-harness/investigations/experiments/).
 
 | Experiment | Example | Result |
 | --- | --- | --- |
@@ -193,9 +193,9 @@ where these runs fail.
 ## What was measured
 
 Scores, examples, and replay commands:
-[Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/)
-· [which model](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/investigations/which-model.md)
-· [research-vibe-review](https://github.com/YauhenBichel/python-vibe/blob/HEAD/docs/research-vibe-review.md).
+[Experiments](https://yauhenbichel.github.io/py-harness/investigations/experiments/)
+· [which model](https://github.com/YauhenBichel/py-harness/blob/HEAD/docs/investigations/which-model.md)
+· [research-vibe-review](https://github.com/YauhenBichel/py-harness/blob/HEAD/docs/research-vibe-review.md).
 
 - About 45 training pairs. Validation was best near step 100, which is what
   this repository ships.
@@ -219,5 +219,5 @@ Faults found by pointing the harness at its own repository, and fixed in it:
   opening the file it had been given.
 
 Open questions:
-[45 pairs vs style prior](https://github.com/YauhenBichel/python-vibe/issues/9) ·
-[guard evasion](https://github.com/YauhenBichel/python-vibe/issues/8).
+[45 pairs vs style prior](https://github.com/YauhenBichel/py-harness/issues/9) ·
+[guard evasion](https://github.com/YauhenBichel/py-harness/issues/8).

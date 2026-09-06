@@ -1,6 +1,6 @@
 """Local MCP over stdio so an editor can apply the write limit without a tunnel.
 
-This is the editor calling python-vibe. It is not an Action the 8B may emit.
+This is the editor calling py-harness. It is not an Action the 8B may emit.
 Stdout is JSON-RPC only. Logs go to stderr.
 """
 
@@ -17,7 +17,7 @@ PROTOCOL = "2024-11-05"
 PROMPTS = (
     {
         "name": "ask",
-        "description": "Read-only question. python-vibe does not change files.",
+        "description": "Read-only question. py-harness does not change files.",
         "arguments": [
             {"name": "task", "description": "The question", "required": True}
         ],
@@ -35,7 +35,7 @@ TOOLS = (
     {
         "name": "ask",
         "description": (
-            "Read-only question about the project. Uses the python-vibe write limit. "
+            "Read-only question about the project. Uses the py-harness write limit. "
             "Does not change files."
         ),
         "inputSchema": {
@@ -131,7 +131,7 @@ def handle_rpc(
             "result": {
                 "protocolVersion": PROTOCOL,
                 "capabilities": {"tools": {}, "prompts": {}},
-                "serverInfo": {"name": "python-vibe", "version": "0.1.0"},
+                "serverInfo": {"name": "py-harness", "version": "0.1.0"},
             },
         }
     if method == "notifications/initialized":
@@ -152,13 +152,13 @@ def handle_rpc(
             "jsonrpc": "2.0",
             "id": rpc_id,
             "result": {
-                "description": f"Call the python-vibe {verb} tool",
+                "description": f"Call the py-harness {verb} tool",
                 "messages": [
                     {
                         "role": "user",
                         "content": {
                             "type": "text",
-                            "text": f"Use the python-vibe {verb} tool with task: {task}",
+                            "text": f"Use the py-harness {verb} tool with task: {task}",
                         },
                     }
                 ],
@@ -184,7 +184,7 @@ def handle_rpc(
                             "type": "text",
                             "text": (
                                 "this server is read-only. Restart it with "
-                                "--allow-writes, or run python-vibe run in the terminal."
+                                "--allow-writes, or run py-harness run in the terminal."
                             ),
                         }
                     ],
@@ -286,7 +286,7 @@ def serve_stdio(
     project: Path, *, allow_writes: bool = False, model: str = ""
 ) -> int:
     print(
-        f"python-vibe mcp  project {project}  "
+        f"py-harness mcp  project {project}  "
         f"{'read-write' if allow_writes else 'read-only'}",
         file=sys.stderr,
         flush=True,

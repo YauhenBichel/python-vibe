@@ -1,14 +1,14 @@
 ---
-title: Hub models for python-vibe
+title: Hub models for py-harness
 description: Hugging Face weights this laptop can run, including GGUFs that are not in the Ollama library. Default stays 8B.
 permalink: /investigations/hub-models/
 date: 2026-09-05
 type: article
 ---
 
-# Hub models for python-vibe
+# Hub models for py-harness
 
-**Question.** Which Hugging Face models should python-vibe run, and which
+**Question.** Which Hugging Face models should py-harness run, and which
 weights are worth a later LoRA?
 
 **Answer.** Keep `llama3.1:8b` for daily work. Keep the 0.5B sidecar for
@@ -66,14 +66,14 @@ the 11–12 GB this machine leaves for a model.
 
 OpenCoder is a code-instruct 8B. SWE-agent-LM is Qwen2.5-Coder-7B-Instruct
 plus about 5k traces from **their** agent. Neither weight speaks
-python-vibe `Action:` / `Find:`. Importing them does not make them the
+py-harness `Action:` / `Find:`. Importing them does not make them the
 default. It makes `--model` work so a later daily table can score them.
 
 ```bash
 python3 scripts/weights/import_hf_ollama.py --list
 python3 scripts/weights/import_hf_ollama.py --name opencoder
 python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
-python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+py-harness --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 `--all` downloads both. `--no-create` stops after the GGUF. The script
@@ -121,7 +121,7 @@ score for this helper.
 
 ### Already on the measure list
 
-These write Python. None of them were trained on python-vibe
+These write Python. None of them were trained on py-harness
 `Action:` / `Find:`.
 
 | Weight | Size class | How to run | Notes |
@@ -197,7 +197,7 @@ seed rows is the wrong next spend: the small models fail the first line.
 
 Publish kit adapters on Qwen2.5-Coder (Apache-2.0). Running Llama 3.1 8B
 through Ollama is fine. Do not publish a Llama-derived LoRA as the
-official python-vibe weight without following the Llama 3.1 licence.
+official py-harness weight without following the Llama 3.1 licence.
 
 ## Do not
 

@@ -1,6 +1,6 @@
 ---
 title: Platform engineering
-description: How python-vibe treats small files that must work on Windows, macOS, and Linux. Path limits, pathlib skill, and refuses an 8B cannot argue with.
+description: How py-harness treats small files that must work on Windows, macOS, and Linux. Path limits, pathlib skill, and refuses an 8B cannot argue with.
 permalink: /investigations/platform-engineering/
 date: 2026-08-29
 ---
@@ -11,7 +11,7 @@ Platform work is mostly small files: a path helper, a venv layout, a
 `pyproject.toml`, a workflow YAML. The failure mode is not “the file is too
 big.” It is “the draft only works on the author’s laptop.”
 
-python-vibe treats that as a harness problem, not a bigger-model problem.
+py-harness treats that as a harness problem, not a bigger-model problem.
 
 ## What the harness already did
 

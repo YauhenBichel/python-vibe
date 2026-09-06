@@ -6,7 +6,7 @@ date: 2026-09-06
 
 <div class="hero">
 <h1>A local tool for one Python folder</h1>
-<p><code>python-vibe</code> is a command-line tool. You point it at <strong>one Python project</strong>. It can answer a question, write a unit test, fix a failing test, or add a small function. It only reads and writes files in that folder.</p>
+<p><code>py-harness</code> is a command-line tool. You point it at <strong>one Python project</strong>. It can answer a question, write a unit test, fix a failing test, or add a small function. It only reads and writes files in that folder.</p>
 <p class="cta"><a href="{{ '/start/' | relative_url }}">Install</a> <a href="{{ '/live/' | relative_url }}">See a demo</a></p>
 </div>
 
@@ -27,17 +27,17 @@ the virtualenv is not active.
 ```bash
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "write tests for apply_discount"
-python-vibe run  "find the NameError and fix it"
-python-vibe run  "add a function total_lines and a test"
+py-harness brief
+py-harness ask  "what does compute_total return?"
+py-harness run  "write tests for apply_discount"
+py-harness run  "find the NameError and fix it"
+py-harness run  "add a function total_lines and a test"
 ```
 
-Do not run `brief` on the python-vibe repository root. That scans
+Do not run `brief` on the py-harness repository root. That scans
 hundreds of files. Another project:
 
-`python-vibe ask ~/app "what does add return?"`.
+`py-harness ask ~/app "what does add return?"`.
 
 On a large project add `--scope src`. Full install steps:
 [Start]({{ '/start/' | relative_url }}).

@@ -200,7 +200,7 @@ going a while, and it is checkable in a way that "write a function" is
 not: the file is either there or it is not, the imports either point at
 it or they do not, and the suite either survives.
 
-Each of these was given to python-vibe on a clean copy of this
+Each of these was given to py-harness on a clean copy of this
 repository, and judged by looking at the file system afterwards rather
 than by reading the reply.
 

@@ -1,4 +1,4 @@
-"""python-vibe: a deterministic harness around a small local model.
+"""py-harness: a deterministic harness around a small local model.
 
 The model drafts; the harness decides what ships.
 

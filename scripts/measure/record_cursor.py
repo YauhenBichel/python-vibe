@@ -8,7 +8,7 @@ Writes docs/media/cursor-demo.cast and docs/media/cursor-demo.gif.
 The recorded project is a fresh copy of demo/orders under /tmp/cursor.
 
 This is what chat and Tasks: Run Task execute after
-`python-vibe editors cursor --allow-writes`. The GIF is for the README
+`py-harness editors cursor --allow-writes`. The GIF is for the README
 and the Cursor page. It is not a capture of the editor window.
 """
 
@@ -37,10 +37,10 @@ COLS, ROWS = 80, 24
 PROMPT = b"demo $ "
 
 COMMANDS = (
-    "python-vibe editors cursor --allow-writes",
-    "python-vibe brief",
-    'python-vibe ask "what does compute_total return?"',
-    'python-vibe run "find the NameError and fix it"',
+    "py-harness editors cursor --allow-writes",
+    "py-harness brief",
+    'py-harness ask "what does compute_total return?"',
+    'py-harness run "find the NameError and fix it"',
 )
 
 
@@ -54,7 +54,7 @@ def _prepare() -> None:
     shutil.copytree(DEMO, WORK, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     bin_dir = WORK / ".bin"
     bin_dir.mkdir()
-    shim = bin_dir / "python-vibe"
+    shim = bin_dir / "py-harness"
     shim.write_text(
         "#!/bin/sh\n"
         f'export PYTHONPATH="{SRC}"\n'

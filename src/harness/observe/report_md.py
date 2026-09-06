@@ -33,7 +33,7 @@ def render_markdown(
     flagged = 0
     applied = 0
     lines = [
-        "# python-vibe batch review",
+        "# py-harness batch review",
         "",
         f"Project: `{project}`",
         "",

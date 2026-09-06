@@ -1,6 +1,6 @@
 ---
 title: Model lanes
-description: Which local weight to use for which python-vibe job. Routing versus cascading, measured on this laptop 29 Aug 2026.
+description: Which local weight to use for which py-harness job. Routing versus cascading, measured on this laptop 29 Aug 2026.
 permalink: /investigations/model-lanes/
 date: 2026-08-29
 type: article
@@ -8,7 +8,7 @@ type: article
 
 # Model lanes
 
-**Question.** Should python-vibe use a different local model for questions,
+**Question.** Should py-harness use a different local model for questions,
 writes, refactors, and ship work?
 
 **Answer.** Yes as **lanes**. No as an automatic swap onto the 0.5B sidecar
@@ -19,9 +19,9 @@ you already have is not another weight — it is the oracle.
 See which lane a task is, with no model call:
 
 ```bash
-python-vibe route "what does compute_total return?"
-python-vibe route "add multiply(a, b) and a test"
-python-vibe route "create a pr for #50"
+py-harness route "what does compute_total return?"
+py-harness route "add multiply(a, b) and a test"
+py-harness route "create a pr for #50"
 ```
 
 Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | relative_url }})
@@ -58,7 +58,7 @@ token. Good when task kinds differ and the pick is cheap.
 *verifier* decides whether to escalate. The papers that work on code use
 **syntax and tests** as the judge, not a second LLM.
 
-python-vibe already cascades on oracles (`ast.parse`, undefined names,
+py-harness already cascades on oracles (`ast.parse`, undefined names,
 a test that sets up its inputs, the old definition gone). Escalation is **another turn of the same
 8B**, not a load of 18 GB mid-run. Loading a second weight on a laptop
 is the expensive move. A hosted usage pool is what you are trying not
@@ -76,7 +76,7 @@ already deterministic.
 | `write` | add, bugfix, rename, tests, script, HTTP, paths | `llama3.1:8b` | Auto-switch to 30B. Optional `--model qwen2.5-coder:7b` only after it is pulled and measured |
 | `structure` | review the tree / one-split loop | `llama3.1:8b` | Expect a 30B to replace the design scan |
 
-`python-vibe route` prints the lane. `--model` still wins when you pass
+`py-harness route` prints the lane. `--model` still wins when you pass
 it. The default does not change by itself, so a 1.5B that has never
 parsed `Action:` cannot sneak into a write.
 

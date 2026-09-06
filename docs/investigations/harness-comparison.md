@@ -31,7 +31,7 @@ of leverage for a small model:
 
 ## Comparison
 
-| | python-vibe (before) | pi | mini-swe-agent | aider |
+| | py-harness (before) | pi | mini-swe-agent | aider |
 | --- | --- | --- | --- | --- |
 | Tools | 11 typed actions | `read` `write` `edit` `bash` | `bash` only | edit formats, no loop tools |
 | Action format | `Action:` text protocol | provider tool-calling | plain shell in prose | fenced diff blocks |

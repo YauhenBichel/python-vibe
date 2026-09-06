@@ -33,7 +33,7 @@ COLS, ROWS = 80, 24
 PROMPT = b"demo $ "
 
 COMMANDS = (
-    'python-vibe run "fix compute_total in src/app.py so it sums the rows"',
+    'py-harness run "fix compute_total in src/app.py so it sums the rows"',
 )
 
 
@@ -47,7 +47,7 @@ def _prepare() -> None:
     shutil.copytree(DEMO, WORK, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     bin_dir = WORK / ".bin"
     bin_dir.mkdir()
-    shim = bin_dir / "python-vibe"
+    shim = bin_dir / "py-harness"
     shim.write_text(
         "#!/bin/sh\n"
         f'export PYTHONPATH="{SRC}"\n'

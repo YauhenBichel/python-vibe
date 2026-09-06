@@ -1,6 +1,6 @@
 ---
 title: Live demo
-description: A real asciinema recording of python-vibe on demo/orders, plus a same-day 8B daily run on a logic bug. 5 September 2026.
+description: A real asciinema recording of py-harness on demo/orders, plus a same-day 8B daily run on a logic bug. 5 September 2026.
 permalink: /live/
 date: 2026-09-05
 ---
@@ -14,7 +14,7 @@ add, no model. They stay on the recording because they are the same
 every time. Daily `run` is 8B: write, run the suite, send a failing
 traceback back once.
 
-![python-vibe on demo/orders — brief, layout, ask, fix, add]({{ '/media/live-demo.gif' | relative_url }})
+![py-harness on demo/orders — brief, layout, ask, fix, add]({{ '/media/live-demo.gif' | relative_url }})
 
 Recorded with asciinema. The GIF loops; the log below is the same
 session, static. Replay the cast:
@@ -40,23 +40,23 @@ Type the same thing after [Start]({{ '/start/' | relative_url }}):
 ```bash
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
-python-vibe layout
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "find the NameError and fix it"
-python-vibe run  "add a function total_lines and a test"
+py-harness brief
+py-harness layout
+py-harness ask  "what does compute_total return?"
+py-harness run  "find the NameError and fix it"
+py-harness run  "add a function total_lines and a test"
 ```
 
-If the shell says `command not found: python-vibe`, the venv is not
+If the shell says `command not found: py-harness`, the venv is not
 active. Activate it in every new terminal.
 
 A second recording, same day, is a **daily** `run`: an 8B write on a
 logic bug, then the suite. That is not a harness demo.
 
-![python-vibe daily run — fix compute_total]({{ '/media/daily-run.gif' | relative_url }})
+![py-harness daily run — fix compute_total]({{ '/media/daily-run.gif' | relative_url }})
 
 ```
-$ python-vibe run "fix compute_total in src/app.py so it sums the rows"
+$ py-harness run "fix compute_total in src/app.py so it sums the rows"
 Action: patch Path: src/app.py Find: return 0 Replace: return sum(rows)
 Action: done
 I fixed the compute_total function in src/app.py to return the sum of
@@ -86,10 +86,10 @@ The eleven-case table, including misses, is still on
 No model. 0.2 s.
 
 ```
-$ python-vibe brief
+$ py-harness brief
 
 10 Python and Markdown files, 2.9 KB in total.
-Small enough that python-vibe can read all of it, so you can ask about any part.
+Small enough that py-harness can read all of it, so you can ask about any part.
 
 Files:
   README.md  685 B
@@ -103,7 +103,7 @@ Files:
   tests/__init__.py  0 B
   tests/test_orders.py  511 B
 
-python-vibe has 23 skills it can apply. It picks them from the wording of
+py-harness has 23 skills it can apply. It picks them from the wording of
 your task; you do not choose them.
 ```
 
@@ -112,7 +112,7 @@ your task; you do not choose them.
 No model. 0.1 s.
 
 ```
-$ python-vibe layout
+$ py-harness layout
 
 layout: 1 finding(s), worst first.
   [cycle] src/render.py and src/report.py import each other
@@ -127,7 +127,7 @@ import.
 back. The second draft named what the function computes.
 
 ```
-$ python-vibe ask "what does compute_total return?"
+$ py-harness ask "what does compute_total return?"
 ollama:llama3.1:8b  project /tmp/orders  mode small
 
 --- step 1 ---
@@ -153,7 +153,7 @@ line. A unique in-scope name is bound without calling weights. That is
 not daily work.
 
 ```
-$ python-vibe run "find the NameError and fix it"
+$ py-harness run "find the NameError and fix it"
 
 bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
 ```
@@ -175,7 +175,7 @@ Harness demo. No model. 0.2 s. A template wrote `total_lines` next to
 `prices`. Daily add-a-function goes through the 8B and the suite.
 
 ```
-$ python-vibe run "add a function total_lines and a test"
+$ py-harness run "add a function total_lines and a test"
 
 added def total_lines(prices) in src/orders.py. Tests passed.
 ```
@@ -206,7 +206,7 @@ they look instant on [Start]({{ '/start/' | relative_url }}). Daily
 wanted the sum. Not a unique typo.
 
 ```
-$ python-vibe run "fix compute_total in src/app.py so it sums the rows"
+$ py-harness run "fix compute_total in src/app.py so it sums the rows"
 ollama:llama3.1:8b  project /tmp/daily  mode small
 
 --- step 1 ---

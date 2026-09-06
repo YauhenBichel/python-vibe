@@ -1,7 +1,7 @@
 name: Pages
 
 # The default Actions token cannot create a Pages site. One-time, in a browser:
-# https://github.com/YauhenBichel/python-vibe/settings/pages
+# https://github.com/YauhenBichel/py-harness/settings/pages
 # Build and deployment → Source → GitHub Actions.
 # Then re-run this workflow.
 

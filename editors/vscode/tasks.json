@@ -2,21 +2,21 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "python-vibe: ask",
+      "label": "py-harness: ask",
       "type": "shell",
       "command": "__RUNNER__ ask \"${workspaceFolder}\" \"${input:task}\"",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
-      "label": "python-vibe: run",
+      "label": "py-harness: run",
       "type": "shell",
       "command": "__RUNNER__ run \"${workspaceFolder}\" \"${input:task}\"",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
-      "label": "python-vibe: brief",
+      "label": "py-harness: brief",
       "type": "shell",
       "command": "__RUNNER__ brief \"${workspaceFolder}\"",
       "problemMatcher": [],
@@ -26,7 +26,7 @@
   "inputs": [
     {
       "id": "task",
-      "description": "What should python-vibe do?",
+      "description": "What should py-harness do?",
       "type": "promptString",
       "default": "add multiply(a, b) and a unit test"
     }

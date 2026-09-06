@@ -19,7 +19,7 @@ CO_AUTHOR = co_author_line()
 # Says on the pull request itself which tool did the work, the way a
 # commit trailer does for a commit.
 PR_FOOTER = (
-    "\n\n---\nOpened with [python-vibe](https://github.com/YauhenBichel/python-vibe).\n"
+    "\n\n---\nOpened with [py-harness](https://github.com/YauhenBichel/py-harness).\n"
     f"{CO_AUTHOR}\n"
 )
 _TIMEOUT = 45

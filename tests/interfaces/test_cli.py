@@ -31,17 +31,21 @@ class HowToTest(unittest.TestCase):
     def test_it_names_the_command_this_machine_can_run(self) -> None:
         """The regression: the list must not send you to a missing command.
 
-        `python-vibe` is only on PATH after `pip install -e .`. Someone
+        `py-harness` is only on PATH after `pip install -e .`. Someone
         running the module form has no such command, so printing it is
-        an instruction that fails on the first line.
+        an instruction that fails on the first line. `python-vibe` stays
+        as a console-script alias and must print that name when invoked.
         """
         old = sys.argv
         try:
             sys.argv = ["/usr/bin/python3.13", "-m", "harness"]
             self.assertIn("python -m harness brief", how_to())
             self.assertNotIn("python-vibe brief", how_to())
+            self.assertNotIn("py-harness brief", how_to())
             sys.argv = ["/somewhere/bin/python-vibe"]
             self.assertIn("python-vibe brief", how_to())
+            sys.argv = ["/somewhere/bin/py-harness"]
+            self.assertIn("py-harness brief", how_to())
         finally:
             sys.argv = old
 
@@ -117,7 +121,7 @@ class CommandTableTest(unittest.TestCase):
         self.assertIn("no traces", buf.getvalue())
 
     def test_the_missing_task_hint_names_a_command_that_exists(self) -> None:
-        """The hint used to say `python-vibe`, installed or not."""
+        """The hint used to say `py-harness`, installed or not."""
         from harness.cli import _missing_task_message, _program_name
 
         old = sys.argv
@@ -125,6 +129,7 @@ class CommandTableTest(unittest.TestCase):
             sys.argv = ["/usr/bin/python3.13", "-m", "harness"]
             self.assertIn(_program_name(), _missing_task_message("ask"))
             self.assertNotIn("python-vibe ask", _missing_task_message("ask"))
+            self.assertNotIn("py-harness ask", _missing_task_message("ask"))
         finally:
             sys.argv = old
 

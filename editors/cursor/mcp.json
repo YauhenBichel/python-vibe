@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "python-vibe": {
+    "py-harness": {
       "type": "stdio",
       "command": "python3",
       "args": ["-m", "harness", "mcp", "--project", "${workspaceFolder}"],

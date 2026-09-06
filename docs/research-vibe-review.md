@@ -9,9 +9,9 @@ type: article
 
 **Weights:** [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b)
 (step-100 adapters, public). **Code:** this repo. Related issues:
-[#8](https://github.com/YauhenBichel/python-vibe/issues/8) (guard evasion),
-[#9](https://github.com/YauhenBichel/python-vibe/issues/9) (45 pairs vs style prior),
-discussion [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13).
+[#8](https://github.com/YauhenBichel/py-harness/issues/8) (guard evasion),
+[#9](https://github.com/YauhenBichel/py-harness/issues/9) (45 pairs vs style prior),
+discussion [eval protocol](https://github.com/YauhenBichel/py-harness/discussions/13).
 
 The harness stays deterministic. This note is measurement and product shape,
 not a second LLM on the serve path.

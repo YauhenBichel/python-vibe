@@ -1,13 +1,13 @@
 ---
-title: Use python-vibe in Cursor
+title: Use py-harness in Cursor
 description: A real recording. Install the local MCP, then brief, ask, and run from chat or Tasks. Same commands the tools execute, captured on demo/orders.
 permalink: /cursor/
 date: 2026-09-05
 ---
 
-# Use python-vibe in Cursor
+# Use py-harness in Cursor
 
-Cursor talks to python-vibe as a **local child process**. Your code stays
+Cursor talks to py-harness as a **local child process**. Your code stays
 on this machine. You do not open a port and you do not point chat at
 `127.0.0.1`.
 
@@ -15,10 +15,10 @@ This page is a live walkthrough on `demo/orders`. 5 September 2026.
 `brief` needs no model. `ask` calls `llama3.1:8b`. The NameError repair
 is a harness demo — no model.
 
-![python-vibe Cursor MCP on demo/orders]({{ '/media/cursor-demo.gif' | relative_url }})
+![py-harness Cursor MCP on demo/orders]({{ '/media/cursor-demo.gif' | relative_url }})
 
 Recorded with asciinema. The GIF is what chat and **Tasks: Run Task**
-run after `python-vibe editors cursor --allow-writes`, not a screenshot
+run after `py-harness editors cursor --allow-writes`, not a screenshot
 of the editor window. Replay:
 
 ```bash
@@ -39,12 +39,12 @@ From a clone (same installer as [Start]({{ '/start/' | relative_url }})):
 python3 scripts/run/install.py
 source .venv/bin/activate
 ollama pull llama3.1:8b
-python-vibe editors cursor --allow-writes
+py-harness editors cursor --allow-writes
 ```
 
 macOS often has no `pip` on PATH. The installer creates `.venv` and
 runs `python -m pip` for you. Activate that venv in every new terminal
-or `python-vibe` will still be missing.
+or `py-harness` will still be missing.
 
 Without installing, from the checkout:
 
@@ -58,7 +58,7 @@ files:
 | File | What it is for |
 | --- | --- |
 | `.cursor/mcp.json` | Cursor starts `python3 -m harness mcp` itself |
-| `.vscode/tasks.json` | Command Palette → Tasks: Run Task → `python-vibe: ask` / `run` |
+| `.vscode/tasks.json` | Command Palette → Tasks: Run Task → `py-harness: ask` / `run` |
 
 `${workspaceFolder}` is filled by Cursor, so the MCP file has **no
 personal path**. You can commit it. Anyone who clones the repo and
@@ -68,30 +68,30 @@ interpreter that ran `editors cursor`. Do not commit that path.
 ## Then in Cursor
 
 1. Command Palette → **Developer: Reload Window**
-2. Open **Customize → MCP** and enable `python-vibe`
+2. Open **Customize → MCP** and enable `py-harness`
 3. In chat, say what you want. Name the tool if you like:
-   - “ask python-vibe what `compute_total` returns”
-   - “run python-vibe: write tests for apply_discount”
-   - “run python-vibe: find the NameError and fix it”
+   - “ask py-harness what `compute_total` returns”
+   - “run py-harness: write tests for apply_discount”
+   - “run py-harness: find the NameError and fix it”
 
 `ask` never writes. `run` writes only when you passed `--allow-writes`.
 
 A large tree: add a scope (“stay in `src/`”). The write limit already
 refuses to load the whole tree.
 
-The same jobs are also **Tasks: Run Task** → `python-vibe: brief` /
-`ask` / `run`. Do not type `python-vibe: ask` in the shell. The colon
+The same jobs are also **Tasks: Run Task** → `py-harness: brief` /
+`ask` / `run`. Do not type `py-harness: ask` in the shell. The colon
 is the task label. In a terminal the commands are:
 
 ```bash
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "find the NameError and fix it"
+py-harness brief
+py-harness ask  "what does compute_total return?"
+py-harness run  "find the NameError and fix it"
 ```
 
-If the shell says `command not found: python-vibe`, the venv is not
+If the shell says `command not found: py-harness`, the venv is not
 active. Activate it in every new terminal.
 
 ## Live: this folder, those tools
@@ -100,34 +100,34 @@ Open `demo/orders` (or this repo and stay in that folder). Reload,
 enable the server, then ask in chat. `editors`, `brief`, `ask`, and
 the NameError `run` below are the GIF.
 
-### `python-vibe editors cursor --allow-writes`
+### `py-harness editors cursor --allow-writes`
 
 Writes `.cursor/mcp.json` and `.vscode/tasks.json`. No model.
 
 ```
-$ python-vibe editors cursor --allow-writes
+$ py-harness editors cursor --allow-writes
 /private/tmp/cursor/.cursor/mcp.json
 /private/tmp/cursor/.vscode/tasks.json
 
-python-vibe is set up for this folder (read-write).
+py-harness is set up for this folder (read-write).
 1. ollama pull llama3.1:8b
 2. Command Palette → Developer: Reload Window
-3. Open Customize → MCP → enable python-vibe
-4. In chat: ask python-vibe what compute_total returns
-   or Tasks: Run Task → python-vibe: ask
+3. Open Customize → MCP → enable py-harness
+4. In chat: ask py-harness what compute_total returns
+   or Tasks: Run Task → py-harness: ask
 Do not point Override OpenAI Base URL at 127.0.0.1. That request often
 leaves this machine.
 ```
 
-### `python-vibe brief`
+### `py-harness brief`
 
 No prompt. Instant. No model.
 
 ```
-$ python-vibe brief
+$ py-harness brief
 
 10 Python and Markdown files, 2.9 KB in total.
-Small enough that python-vibe can read all of it, so you can ask about any part.
+Small enough that py-harness can read all of it, so you can ask about any part.
 
 Files:
   README.md  685 B
@@ -141,11 +141,11 @@ Files:
   tests/__init__.py  0 B
   tests/test_orders.py  511 B
 
-python-vibe has 24 skills it can apply. It picks them from the wording of
+py-harness has 24 skills it can apply. It picks them from the wording of
 your task; you do not choose them.
 ```
 
-### `python-vibe ask`
+### `py-harness ask`
 
 Type: `what does compute_total return?`
 
@@ -154,7 +154,7 @@ only `int`. The helper sent that back. The second draft named what
 the function computes.
 
 ```
-$ python-vibe ask "what does compute_total return?"
+$ py-harness ask "what does compute_total return?"
 ollama:llama3.1:8b  project /private/tmp/cursor  mode small
 
 --- step 1 ---
@@ -175,7 +175,7 @@ order, returning an integer value.
 
 `ask` never writes a file.
 
-### `python-vibe run`
+### `py-harness run`
 
 Type: `find the NameError and fix it`
 
@@ -183,22 +183,22 @@ The planted typo is `subtotl` next to `subtotal =`. One candidate. No
 model. About a tenth of a second.
 
 ```
-$ python-vibe run "find the NameError and fix it"
+$ py-harness run "find the NameError and fix it"
 
 bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passed.
 ```
 
 `run` writes only with `--allow-writes` on the server, or when you use
-the task (a real `python-vibe run` in the project folder). It keeps a
+the task (a real `py-harness run` in the project folder). It keeps a
 `.bak` of anything it edits.
 
 ## Every workspace on this laptop
 
 ```bash
-python-vibe editors cursor --global --allow-writes
+py-harness editors cursor --global --allow-writes
 ```
 
-Merges `python-vibe` into `~/.cursor/mcp.json`. Other servers stay.
+Merges `py-harness` into `~/.cursor/mcp.json`. Other servers stay.
 Each window limits changes to **the folder you have open**.
 
 ## Clone this repo

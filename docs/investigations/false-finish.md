@@ -119,7 +119,7 @@ equivalent for a function.
 
 ## What it cost to find
 
-Every one of these came from giving python-vibe the same job that had
+Every one of these came from giving py-harness the same job that had
 just been done by hand. None came from the test suite. The suite was
 green throughout, which is the point: a function nobody calls, and a run
 that changes nothing, are both invisible to a green suite.

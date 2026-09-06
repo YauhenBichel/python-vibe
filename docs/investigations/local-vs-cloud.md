@@ -1,6 +1,6 @@
 ---
 title: Local loop vs hosted agents
-description: Every python-vibe path against a hosted IDE agent. Measured on a laptop, 29 Aug 2026. None of the local brains match a hosted agent.
+description: Every py-harness path against a hosted IDE agent. Measured on a laptop, 29 Aug 2026. None of the local brains match a hosted agent.
 permalink: /investigations/local-vs-cloud/
 date: 2026-08-29
 type: article
@@ -12,14 +12,14 @@ Every weight, CLI, and way of connecting them in this repo, set next to a hosted
 
 Measured on one laptop (29 Aug 2026): Ollama `llama3.1:8b`, `qwen2.5-coder:0.5b`, Hub [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b). The hosted column is a frontier coding agent in an IDE, not a local weight.
 
-**None of the python-vibe brains match a hosted IDE agent.** The published LoRA is 0.5B. The everyday default is untuned `llama3.1:8b`. A 7B LoRA is a config only — not trained.
+**None of the py-harness brains match a hosted IDE agent.** The published LoRA is 0.5B. The everyday default is untuned `llama3.1:8b`. A 7B LoRA is a config only — not trained.
 
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
 <ol>
-  <li><a href="#every-python-vibe-path">Every python-vibe path</a></li>
+  <li><a href="#every-py-harness-path">Every py-harness path</a></li>
   <li><a href="#same-jobs-every-path">Same jobs, every path</a></li>
-  <li><a href="#use-python-vibe-when">Use python-vibe when</a></li>
+  <li><a href="#use-py-harness-when">Use py-harness when</a></li>
   <li><a href="#use-a-hosted-ide-agent-when">Use a hosted IDE agent when</a></li>
 </ol>
 </nav>
@@ -41,7 +41,7 @@ First Action on the same three tasks (`scripts/measure/skill_probe.py` plus one 
 
 The 8B still answered `listen_addr` as “a tuple of host and port” and omitted env and argv defaults. The hosted agent quoted both in one read.
 
-## Every python-vibe path
+## Every py-harness path
 
 | Path | What it is | On the laptop | Vs a hosted IDE agent |
 | --- | --- | --- | --- |
@@ -51,7 +51,7 @@ The 8B still answered `listen_addr` as “a tuple of host and port” and omitte
 | `agent.py` + `llama3.1:8b` | Everyday default. Text Actions + locate prelude + skills and the write limit. | Pulled (~5 GB). After a hint fix: `done` in one step on `listen_addr`. Add-feature probe: `patch` + `Append:`. Parse eval 2/3. | Closest laptop stand-in. Answers are shallow. No extra tools, no browser, text files only (no secrets). 20 steps max. |
 | `agent.py` + qwen2.5-coder 7B / 14B / 32B | Listed in `everyday.py`. Same harness. | Not pulled. Not measured that day. | Likely stronger Python than 8B. Still a text protocol, not native IDE tools. 32B is RAM-heavy. |
 | `train.py --everyday` (`python-vibe-8b`) | MLX LoRA on Qwen2.5-Coder-7B-Instruct-4bit. Needs ~2k tool traces. | Config only. `adapters/python-vibe-8b` is not trained. Seed data is 30 train rows. | Could teach `Action:` format. Will not grow context, extra tools, or an IDE loop. |
-| `openai_compat.py` | Local OpenAI `/v1` so an editor can pick `llama3.1:8b`. | Docs shipped. Does not add tools. The editor still drives the loop. | Wires a python-vibe brain into an editor chat. Quality stays 8B-class unless you pick a hosted model. |
+| `openai_compat.py` | Local OpenAI `/v1` so an editor can pick `llama3.1:8b`. | Docs shipped. Does not add tools. The editor still drives the loop. | Wires a py-harness brain into an editor chat. Quality stays 8B-class unless you pick a hosted model. |
 
 A 30B coder may already sit on the same machine as `--model`. It is not in `EVERYDAY_OLLAMA_CHOICES`. It still has no native IDE tools.
 
@@ -67,7 +67,7 @@ A 30B coder may already sit on the same machine as `--model`. It is not in `EVER
 | Offline / $0 API | Yes. ~400 MB. | Yes. ~5 GB RAM for 8B Q4. | No. Cloud, billed on a usage pool. |
 | Safe writes on a laptop | `PythonVibeGuard` + `.bak` + 2/3 length + `ast.parse`. | Same write limit. Questions refuse `patch` / `edit` / `run`. | Editor diff / confirm. No PV00x rules. Relies on you. |
 
-## Use python-vibe when
+## Use py-harness when
 
 You want a cheap offline loop on a small Python tree (≤40 files, ≤200 KB), writes limited to one folder, no cloud. Default `llama3.1:8b`. Keep 0.5B for Hub demos and CI smoke.
 

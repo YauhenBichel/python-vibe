@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for humans and coding agents working in **python-vibe**.
+Guidance for humans and coding agents working in **py-harness**.
 
 This repo is a **0.5B LoRA + a deterministic harness** for everyday laptop
 work. Treat the 0.5B model as a style prior. Treat `PythonVibeGuard` as the
@@ -56,7 +56,7 @@ program.
 | `src/harness/model/` | Talking to weights (the only non-deterministic layer) |
 | `src/harness/observe/` | Traces, report, offline eval gate |
 | `src/finetune/` | Specs, splits, Hub card, agent system prompt |
-| `scripts/run/install.py` | Put `python-vibe` on PATH (`.venv` + `pip install -e .`) |
+| `scripts/run/install.py` | Put `py-harness` on PATH (`.venv` + `pip install -e .`) |
 | `scripts/run/vibe.py` | Laptop REPL (`/run`, `--then`, `--project`) |
 | `scripts/run/serve.py` | Local HTTP sidecar |
 | `scripts/run/agent.py` | Everyday explore / edit / run / ship (use a **larger** Ollama model) |
@@ -126,7 +126,7 @@ Pages → Build and deployment → Source → GitHub Actions**. The default Acti
 token cannot create that site. Then re-run the workflow. Pages publishes from
 the default branch only. Every page needs `title:` and `description:` front
 matter and an entry in `sitemap.md`; `tests/website/test_pages.py` checks both.
-URL: `https://yauhenbichel.github.io/python-vibe/`. `llms.txt` and
+URL: `https://yauhenbichel.github.io/py-harness/`. `llms.txt` and
 `llms-full.txt` are the map for coding agents (llms.txt v2). Name a
 third-party editor only where this repo ships an integration for it, as
 `editors/` does; a page must not otherwise advertise or compare products.

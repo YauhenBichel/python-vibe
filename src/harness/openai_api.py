@@ -68,7 +68,7 @@ def last_user_text(messages: list[Any]) -> str:
 
 def chat_completion_payload(content: str, model: str) -> dict[str, Any]:
     return {
-        "id": "python-vibe",
+        "id": "py-harness",
         "object": "chat.completion",
         "choices": [
             {

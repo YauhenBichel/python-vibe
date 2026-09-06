@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record the live demo: type five python-vibe commands in a real shell.
+"""Record the live demo: type five py-harness commands in a real shell.
 
   PYTHONPATH=src python scripts/measure/record_live.py
 
@@ -33,11 +33,11 @@ COLS, ROWS = 80, 24
 PROMPT = b"demo $ "
 
 COMMANDS = (
-    "python-vibe brief",
-    "python-vibe layout",
-    'python-vibe ask "what does compute_total return?"',
-    'python-vibe run "find the NameError and fix it"',
-    'python-vibe run "add a function total_lines and a test"',
+    "py-harness brief",
+    "py-harness layout",
+    'py-harness ask "what does compute_total return?"',
+    'py-harness run "find the NameError and fix it"',
+    'py-harness run "add a function total_lines and a test"',
 )
 
 
@@ -51,7 +51,7 @@ def _prepare() -> None:
     shutil.copytree(DEMO, WORK, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     bin_dir = WORK / ".bin"
     bin_dir.mkdir()
-    shim = bin_dir / "python-vibe"
+    shim = bin_dir / "py-harness"
     shim.write_text(
         "#!/bin/sh\n"
         f'export PYTHONPATH="{SRC}"\n'

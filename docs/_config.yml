@@ -1,12 +1,12 @@
-title: python-vibe
+title: py-harness
 description: A local command-line tool for one Python folder. Ask a question, write a test, fix a bug, or add a small function.
 url: https://yauhenbichel.github.io
-baseurl: /python-vibe
+baseurl: /py-harness
 lang: en
 author:
   name: Yauhen Bichel
   url: https://github.com/YauhenBichel
-markdown_raw: https://raw.githubusercontent.com/YauhenBichel/python-vibe/HEAD/docs
+markdown_raw: https://raw.githubusercontent.com/YauhenBichel/py-harness/HEAD/docs
 permalink: pretty
 markdown: kramdown
 kramdown:

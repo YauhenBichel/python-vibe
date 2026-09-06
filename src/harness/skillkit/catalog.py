@@ -1,6 +1,6 @@
 """Load SKILL.md files. Deterministic. No model.
 
-Looks in the project `skills/` folder and the python-vibe kit
+Looks in the project `skills/` folder and the py-harness kit
 (`<repo>/skills`). Same name: project wins.
 """
 

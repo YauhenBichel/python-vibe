@@ -67,7 +67,7 @@ interfaces enable automated software engineering. *NeurIPS*.
 <https://arxiv.org/abs/2405.15793>
 
 Previous best retrieval-only: 3.8%. SWE-agent: 12.5%. Same
-model: retrieval 1.3% → agent 12.5%. python-vibe’s first-run
+model: retrieval 1.3% → agent 12.5%. py-harness’s first-run
 four jobs were **0 / 4** then **4 / 4** after the helper. Same
 shape, smaller tree.
 [First-run four]({{ '/investigations/first-run-four/' | relative_url }}).
@@ -162,7 +162,7 @@ Verified.
 <https://arxiv.org/abs/2602.22124>
 
 That is a different job: train a 7B to ask a larger model. Daily
-python-vibe stays on one local 8B.
+py-harness stays on one local 8B.
 
 Lee, W., Cho, J., & Choi, J. (2026). MapCoder-Lite: Distilling
 multi-agent coding into a single small LLM. *Findings of EACL*.
@@ -302,5 +302,5 @@ trade offs.
 }
 ```
 
-How to cite python-vibe itself: [Cite]({{ '/cite/' | relative_url }}).
+How to cite py-harness itself: [Cite]({{ '/cite/' | relative_url }}).
 The measured scores: [Results]({{ '/investigations/' | relative_url }}).
