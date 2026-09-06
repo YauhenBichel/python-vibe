@@ -177,6 +177,7 @@ trade offs.
 
 ## BibTeX
 
+{% raw %}
 ```bibtex
 @article{grattafiori2024llama3,
   title = {The Llama 3 Herd of Models},
@@ -301,6 +302,7 @@ trade offs.
   archivePrefix = {arXiv}
 }
 ```
+{% endraw %}
 
 How to cite py-harness itself: [Cite]({{ '/cite/' | relative_url }}).
 The measured scores: [Results]({{ '/investigations/' | relative_url }}).

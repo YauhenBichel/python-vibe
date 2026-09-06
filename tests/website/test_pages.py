@@ -10,6 +10,10 @@ DOCS = ROOT / "docs"
 
 _CHAT_PRODUCTS = re.compile(r"\b(ChatGPT|Claude|Grok)\b")
 _CURSOR = re.compile(r"\bCursor\b")
+# Jekyll treats {{Ident as Liquid. Valid filters here always have a space:
+# {{ '/' | relative_url }}. BibTeX {{LoRA} has none, and broke Pages.
+_RAW_LIQUID = re.compile(r"\{%\s*raw\s*%\}.*?\{%\s*endraw\s*%\}", re.DOTALL)
+_UNSPACED_LIQUID = re.compile(r"\{\{(?!\s)")
 
 
 class PagesInvestigationsTest(unittest.TestCase):
@@ -249,6 +253,11 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("{{ '/cite/' | relative_url }}", text)
         footer = (DOCS / "_layouts" / "default.html").read_text(encoding="utf-8")
         self.assertIn("{{ '/references/' | relative_url }}", footer)
+        bibtex = text[text.index("## BibTeX") :]
+        self.assertIn("{% raw %}", bibtex)
+        self.assertIn("{% endraw %}", bibtex)
+        self.assertLess(bibtex.index("{% raw %}"), bibtex.index("```bibtex"))
+        self.assertGreater(bibtex.index("{% endraw %}"), bibtex.rindex("```"))
 
     def test_vscode_page_is_a_real_session(self) -> None:
         text = (DOCS / "vscode.md").read_text(encoding="utf-8")
@@ -418,6 +427,18 @@ class SiteFrontMatterTest(unittest.TestCase):
                 unlisted.append(f"{rel} -> {url}")
         self.assertEqual(unlisted, [])
 
+
+class SiteLiquidTest(unittest.TestCase):
+    """GitHub Pages failed on {{LoRA} in the references BibTeX fence."""
+
+    def test_markdown_does_not_open_unescaped_liquid_variables(self) -> None:
+        leaks: list[str] = []
+        for path in _site_pages():
+            text = _RAW_LIQUID.sub("", path.read_text(encoding="utf-8"))
+            for i, line in enumerate(text.splitlines(), 1):
+                if _UNSPACED_LIQUID.search(line):
+                    leaks.append(f"{path.relative_to(DOCS)}:{i}")
+        self.assertEqual(leaks, [])
 
 
 class CrossPlatformDocsTest(unittest.TestCase):
