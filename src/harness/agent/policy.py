@@ -300,6 +300,12 @@ def _refuse_other_than_named(task: str, project: Path, path: str) -> str:
 
 def refuse_before(state: LoopState, turn) -> str:
     """The turn is about to run a tool. Return a refusal, or ""."""
+    if turn.action == "patch":
+        # Remember the proposal before any policy rejects it. Otherwise a
+        # refused patch can be resubmitted forever without reaching the guard.
+        repeated = state.guard.check(turn)
+        if repeated:
+            return repeated
     if state.autofixed and turn.action not in {"run", "done"}:
         if turn.action in {"edit", "patch"} and "test" in (
             turn.path or state.last_path or ""
@@ -363,7 +369,7 @@ def _tool_refusals(state: LoopState, turn) -> str:
         lambda: refuse_smell_wrong_file(
             state.task, turn.action, turn.path, state.located_path, _located_body(state)
         ),
-        lambda: state.guard.check(turn),
+        lambda: state.guard.check(turn) if turn.action != "patch" else "",
         lambda: _refuse_ship(state.task, turn.action)
         if turn.action in SHIP_ACTIONS
         else "",
