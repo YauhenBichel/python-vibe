@@ -96,7 +96,9 @@ first 180s, second 44.8 s. A concurrent `bench.py --tier 3` on
 the 8B was holding `/api/chat` during those walls. That 8B bench
 ended; the same rerun then loaded `qwen2.5-coder:7b`. An idle
 local remasure (empty VRAM, no client on 11434): first Agent
-chat 180s, then SWE listed; second 2.15 s. A reply is not a daily score.
+chat 180s, then SWE listed; second 2.15 s. A new
+`bench.py --tier 6` then held the 8B and started the 7B coder.
+A first chat past 180s was not run. A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
