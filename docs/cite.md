@@ -11,6 +11,7 @@ type: article
 If you use the software or quote a measured score, cite **Yauhen Bichel**
 and python-vibe. GitHub also offers **Cite this repository** from
 [`CITATION.cff`](https://github.com/YauhenBichel/python-vibe/blob/HEAD/CITATION.cff).
+Publications this project sits on: [References]({{ '/references/' | relative_url }}).
 
 Site: [yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/).
 Code: [github.com/YauhenBichel/python-vibe](https://github.com/YauhenBichel/python-vibe).

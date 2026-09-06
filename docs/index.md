@@ -53,6 +53,7 @@ On a large project add `--scope src`. Full install steps:
 | [Folders]({{ '/tree/' | relative_url }}) | What each directory in this repository is |
 | [Editors]({{ '/editor-demos/' | relative_url }}) | VS Code and Cursor |
 | [Results]({{ '/investigations/' | relative_url }}) | Measured scores |
+| [References]({{ '/references/' | relative_url }}) | Papers the design sits on |
 | [Architecture]({{ '/architecture/' | relative_url }}) | How `src/harness/` is layered |
 
 ## Limits

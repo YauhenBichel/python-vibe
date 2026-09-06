@@ -94,7 +94,7 @@ eighteen tasks never passed. LoRA was not measured (`mlx-lm` missing).
 Unit tests for the checkers passed.
 
 Write-up: [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | relative_url }}).
-Cite: [Cite]({{ '/cite/' | relative_url }}).
+Cite: [Cite]({{ '/cite/' | relative_url }}). Related work: [References]({{ '/references/' | relative_url }}).
 
 ## Sample four drafts, then greedy
 
