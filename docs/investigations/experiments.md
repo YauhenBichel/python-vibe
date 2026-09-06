@@ -545,8 +545,14 @@ first POST **180s** timeout, then `/api/ps` listed
 `bench.py --tier 6 --model llama3.1:8b --repeat 5` held `/api/chat`.
 When that arm ended, `--tier 6 --model qwen2.5-coder:7b --repeat 5`
 was already starting and `/api/ps` listed the 7B coder. A first
-SWE chat past the 180s client cap was not run. **Do not switch.**
-Default stays `llama3.1:8b`.
+SWE chat past the 180s client cap was not run.
+
+**Past 180s, same night.** After the 7B tier-6 arm, `/api/ps` was
+empty and no client was on port 11434. One Agent body (no
+`keep_alive`): **300s** timeout. `/api/ps` was still empty. A
+later check listed `llama3.1:8b`. Raising the client cap past
+180s did not get a first-turn reply. Still not a nine-cell
+table. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
