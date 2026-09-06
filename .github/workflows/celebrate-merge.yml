@@ -9,4 +9,8 @@ jobs:
     if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.3.0
+      # Pinned to a commit, not the tag. This job runs on
+      # `pull_request_target` with `pull-requests: write`, so it has the
+      # repository's token on a pull request from anyone. A tag can be
+      # moved; a commit cannot.
+      - uses: YauhenBichel/merge-cheer@b6f4bc2cc6e64917e31574f4d2bcac18e7e79691 # v1.3.0
