@@ -24,6 +24,7 @@ from harness.skillkit.refuse_change import (
     refuse_opaque_names,
     refuse_ops_draft,
     refuse_platform_draft,
+    refuse_dropped_definition,
     refuse_rename_incomplete,
     refuse_shell_fetch,
     refuse_stdlib_shadow,
@@ -237,6 +238,10 @@ CHANGE_RULES: tuple[tuple[str, Callable[[ProposedChange], str]], ...] = (
     (
         "undefined name",
         lambda c: refuse_undefined_draft(c.task, c.rel, c.original, c.draft),
+    ),
+    (
+        "dropped the subject",
+        lambda c: refuse_dropped_definition(c.task, c.rel, c.original, c.draft),
     ),
     (
         "half a rename",
