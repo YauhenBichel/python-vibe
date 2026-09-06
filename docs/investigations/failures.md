@@ -22,6 +22,14 @@ the model was sent.
 | worked | 51 |
 | failed | **24 of 75 (32%)** |
 
+> **Update, 6 September 2026.** The same fifteen cases at five passes now
+> score **64 of 75**, so the failure rate is 15% rather than 32%. A day
+> of harness and instrument repairs did that, without asking anything
+> more of the model — written up in
+> [A day of repairs]({{ '/investigations/a-day-of-repairs/' | relative_url }}).
+> The classification below still describes what failure looks like; the
+> proportions are the ones measured on 5 September.
+
 ## Two thirds of the failures are wrong code
 
 | Why it failed | Share |
