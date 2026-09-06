@@ -107,7 +107,12 @@ Thank you to everyone who has helped py-harness.
 
 <!-- readme: contributors,bots/- -start -->
 <p align="center">
-  <img src=".github/contributors.svg" width="310" alt="Yauhen Bichel, Mark Xian, Itzsaurav, svkzn, Aditya, Huangshuo Kuang" />
+  <a href="https://github.com/YauhenBichel" title="Yauhen Bichel"><img src="https://avatars.githubusercontent.com/YauhenBichel?s=144" width="72" height="72" alt="Yauhen Bichel" /></a>
+  <a href="https://github.com/xianjianlf2" title="Mark Xian"><img src="https://avatars.githubusercontent.com/xianjianlf2?s=144" width="72" height="72" alt="Mark Xian" /></a>
+  <a href="https://github.com/ItzSaurav" title="Itzsaurav"><img src="https://avatars.githubusercontent.com/ItzSaurav?s=144" width="72" height="72" alt="Itzsaurav" /></a>
+  <a href="https://github.com/svkzn" title="svkzn"><img src="https://avatars.githubusercontent.com/svkzn?s=144" width="72" height="72" alt="svkzn" /></a>
+  <a href="https://github.com/Aditya-233" title="Aditya"><img src="https://avatars.githubusercontent.com/Aditya-233?s=144" width="72" height="72" alt="Aditya" /></a>
+  <a href="https://github.com/kkkhs" title="Huangshuo Kuang"><img src="https://avatars.githubusercontent.com/kkkhs?s=144" width="72" height="72" alt="Huangshuo Kuang" /></a>
 </p>
 <p align="center">
   <a href="https://github.com/YauhenBichel">Yauhen Bichel</a><span> · </span><a href="https://github.com/xianjianlf2">Mark Xian</a><span> · </span><a href="https://github.com/ItzSaurav">Itzsaurav</a><span> · </span><a href="https://github.com/svkzn">svkzn</a><span> · </span><a href="https://github.com/Aditya-233">Aditya</a><span> · </span><a href="https://github.com/kkkhs">Huangshuo Kuang</a>

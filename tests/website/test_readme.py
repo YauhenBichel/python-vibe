@@ -81,6 +81,7 @@ class ReadmeContributorsTest(unittest.TestCase):
         """A step with `contents: write` must not follow a moving tag."""
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertRegex(text, r"uses: YauhenBichel/readme-contributors@[0-9a-f]{40}")
+        self.assertIn("format: html", text)
 
     def test_checkout_is_pinned_to_a_commit(self) -> None:
         """contents: write plus persist-credentials must not follow a moving tag."""
@@ -156,21 +157,26 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertIn("cultofthepartyparrot.com", notice)
 
     def test_contributor_markers_are_not_an_empty_pair(self) -> None:
-        """Real people are listed between the markers.
+        """Each person is a separate icon that links to their profile.
 
-        The check is on what the block says, not how it is built. It
-        asserted `<table>` and inline avatar URLs, which described the
-        markup of the day rather than the invariant, and went red the
-        moment the list became an image and a row of links.
+        A single `<img src="contributors.svg">` is one picture: GitHub
+        cannot attach a URL to each face. The wall must be one `<a>`
+        per person, wrapping that person's avatar.
         """
         text = README.read_text(encoding="utf-8")
         start = text.index(_START) + len(_START)
         end = text.index(_END)
         body = text[start:end]
-        profiles = set(re.findall(r"https://github\.com/([A-Za-z0-9-]+)", body))
-        self.assertGreaterEqual(
-            len(profiles), 2, f"the block lists no contributors: {body!r}"
+        self.assertNotIn("contributors.svg", body)
+        self.assertNotIn("<table>", body)
+        icons = re.findall(
+            r'<a href="https://github.com/([A-Za-z0-9-]+)"[^>]*>\s*<img ',
+            body,
         )
+        self.assertGreaterEqual(len(icons), 2, body)
+        self.assertEqual(len(icons), len(set(icons)), body)
+        for login in icons:
+            self.assertIn(f"avatars.githubusercontent.com/{login}", body)
 
     def test_fill_script_renders_a_table_without_bots(self) -> None:
         import importlib.util
