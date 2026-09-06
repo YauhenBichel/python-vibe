@@ -539,8 +539,14 @@ identical Agent bodies (no `keep_alive`, about 6,800 characters):
 first POST **180s** timeout, then `/api/ps` listed
 `swe-agent-lm:7b`. Immediate second POST **2.15 s** (load 0.01 s,
 1,709 prompt tokens, prose). The first-turn 180s is not only the
-8B bench. Still not a nine-cell table. **Do not switch.** Default
-stays `llama3.1:8b`.
+8B bench. Still not a nine-cell table.
+
+**Tier-6 bench, same night.** A new local
+`bench.py --tier 6 --model llama3.1:8b --repeat 5` held `/api/chat`.
+When that arm ended, `--tier 6 --model qwen2.5-coder:7b --repeat 5`
+was already starting and `/api/ps` listed the 7B coder. A first
+SWE chat past the 180s client cap was not run. **Do not switch.**
+Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
