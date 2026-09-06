@@ -31,6 +31,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 ## Results
 
 - [Cite]({{ '/cite/' | absolute_url }}): APA and BibTeX. Software and the 5 Sep 2026 0.5B exact-stdout and sample-and-run evals.
+- [References]({{ '/references/' | absolute_url }}): Publications the design sits on. Models and methods that run here, plus related work. 6 Sep 2026.
 - [Experiments]({{ '/investigations/experiments/' | absolute_url }}): What I typed, the planted example, and the score. 29–30 Aug and 5 Sep 2026. Not everyday-ready.
 - [0.5B exact-stdout eval]({{ '/investigations/held-out-exec-eval/' | absolute_url }}): 18 scripts × 3. Base 7/54. One repair 12/54. 5 Sep 2026.
 - [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | absolute_url }}): Four drafts 9/18. Later loop 12/18, 0 hint-repairs. Greedy LoRA 0/54. 5 Sep 2026.

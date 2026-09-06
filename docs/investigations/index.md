@@ -35,7 +35,8 @@ Public pages do not name other editors or chat products.
     <h2>How to use the tool</h2>
     <p><a href="{{ '/scenarios/' | relative_url }}">What you type</a> — the four jobs on <code>demo/orders</code>.</p>
     <p><a href="{{ '/investigations/first-run-four/' | relative_url }}">First-run four</a> — those jobs failed, then the helper finished them.</p>
-    <p><a href="{{ '/cite/' | relative_url }}">Cite</a> — APA and BibTeX.</p>
+    <p><a href="{{ '/cite/' | relative_url }}">Cite</a> — APA and BibTeX for this software.</p>
+    <p><a href="{{ '/references/' | relative_url }}">References</a> — papers the design sits on.</p>
   </div>
 </div>
 

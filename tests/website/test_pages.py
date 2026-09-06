@@ -52,6 +52,7 @@ class PagesInvestigationsTest(unittest.TestCase):
             "investigations/held-out-exec-eval.md",
             "investigations/sample-and-run.md",
             "cite.md",
+            "references.md",
             "investigations/bench-record.md",
             "investigations/cloud-weights.md",
         )
@@ -202,6 +203,22 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn(">Commands<", nav)
         self.assertNotIn(">Using<", nav)
         self.assertNotIn(">Cite<", nav)
+
+    def test_references_page_lists_what_runs_and_related_work(self) -> None:
+        text = (DOCS / "references.md").read_text(encoding="utf-8")
+        self.assertIn("permalink: /references/", text)
+        self.assertIn("title: References", text)
+        self.assertIn("2407.21783", text)
+        self.assertIn("2409.12186", text)
+        self.assertIn("2106.09685", text)
+        self.assertIn("2210.03629", text)
+        self.assertIn("2305.01210", text)
+        self.assertIn("@inproceedings{hu2022lora", text)
+        self.assertIn("does **not** report a SWE-bench score", text)
+        self.assertNotIn("sidecar", text.lower())
+        self.assertIn("{{ '/cite/' | relative_url }}", text)
+        footer = (DOCS / "_layouts" / "default.html").read_text(encoding="utf-8")
+        self.assertIn("{{ '/references/' | relative_url }}", footer)
 
     def test_vscode_page_is_a_real_session(self) -> None:
         text = (DOCS / "vscode.md").read_text(encoding="utf-8")
