@@ -97,10 +97,16 @@ punishes asking and mangles fenced code would have made the fine-tune
 evaluation wrong in the same two ways, and that evaluation was going to
 be the basis for weeks of work.
 
-## What has to happen before the question can be asked again
+## What happened next
 
-Strip the fence where a draft is parsed. Then re-run the three models on
-the same cases, and only then read the result as being about model size.
+The fence is stripped where a draft is parsed, and the three models were
+re-run on the same cases. The 32B went from 1 of 10 to **9 of 10**, and
+the local models did not move — written up in
+[The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}).
+
+So neither of the two days of comparisons said anything about model
+size. Tier 3 is now saturated for the 32B; the wall is at tier 6, and
+that is the measurement still to make.
 
 ## Reproducing this
 

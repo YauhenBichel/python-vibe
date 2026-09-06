@@ -46,7 +46,9 @@ The helper moved the four Start commands from **0 / 4** to
 **4 / 4** by doing compiler jobs itself. The everyday-ready bar —
 beat a plain 8B at the next step **and** at a real bug the helper
 cannot write — is not met. This project does not report a
-SWE-bench score.
+SWE-bench score. A hosted **32B** was measured once the
+benchmark itself was repaired: it scores **9 / 10** on tier 3, where
+before the repair it scored **1 / 10**.
 
 <div class="stats">
   <div class="stat"><b>12 / 18</b><span>tiny 0.5B (500M weights), four drafts then a later loop</span></div>
@@ -919,10 +921,40 @@ markdown fences, the fence reaches the file unchanged, and the result is
 a `SyntaxError`. Nine of ten runs then produced nothing that would load.
 A 14B, meanwhile, times out on this machine three times out of three.
 
-So whether size breaks the wall is still unanswered, and every model
-number published before this is unsafe.
+Every model number published before this is unsafe.
 
 Write-up: [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}).
+
+### The fence was the whole story
+
+**Example.** The same hosted 32B, the same two tier-3 cases, ten runs
+each side. The only difference is whether the harness takes the markdown
+fence off a draft before writing it to a file.
+
+**Result**
+
+| `Qwen2.5-Coder-32B-Instruct`, tier 3 | worked |
+| --- | --- |
+| before the fence was stripped | 1 of 10 |
+| after | **9 of 10** |
+
+Per case after the fix: `slugify` 5 of 5, `wordcount` 4 of 5. The one
+failure is an ordinary `word_count not found in any module`, not a file
+the model had broken. Median run 15.3 s. Both columns were measured
+after the answerer was fixed, so the jump belongs to the fence alone.
+
+The model was never the problem. Four backticks were.
+
+The control says the same thing from the other side. Local weights do
+not fence their code — zero of twenty recorded turns contain one — so
+the fix cannot move them, and it does not:
+
+| `llama3.1:8b`, tier 3, twenty runs | worked |
+| --- | --- |
+| without the fence fix | 10 of 20 |
+| with it | 10 of 20 |
+
+Write-up: [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}).
 
 ### Two models, one wall
 
@@ -1063,7 +1095,20 @@ Do not treat the fixture scores as a real-repo review.
 
 Two models of different lineage hit the same wall (51 vs 50 of 75).
 Wrong-code failures can become refusals without the pass count
-moving. Raising the count that works is the target.
+moving. Raising the count that works is the target. That pair was
+measured before the instrument was repaired, so the number to trust
+is the shape, not the score.
+
+The most transferable result is about the instrument, not any model.
+Both faults found this week had one shape: the harness had quietly
+specialised to the single model it runs itself. Local weights rarely
+ask a question, so nobody noticed there was no one to answer; local
+weights do not fence their code, so nobody noticed the fence reached
+the file. Each was invisible from inside that choice and appeared the
+moment something else was plugged in. A hosted 32B looked incapable at
+**1 / 10** and scores **9 / 10** with four backticks removed. The
+lesson is to measure a second model early, because it is the cheapest
+way to find the assumptions the first one hides.
 
 ## Limitations
 
@@ -1071,8 +1116,10 @@ One laptop, 18 GB unified memory. One run unless a table says
 otherwise; gaps of one or two cases are noise. Several published
 cells are compiler binds, not model writes. The instrument was
 wrong for part of the month: unanswered `ask` stops, and markdown
-fences reaching the file. Every model number from before that note
-is unsafe.
+fences reaching the file. Both are fixed, and every model number
+from before 6 September is unsafe. Tier 3 has two cases, so its
+run-to-run spread is wide: the same 8B on the same code scored
+14 / 20 and 10 / 20 on different nights.
 
 This project does **not** report a SWE-bench score. The public
 numbers are four jobs on `demo/orders` and a 4,580-file write rate
