@@ -564,7 +564,14 @@ from empty VRAM was not run.
 single word ok.` Cap 180s. **7.42 s** (load 5.09 s, 36 prompt
 tokens, prose). After that `/api/ps` listed `swe-agent-lm:7b`.
 The tag loads. The 300s miss is the helper-sized first chat, not
-a dead weight file. Still not a nine-cell table. **Do not
+a dead weight file. Still not a nine-cell table.
+
+**Helper chat off the 8B, later.** The one-word SWE load had
+expired. `/api/ps` listed `llama3.1:8b`. One Agent body (no
+`keep_alive`, about 6,800 characters): **36.69 s** (load 5.73 s,
+1,709 prompt tokens, prose). After that `/api/ps` listed SWE.
+The helper-sized first chat can finish when swapping off the 8B.
+The 300s miss was empty VRAM, not prompt size alone. **Do not
 switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
