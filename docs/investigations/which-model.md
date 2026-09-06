@@ -106,7 +106,7 @@ A later helper-sized Agent chat while the 8B was listed finished
 in 36.69 s. A second helper chat while SWE was still listed
 finished in 74.83 s (load 0.02 s, 1,700 eval tokens). Later
 an 8B client held `/api/chat`; empty helper was not remasured.
-A reply is not a daily score.
+A second local client then held the 8B again. A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
