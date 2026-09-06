@@ -540,6 +540,12 @@ class Agent:
                 task=run.options.task,
             )
         except (ValueError, OSError) as exc:
+            # The action raised, so `run_action` never returned a path and
+            # `last_path` still holds the previous step's file. Everything
+            # downstream then talks about the wrong one: the step log
+            # blames a file the model did not touch, and the repair names
+            # it too. A failed patch is still about the file it named.
+            state.last_path = turn.path or state.last_path
             return str(exc)
         if turn.action == "read" and state.last_path:
             state.files_seen.add(state.last_path)
