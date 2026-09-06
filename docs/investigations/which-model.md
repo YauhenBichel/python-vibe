@@ -113,7 +113,10 @@ at start). An empty-VRAM remasure of the same job timed out on
 the first generate at 180 s; after that `/api/ps` listed SWE.
 A later one-word SWE load finished in 4.93 s, then the same
 daily job with SWE listed timed out on the first generate at
-180 s; after that `/api/ps` was empty. A reply is not a daily score.
+180 s; after that `/api/ps` was empty. A later Agent-body
+warm at `num_ctx` 8192 finished in 29.76 s, then the same
+daily job timed out on the first generate at 180 s; after that
+`/api/ps` still listed SWE. A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
