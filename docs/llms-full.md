@@ -165,6 +165,7 @@ The instrument was broken {{ '/investigations/measuring/' | absolute_url }}
 The fence was the whole story {{ '/investigations/the-fence/' | absolute_url }}
 The wall two local models share {{ '/investigations/the-wall/' | absolute_url }}
 What the totals were hiding {{ '/investigations/totals-hide-things/' | absolute_url }}
+A day of repairs, measured {{ '/investigations/a-day-of-repairs/' | absolute_url }}
 Two models, one wall {{ '/investigations/two-models/' | absolute_url }}
 Where the failures are {{ '/investigations/failures/' | absolute_url }}
 What the harness cannot fix {{ '/investigations/limits/' | absolute_url }}

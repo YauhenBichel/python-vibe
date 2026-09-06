@@ -51,7 +51,9 @@ beat a plain 8B at the next step **and** at a real bug the helper
 cannot write — is not met. This paper does **not** report a
 SWE-bench score. A hosted **32B** was measured once the
 benchmark itself was repaired: it scores **9 / 10** on tier 3, where
-before the repair it scored **1 / 10**.
+before the repair it scored **1 / 10**. A day of repairs to the harness
+and the benchmark then took the whole suite from **51 / 75** to
+**64 / 75** without asking more of the model.
 
 </div>
 
@@ -1177,6 +1179,43 @@ the fix cannot move them, and it does not:
 | with it | 10 of 20 |
 
 Write-up: [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}).
+
+### A day of repairs
+
+**Example.** Six September was spent on the tool rather than the model:
+the benchmark's own faults, the parser, and the paths the harness takes
+without asking a model at all. Same fifteen cases, five passes,
+`llama3.1:8b`, before and after.
+
+**Result**
+
+| | worked |
+| --- | --- |
+| 5 September | 51 of 75 |
+| 6 September | **64 of 75** |
+
+| tier | | |
+| --- | --- | --- |
+| 1, 2, 4 | 15/15, 10/10, 10/10 | clean |
+| 3 | 8/10 | `wordcount` 3/5 |
+| 5 | 7/10 | `fix-offbyone` 2/5 |
+| 6 | 14/20 | `env-flag` 2/5 |
+
+Almost none of it was the model. A benchmark that scored a question as a
+failure; a parser that fed markdown to Python; a mechanical path that
+wrote `def word_count(prices): return len(prices)` and its own passing
+test; a suite that ran nothing and counted as passing; a refusal whose
+advice named a field the draft did not have. On the reported "write
+tests" reproduction, suites that actually ran a test went from 2 of 8 to
+**8 of 8**.
+
+Two of the nine fixes moved no score and are kept anyway. Guarding
+against a draft that deletes the function it was sent to fix took that
+outcome from 4 of 12 runs to 0 of 12, while the pass rate stayed inside
+the noise — it converts *deleted the function* into *did not fix the
+bug*.
+
+Write-up: [A day of repairs]({{ '/investigations/a-day-of-repairs/' | relative_url }}).
 
 ### What the totals were hiding
 
