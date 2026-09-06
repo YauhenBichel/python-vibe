@@ -605,7 +605,17 @@ job, twelve steps. First generate timed out at **180 s**. After
 that `/api/ps` listed SWE. No `def clamp`. The 464 s clamp
 started with the 8B listed and finished twelve steps; empty
 VRAM stopped on the first generate. Still not a nine-cell
-table. **Do not switch.** Default stays `llama3.1:8b`.
+table.
+
+**Listed daily clamp, later.** Another local Python client then
+held `/api/chat`. After two idle checks, unloaded the 8B.
+`/api/ps` empty. One-word SWE generate: **4.93 s** (load
+4.61 s, 36 prompt tokens, `OK.`). `/api/ps` listed SWE. No
+client on port 11434. Same add-function job, twelve steps.
+First generate timed out at **180 s**. After that `/api/ps`
+was empty. No `def clamp`. Listing the tag is not enough for
+the helper-sized first turn. Still not a nine-cell table.
+**Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.

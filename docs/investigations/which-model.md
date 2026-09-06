@@ -111,7 +111,9 @@ empty-VRAM helper chat finished in 43.45 s. One daily clamp
 job then ran 12 steps in 464 s with no `def clamp` (8B listed
 at start). An empty-VRAM remasure of the same job timed out on
 the first generate at 180 s; after that `/api/ps` listed SWE.
-A reply is not a daily score.
+A later one-word SWE load finished in 4.93 s, then the same
+daily job with SWE listed timed out on the first generate at
+180 s; after that `/api/ps` was empty. A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
