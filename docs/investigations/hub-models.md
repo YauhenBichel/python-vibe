@@ -51,7 +51,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `starcoder2:7b` | 4.0 GB | On disk. One-word generate hit 180s. Completion-style. |
 | `codellama:7b-python` | 3.8 GB | On disk. One-word generate hit 180s. |
 | `opencoder:8b` | 4.7 GB | On disk. One-word generate hit 180s. |
-| `swe-agent-lm:7b` | 4.7 GB | On disk. One daily clamp: 12 steps, no `clamp`, **464 s**. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Empty-VRAM daily clamp: first generate **180 s**. Prior clamp with 8B listed: 12 steps, no `clamp`, 464 s. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -106,8 +106,10 @@ SWE was still listed finished in 74.83 s (load 0.02 s, 1,700
 eval tokens). Later an 8B client held `/api/chat`; a second
 local client then held the 8B again. After that an empty-VRAM
 helper chat finished in 43.45 s. One daily clamp job then ran
-12 steps in 464 s with no `def clamp`. OpenCoder still misses a
-one-word generate.
+12 steps in 464 s with no `def clamp` (8B listed at start). An
+empty-VRAM remasure of the same job timed out on the first
+generate at 180 s; after that `/api/ps` listed SWE. OpenCoder
+still misses a one-word generate.
 Write-tests was 3 / 3 with no model (harness AAA bind). That is not
 a score. Do not switch the default.
 
@@ -133,7 +135,7 @@ These write Python. None of them were trained on py-harness
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. One-word generate hit 180s. Completion-style. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | On disk. One-word generate hit 180s. |
 | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. One-word generate hit 180s. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. One daily clamp: 12 steps, no `clamp`, 464 s. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Empty-VRAM daily clamp: first generate 180 s. |
 
 ### Fits, measure later
 

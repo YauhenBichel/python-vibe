@@ -596,8 +596,16 @@ SWE. The earlier 300s empty miss is not stable.
 job, twelve steps, `swe-agent-lm:7b`. `/api/ps` listed the 8B
 at start. Stopped `steps` in **464 s**. No `def clamp`. Suite
 on the untouched fixture was green. That is a fail, not a
-score. Still not a nine-cell table. **Do not switch.** Default
-stays `llama3.1:8b`.
+score. Still not a nine-cell table.
+
+**Empty daily clamp, later.** Another local Python client then
+held `/api/chat`. After two idle checks, unloaded the 8B.
+`/api/ps` empty. No client on port 11434. Same add-function
+job, twelve steps. First generate timed out at **180 s**. After
+that `/api/ps` listed SWE. No `def clamp`. The 464 s clamp
+started with the 8B listed and finished twelve steps; empty
+VRAM stopped on the first generate. Still not a nine-cell
+table. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
