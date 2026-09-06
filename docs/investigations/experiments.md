@@ -552,7 +552,13 @@ empty and no client was on port 11434. One Agent body (no
 `keep_alive`): **300s** timeout. `/api/ps` was still empty. A
 later check listed `llama3.1:8b`. Raising the client cap past
 180s did not get a first-turn reply. Still not a nine-cell
-table. **Do not switch.** Default stays `llama3.1:8b`.
+table.
+
+**Later, same laptop.** A new local
+`bench.py --tier 3 --model llama3.1:8b --repeat 10` was holding
+`/api/chat`. `/api/ps` listed the 8B. A one-word SWE generate
+from empty VRAM was not run. **Do not switch.** Default stays
+`llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
