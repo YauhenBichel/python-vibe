@@ -18,6 +18,11 @@ job, not that a file was written.
 
   python scripts/measure/bench.py                 # every tier, needs Ollama
   python scripts/measure/bench.py --tier 1
+
+Every turn is appended to the checkout's own `.python-vibe/traces.jsonl`,
+which is outside the temporary project so it survives the run, and is
+the file `scripts/weights/build_agent_data.py` already reads. Point it
+somewhere else with `--traces`, or pass an empty one to keep nothing.
 """
 from __future__ import annotations
 
@@ -34,6 +39,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from harness import Agent, AgentOptions  # noqa: E402
+from harness.observe.trace_record import default_trace_path  # noqa: E402
 
 LOADER = '''
 import importlib.util, pathlib
@@ -199,7 +205,30 @@ NO_HELP = (
 )
 
 
-def run(case: Case, model: str, steps: int, engine: str = "ollama") -> dict:
+# Outside the temporary project on purpose. A run records its turns into
+# whatever project it ran in, and this benchmark's project is deleted
+# when the run ends, so the default took every trace down with it.
+#
+# This is the checkout's own trace file, which is the one the training
+# data builder already reads. Anywhere else and the rows would have to
+# be found and pointed at by hand, which is how they got lost.
+DEFAULT_TRACES = default_trace_path(ROOT)
+
+
+def run(case: Case, model: str, steps: int, engine: str = "ollama",
+        traces: Path | None = None) -> dict:
+    """Measure one case, and keep the turns it produced.
+
+    The project is a temporary directory, so a run that records into it
+    — which is the default since #192 — has its trace deleted along with
+    the directory. Twenty runs leave nothing behind. `traces` points the
+    recorder at a file that outlives the run instead.
+
+    That data is the reason to bother: the fine-tune question is waiting
+    on volume, each run is about twenty turns of a real task, and the
+    trace ends with a row saying whether the run worked, so the builder
+    can tell a run that did the job from a run that spent the budget.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         project = Path(tmp)
         for rel, body in {**BASE, **case.files}.items():
@@ -215,6 +244,7 @@ def run(case: Case, model: str, steps: int, engine: str = "ollama") -> dict:
                     model=model,
                     steps=steps,
                     engine=engine,
+                    record=traces,
                     on_question=lambda _question: NO_HELP,
                 )
             ).run()
@@ -319,6 +349,23 @@ def report(rows: list[dict], passes: int) -> None:
         print(f"\n{ONE_RUN_WARNING}", file=sys.stderr)
 
 
+def _trace_path(argument: str) -> Path | None:
+    """Where to record, or None when the run should keep nothing.
+
+    An empty `--traces` is the off switch. It has to be something a
+    person can type, because a benchmark measuring the recorder itself
+    must be able to leave the file alone.
+    """
+    return Path(argument).expanduser() if argument else None
+
+
+def _turns_in(path: Path | None) -> int:
+    """How many turns the trace file holds. Zero when there is none."""
+    if not path or not path.is_file():
+        return 0
+    return sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Measure the agent on tasks of increasing size."
@@ -332,6 +379,13 @@ def main() -> int:
     )
     parser.add_argument("--steps", type=int, default=10)
     parser.add_argument(
+        "--traces",
+        default=str(DEFAULT_TRACES),
+        metavar="PATH",
+        help="append every turn here, so the runs survive the benchmark "
+        f"(default: {DEFAULT_TRACES}; empty string to record nothing)",
+    )
+    parser.add_argument(
         "--repeat",
         type=int,
         default=1,
@@ -343,14 +397,21 @@ def main() -> int:
         print("--repeat must be at least 1", file=sys.stderr)
         return 2
     cases = [c for c in CASES if not args.tier or c.tier in args.tier]
+    traces = _trace_path(args.traces)
+    if traces:
+        traces.parent.mkdir(parents=True, exist_ok=True)
+    before = _turns_in(traces)
     rows: list[dict] = []
     for number in range(1, args.repeat + 1):
         for case in cases:
-            row = run(case, args.model, args.steps, args.engine)
+            row = run(case, args.model, args.steps, args.engine, traces)
             row["pass"] = number
             rows.append(row)
             print(json.dumps(row), flush=True)
     report(rows, args.repeat)
+    if traces:
+        kept = _turns_in(traces) - before
+        print(f"\nkept {kept} turn(s) in {traces}", file=sys.stderr)
     return 0
 
 

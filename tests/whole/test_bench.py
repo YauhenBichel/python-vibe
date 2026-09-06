@@ -96,3 +96,83 @@ class RepeatFlagTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class KeepingTheTracesTest(unittest.TestCase):
+    """The benchmark runs in a temporary directory that is then deleted.
+
+    Recording is on by default, and it writes into whatever project the
+    run ran in — so every turn the benchmark produced went into that
+    directory and was deleted with it. Ninety runs left nothing. These
+    tests check the turns now land somewhere that outlives the run.
+    """
+
+    def setUp(self) -> None:
+        self.bench = _bench()
+
+    def test_the_default_is_outside_the_temporary_project(self) -> None:
+        """It is the checkout's file, which is what the builder reads."""
+        from harness.observe.trace_record import default_trace_path
+
+        self.assertEqual(self.bench.DEFAULT_TRACES, default_trace_path(self.bench.ROOT))
+
+    def test_run_takes_somewhere_to_record(self) -> None:
+        import inspect
+
+        self.assertIn("traces", inspect.signature(self.bench.run).parameters)
+
+    def test_run_hands_that_path_to_the_agent(self) -> None:
+        """`record=traces`, not a temporary path the run then deletes."""
+        import ast
+
+        source = (ROOT / "scripts" / "measure" / "bench.py").read_text(encoding="utf-8")
+        run = next(
+            node
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.FunctionDef) and node.name == "run"
+        )
+        options = [
+            node
+            for node in ast.walk(run)
+            if isinstance(node, ast.Call)
+            and getattr(node.func, "id", "") == "AgentOptions"
+        ]
+        self.assertEqual(len(options), 1)
+        passed = {kw.arg: kw.value for kw in options[0].keywords}
+        self.assertIn("record", passed)
+        self.assertEqual(getattr(passed["record"], "id", ""), "traces")
+
+    def test_the_flag_is_offered_and_can_be_turned_off(self) -> None:
+        text = " ".join(_help(self.bench).split())  # argparse wraps mid-phrase
+        self.assertIn("--traces", text)
+        self.assertIn("empty string to record nothing", text)
+
+    def test_an_empty_traces_argument_records_nothing(self) -> None:
+        self.assertIsNone(self.bench._trace_path(""))
+
+    def test_a_named_path_is_used_and_expanded(self) -> None:
+        self.assertEqual(self.bench._trace_path("~/t.jsonl"), Path.home() / "t.jsonl")
+
+    def test_counting_turns_in_a_file(self) -> None:
+        import tempfile
+
+        self.assertEqual(self.bench._turns_in(None), 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "nothing.jsonl"
+            self.assertEqual(self.bench._turns_in(missing), 0)
+            missing.write_text('{"a": 1}\n\n{"b": 2}\n', encoding="utf-8")
+            self.assertEqual(self.bench._turns_in(missing), 2)
+
+
+def _help(bench) -> str:
+    """The runner's --help text, without exiting the test process."""
+    import contextlib
+
+    out = io.StringIO()
+    argv, sys.argv = sys.argv, ["bench.py", "--help"]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
+            bench.main()
+    finally:
+        sys.argv = argv
+    return out.getvalue()
