@@ -109,7 +109,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 7B / 14B / 32B listed in everyday.py: not pulled. 30B-class on disk timed out at 180s.
 - python-vibe-8b adapters: missing.
 - Hub comparison: {{ '/investigations/hub-models/' | absolute_url }}
-- OpenCoder 8B and SWE-agent-LM 7B imported from Hub GGUF (`import_hf_ollama.py`). Write-tests 3/3 is the compiler bind. Agent `OllamaGenerate.body()` has no `keep_alive`: two identical first chats 180s; the same body with `keep_alive` 30m finished in 115.7s (load 105.6s). Default stays 8B. Do not pull 14B or 30B.
+- OpenCoder 8B and SWE-agent-LM 7B imported from Hub GGUF (`import_hf_ollama.py`). Write-tests 3/3 is the compiler bind. A remasure of two Agent bodies with `keep_alive` 30m from empty VRAM: first 180s, second 44.8s. One earlier 115.7s finish is not a first-turn fix. Default stays 8B. Do not pull 14B or 30B.
 
 ## Limits vs a hosted IDE agent
 

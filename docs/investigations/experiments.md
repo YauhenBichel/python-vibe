@@ -382,8 +382,15 @@ chat answers; the daily first generate did not return in 180s.
 6,800 characters, 8,192 context) both hit 180s. The same body with
 `keep_alive` 30 minutes added finished in **115.7 s** (load 105.6 s,
 1,709 prompt tokens, prose). After that reply, `/api/ps` listed
-`llama3.1:8b`, not SWE. Still not a nine-cell table. **Do not
-switch.** Default stays `llama3.1:8b`.
+`llama3.1:8b`, not SWE. Still not a nine-cell table.
+
+**Two `keep_alive` chats, same night.** Empty VRAM. The same Agent
+body with `keep_alive` 30 minutes: first POST **180s** timeout
+(`/api/ps` still empty). Immediate second POST **44.8 s** (load
+18.0 s, 1,708 prompt tokens, prose). After that reply `/api/ps`
+was empty again; a later check listed `llama3.1:8b`. One 115.7 s
+finish does not make `keep_alive` a first-turn fix. Still not a
+nine-cell table. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
