@@ -590,8 +590,14 @@ not remasured.
 8B. `/api/ps` empty. No client on port 11434. One Agent body
 (no `keep_alive`): **43.45 s** (load 5.62 s, 1,709 prompt
 tokens, 797 eval tokens, prose). After that `/api/ps` listed
-SWE. The earlier 300s empty miss is not stable. Still not a
-nine-cell table. **Do not switch.** Default stays `llama3.1:8b`.
+SWE. The earlier 300s empty miss is not stable.
+
+**One daily clamp, later.** Same `eval_daily.py` add-function
+job, twelve steps, `swe-agent-lm:7b`. `/api/ps` listed the 8B
+at start. Stopped `steps` in **464 s**. No `def clamp`. Suite
+on the untouched fixture was green. That is a fail, not a
+score. Still not a nine-cell table. **Do not switch.** Default
+stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.

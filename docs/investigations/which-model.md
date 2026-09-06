@@ -107,7 +107,8 @@ in 36.69 s. A second helper chat while SWE was still listed
 finished in 74.83 s (load 0.02 s, 1,700 eval tokens). Later
 an 8B client held `/api/chat`; empty helper was not remasured.
 A second local client then held the 8B again. After that an
-empty-VRAM helper chat finished in 43.45 s. A reply is not a daily score.
+empty-VRAM helper chat finished in 43.45 s. One daily clamp
+job then ran 12 steps in 464 s with no `def clamp`. A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 
