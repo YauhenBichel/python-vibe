@@ -106,54 +106,12 @@ Vulnerabilities: a **public** GitHub issue. Do not paste live keys.
 Thank you to everyone who has helped py-harness.
 
 <!-- readme: contributors,bots/- -start -->
-<table>
-	<tbody>
-		<tr>
-			<td align="center">
-				<a href="https://github.com/YauhenBichel">
-					<img src="https://avatars.githubusercontent.com/YauhenBichel?s=48" width="48" alt="Yauhen Bichel" />
-					<br />
-					<sub><b>Yauhen Bichel</b></sub>
-				</a>
-			</td>
-			<td align="center">
-				<a href="https://github.com/xianjianlf2">
-					<img src="https://avatars.githubusercontent.com/xianjianlf2?s=48" width="48" alt="Mark Xian" />
-					<br />
-					<sub><b>Mark Xian</b></sub>
-				</a>
-			</td>
-			<td align="center">
-				<a href="https://github.com/ItzSaurav">
-					<img src="https://avatars.githubusercontent.com/ItzSaurav?s=48" width="48" alt="Itzsaurav" />
-					<br />
-					<sub><b>Itzsaurav</b></sub>
-				</a>
-			</td>
-			<td align="center">
-				<a href="https://github.com/svkzn">
-					<img src="https://avatars.githubusercontent.com/svkzn?s=48" width="48" alt="svkzn" />
-					<br />
-					<sub><b>svkzn</b></sub>
-				</a>
-			</td>
-			<td align="center">
-				<a href="https://github.com/Aditya-233">
-					<img src="https://avatars.githubusercontent.com/Aditya-233?s=48" width="48" alt="Aditya" />
-					<br />
-					<sub><b>Aditya</b></sub>
-				</a>
-			</td>
-			<td align="center">
-				<a href="https://github.com/kkkhs">
-					<img src="https://avatars.githubusercontent.com/kkkhs?s=48" width="48" alt="Huangshuo Kuang" />
-					<br />
-					<sub><b>Huangshuo Kuang</b></sub>
-				</a>
-			</td>
-		</tr>
-	</tbody>
-</table>
+<p align="center">
+  <img src=".github/contributors.svg" width="310" alt="Yauhen Bichel, Mark Xian, Itzsaurav, svkzn, Aditya, Huangshuo Kuang" />
+</p>
+<p align="center">
+  <a href="https://github.com/YauhenBichel">Yauhen Bichel</a><span> · </span><a href="https://github.com/xianjianlf2">Mark Xian</a><span> · </span><a href="https://github.com/ItzSaurav">Itzsaurav</a><span> · </span><a href="https://github.com/svkzn">svkzn</a><span> · </span><a href="https://github.com/Aditya-233">Aditya</a><span> · </span><a href="https://github.com/kkkhs">Huangshuo Kuang</a>
+</p>
 <!-- readme: contributors,bots/- -end -->
 
-The list is filled by [Contributors](./.github/workflows/contributors.yml) from GitHub commits (bots omitted). [Contributor graph](https://github.com/YauhenBichel/py-harness/graphs/contributors) · [good first issue](https://github.com/YauhenBichel/py-harness/labels/good%20first%20issue)
+Filled from GitHub commits (bots omitted). [Contributor graph](https://github.com/YauhenBichel/py-harness/graphs/contributors) · [good first issue](https://github.com/YauhenBichel/py-harness/labels/good%20first%20issue) · [Action](https://github.com/YauhenBichel/readme-contributors)
