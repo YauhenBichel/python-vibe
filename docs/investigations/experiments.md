@@ -45,9 +45,13 @@ The 0.5B adapter is a style prior, not an agent (held-out vibe
 **0 / 4**; greedy LoRA **0 / 54**). One traceback repair lifts
 exact-stdout from **7 / 54** to **12 / 54**. Daily jobs on the 8B
 reached **9 / 9** the same evening the 7B coder scored **7 / 9**.
-The helper moved four start commands from **0 / 4** to **4 / 4**.
-The everyday-ready bar is not met. This paper does not report a
-SWE-bench score.
+The helper moved the four Start commands from **0 / 4** to
+**4 / 4** by doing compiler jobs itself. The everyday-ready bar —
+beat a plain 8B at the next step **and** at a real bug the helper
+cannot write — is not met. This paper does **not** report a
+SWE-bench score. A hosted **32B** was measured once the
+benchmark itself was repaired: it scores **9 / 10** on tier 3, where
+before the repair it scored **1 / 10**.
 
 </div>
 
@@ -112,6 +116,7 @@ for most cells; MLX for the 0.5B sample-and-run cell
 | **0.5B** | 500 million | Qwen2.5-Coder-0.5B <a class="cite" href="#ref-10">[10]</a>. Ollama `qwen2.5-coder:0.5b` or MLX 4-bit. Optional LoRA <a class="cite" href="#ref-11">[11]</a> [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b), step 100 | Style prior. Not daily `ask` / `run` |
 | **7B** | 7 billion | `qwen2.5-coder:7b` unless a table names another tag | Same-night comparison |
 | **8B** | 8 billion | Ollama `llama3.1:8b` <a class="cite" href="#ref-12">[12]</a> | Daily default |
+| **32B** | 32 billion | Hosted `Qwen2.5-Coder-32B-Instruct` | One GPU comparison, after the fence fix |
 
 A “clean” 8B is the same 8 billion weights with no agent system
 prompt and no loop. The 0.5B file on disk is about 400 MB; the 8B
@@ -159,36 +164,71 @@ helper cannot write (`clip`). Last recorded night: harness parse
 4,580 first-party files. Reads worked. Write a test or add a
 function: **1 / 12**.
 
+### The instrument, then a hosted 32B
+
+A run that stops to ask needs someone to answer. Local 8B almost
+never asks; a 7B coder asks in eleven of twenty tier-3 runs. The
+same week, a hosted 32B wrapped drafts in markdown fences and the
+fence reached the file. Before the harness stripped it:
+**1 / 10**. After: **9 / 10**. Local 8B does not fence, so the
+same fix leaves it at **10 / 20**. The tables are in the
+[appendix](#the-fence-was-the-whole-story)
+<a class="cite" href="#ref-16">[16]</a>.
+
 ## Discussion
 
 The helper is load-bearing for jobs it can finish without a model
 <a class="cite" href="#ref-2">[2]</a>. First-run four went
 **0 / 4** to **4 / 4** once the compiler wrote the NameError, the
-test, and `total_lines`. The model still has to do the rest. The
-loop helps the 8B pick an Action and does not get a patch on
-`clip`.
+test, and `total_lines`. The model still has to do the rest. Daily
+`llama3.1:8b` is **9 / 9** on small fixtures and **8 / 15** on
+first-step parse. The everyday-ready bar asks for a ≥1 KB logic
+fix the helper cannot write (`clip`). Harness **0 / 3**, clean 8B
+**3 / 3**. The loop helps the 8B pick an Action and does not get a
+patch on `clip`.
 
 The 0.5B is a style prior. A traceback fixes `NameError` and
 `SyntaxError`, not logic <a class="cite" href="#ref-6">[6]</a>. A
-7B coder is close and not better. Writing on a 4,580-file tree is
-**1 / 12**. Two models of different lineage hit the same wall
-(51 vs 50 of 75). Raising the count that works is the target.
+7B coder is close (**7 / 9**) and not better. Writing on a
+4,580-file tree is **1 / 12**. Two models of different lineage hit
+the same wall (51 vs 50 of 75). That pair was measured before the
+instrument was repaired, so the number to trust is the shape, not
+the score. Raising the count that works is the target.
+
+The most transferable result is about the instrument, not any
+model. Both faults had one shape: the harness had specialised to
+the single model it runs itself. Local weights rarely ask, so
+nobody noticed there was no one to answer; they do not fence, so
+nobody noticed the fence reached the file. A hosted 32B looked
+incapable at **1 / 10** and scores **9 / 10** with four backticks
+removed <a class="cite" href="#ref-16">[16]</a>. Measure a second
+model early. It is the cheapest way to find the assumptions the
+first one hides.
 
 ## Limitations
 
 One laptop, 18 GB unified memory. One run unless a table says
-otherwise. Several cells are compiler binds. For part of the month
-the instrument was wrong: unanswered `ask` stops, and markdown
-fences reaching the file. Numbers from before that note are unsafe.
+otherwise; gaps of one or two cases are noise. Several cells are
+compiler binds, not model writes. The instrument was wrong for
+part of the month: unanswered `ask` stops, and markdown fences
+reaching the file. Both are fixed, and every model number from
+before 6 September is unsafe. Tier 3 has two cases, so its
+run-to-run spread is wide: the same 8B on the same code scored
+14 / 20 and 10 / 20 on different nights.
 
 This paper does **not** report a SWE-bench score
-<a class="cite" href="#ref-8">[8]</a>. No claim that the 0.5B LoRA
+<a class="cite" href="#ref-8">[8]</a>. The public numbers are four
+jobs on `demo/orders` and a 4,580-file write rate of **1 / 12**.
+No hosted chat product is named. No claim that the 0.5B LoRA
 audited a real repository.
 
 ## Conclusion
 
-Keep `llama3.1:8b`. Do not train more 0.5B steps. The helper should
-keep finishing compiler jobs. Everyday-ready is not met.
+Keep `llama3.1:8b`. Do not train more 0.5B steps. Do not switch
+the default to a 7B coder or a Hub GGUF that misses the 180s
+generate cap. The helper should keep finishing compiler jobs. The
+everyday-ready bar stays: beat a plain 8B at the next step
+**and** at a real bug the helper cannot write. It does not, yet.
 
 ## References
 
@@ -208,6 +248,7 @@ keep finishing compiler jobs. Everyday-ready is not met.
 <li id="ref-13">Bichel, Y. (2026, September 5). 0.5B exact-stdout eval. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/">yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/</a></li>
 <li id="ref-14">Bichel, Y. (2026, September 5). 0.5B sample-and-run. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/">yauhenbichel.github.io/python-vibe/investigations/sample-and-run/</a></li>
 <li id="ref-15">Bichel, Y. (2026). <i>python-vibe</i> [Computer software]. <a href="https://github.com/YauhenBichel/python-vibe">github.com/YauhenBichel/python-vibe</a></li>
+<li id="ref-16">Bichel, Y. (2026, September 6). The fence was the whole story. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/the-fence/">yauhenbichel.github.io/python-vibe/investigations/the-fence/</a></li>
 </ol>
 
 APA and BibTeX for this software: [Cite]({{ '/cite/' | relative_url }}).
@@ -1007,10 +1048,40 @@ markdown fences, the fence reaches the file unchanged, and the result is
 a `SyntaxError`. Nine of ten runs then produced nothing that would load.
 A 14B, meanwhile, times out on this machine three times out of three.
 
-So whether size breaks the wall is still unanswered, and every model
-number published before this is unsafe.
+Every model number published before this is unsafe.
 
 Write-up: [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}).
+
+### The fence was the whole story
+
+**Example.** The same hosted 32B, the same two tier-3 cases, ten runs
+each side. The only difference is whether the harness takes the markdown
+fence off a draft before writing it to a file.
+
+**Result**
+
+| `Qwen2.5-Coder-32B-Instruct`, tier 3 | worked |
+| --- | --- |
+| before the fence was stripped | 1 of 10 |
+| after | **9 of 10** |
+
+Per case after the fix: `slugify` 5 of 5, `wordcount` 4 of 5. The one
+failure is an ordinary `word_count not found in any module`, not a file
+the model had broken. Median run 15.3 s. Both columns were measured
+after the answerer was fixed, so the jump belongs to the fence alone.
+
+The model was never the problem. Four backticks were.
+
+The control says the same thing from the other side. Local weights do
+not fence their code — zero of twenty recorded turns contain one — so
+the fix cannot move them, and it does not:
+
+| `llama3.1:8b`, tier 3, twenty runs | worked |
+| --- | --- |
+| without the fence fix | 10 of 20 |
+| with it | 10 of 20 |
+
+Write-up: [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}).
 
 ### Two models, one wall
 
@@ -1112,7 +1183,7 @@ sends only the generate call to a GPU. The write limit stays here.
 | --- | --- |
 | 30B on this laptop | Timeout. 0 / 4 platform cases |
 | **14B on this laptop** | **Could not be measured.** 9 GB of weights on 18 GB put the machine into 12–13 GB of swap; no run finished |
-| 14B / 32B on a GPU | **No live number yet.** Must beat the laptop 8B on the same four jobs |
+| 32B on a GPU, tier 3 | **9 / 10** after the fence was stripped; **1 / 10** before. Not the four daily jobs |
 
 The 14B result is about the machine, not the model. Weights are only
 part of the budget: the key-value cache grows with context and the
