@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import unittest
 from pathlib import Path
 
@@ -54,14 +55,32 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertNotIn("| Contributor | Commits |", text)
 
     def test_workflow_reads_github_api(self) -> None:
+        """The list is generated, and no contributor is named in the file.
+
+        This used to require `fill_contributors.py` by name, which said
+        which generator rather than that there is one, and went red when
+        the step became a reusable action.
+
+        The no-hardcoded-names half is the part worth keeping, and it
+        needs care now: the generator is `YauhenBichel/readme-contributors`,
+        so the owner's login appears legitimately. Every other name is
+        still banned, and his is allowed only as part of that reference.
+        """
         text = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("fill_contributors.py", text)
         self.assertIn("github-actions[bot]", text)
         self.assertNotIn("akhilmhdh/contributors-readme-action", text)
-        self.assertNotIn("YauhenBichel", text)
-        self.assertNotIn("ItzSaurav", text)
-        script = ROOT / ".github" / "scripts" / "fill_contributors.py"
-        self.assertTrue(script.is_file())
+        for login in ("ItzSaurav", "svkzn", "Aditya-233", "xianjianlf2", "kkkhs"):
+            self.assertNotIn(login, text, f"{login} is hardcoded in the workflow")
+        self.assertNotIn(
+            "YauhenBichel",
+            text.replace("YauhenBichel/readme-contributors", ""),
+            "the owner is named outside the action reference",
+        )
+
+    def test_the_generator_is_pinned_to_a_commit(self) -> None:
+        """A step with `contents: write` must not follow a moving tag."""
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertRegex(text, r"uses: YauhenBichel/readme-contributors@[0-9a-f]{40}")
 
     def test_checkout_is_pinned_to_a_commit(self) -> None:
         """contents: write plus persist-credentials must not follow a moving tag."""
@@ -137,12 +156,21 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertIn("cultofthepartyparrot.com", notice)
 
     def test_contributor_markers_are_not_an_empty_pair(self) -> None:
+        """Real people are listed between the markers.
+
+        The check is on what the block says, not how it is built. It
+        asserted `<table>` and inline avatar URLs, which described the
+        markup of the day rather than the invariant, and went red the
+        moment the list became an image and a row of links.
+        """
         text = README.read_text(encoding="utf-8")
         start = text.index(_START) + len(_START)
         end = text.index(_END)
         body = text[start:end]
-        self.assertIn("<table>", body)
-        self.assertIn("avatars.githubusercontent.com", body)
+        profiles = set(re.findall(r"https://github\.com/([A-Za-z0-9-]+)", body))
+        self.assertGreaterEqual(
+            len(profiles), 2, f"the block lists no contributors: {body!r}"
+        )
 
     def test_fill_script_renders_a_table_without_bots(self) -> None:
         import importlib.util
