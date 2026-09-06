@@ -27,7 +27,7 @@ Public pages do not name other editors or chat products.
 <div class="tracks">
   <div class="track">
     <h2>The scores</h2>
-    <p><a href="{{ '/investigations/experiments/' | relative_url }}">Experiments</a> — every measured run, with what I typed.</p>
+    <p><a href="{{ '/investigations/experiments/' | relative_url }}">Experiments</a> — paper form: abstract, methods, every measured run. 0.5B is 500 million weights.</p>
     <p><a href="{{ '/investigations/which-model/' | relative_url }}">Which model</a> — keep <code>llama3.1:8b</code>. A 7B coder is close, not better.</p>
     <p><a href="{{ '/investigations/hub-models/' | relative_url }}">Hub models</a> — which Hugging Face weights fit 18 GB, and how to import two that Ollama does not ship.</p>
   </div>
@@ -57,7 +57,7 @@ Public pages do not name other editors or chat products.
 
 | Note | In one sentence |
 | --- | --- |
-| [Experiments]({{ '/investigations/experiments/' | relative_url }}) | The long table: example, score, how to replay. |
+| [Experiments]({{ '/investigations/experiments/' | relative_url }}) | Paper form. 0.5B means 500 million weights, not the daily 8B. |
 | [0.5B exact stdout]({{ '/investigations/held-out-exec-eval/' | relative_url }}) | 18 scripts, three times each. 7 / 54, then 12 / 54 after one repair. |
 | [0.5B sample-and-run]({{ '/investigations/sample-and-run/' | relative_url }}) | Four drafts found 9 / 18. A later loop 12 / 18. The adapter at greedy temperature: 0 / 54. |
 | [0.5B vibe review]({{ '/research-vibe-review/' | relative_url }}) | Held-out short scripts, and a 100-file walk that was not a review. |
