@@ -10,7 +10,7 @@ type: article
 
 The product gap is not closable. The harness gap is.
 
-A hosted IDE agent has native tools, extra servers, a browser, and a large context window. python-vibe is a local loop: twenty typed Actions, a write limit, twenty steps, 700 tokens, project text files only (Python plus a few config suffixes; no secrets). Improving this project means making the **8B loop reliable on small Python and platform trees** — not growing a browser Action or pretending 8B is a frontier model.
+A hosted IDE agent has native tools, extra servers, a browser, and a large context window. py-harness is a local loop: twenty typed Actions, a write limit, twenty steps, 700 tokens, project text files only (Python plus a few config suffixes; no secrets). Improving this project means making the **8B loop reliable on small Python and platform trees** — not growing a browser Action or pretending 8B is a frontier model.
 
 Related: [local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | relative_url }}) · [harness comparison]({{ '/investigations/harness-comparison/' | relative_url }}).
 
@@ -30,7 +30,7 @@ Related: [local loop vs hosted agents]({{ '/investigations/local-vs-cloud/' | re
 
 Published harness notes in this repo already said the quiet part: **edit format and context assembly** move small-model pass rates. A free shell tool does not transfer to an 8B on a laptop working tree.
 
-| Hosted-agent behavior | Copy into python-vibe? | Local lever | Status (29 Aug 2026) |
+| Hosted-agent behavior | Copy into py-harness? | Local lever | Status (29 Aug 2026) |
 | --- | --- | --- | --- |
 | Read the defining file before answering | Yes | `prelude()` locate + refuse a shallow `done` (must quote the `->` type) | Wired. Files under 12 KB are read whole so nearby constants stay in the quote. |
 | Patch one function, then add a test, then run | Yes, scoped — not a stranger’s full suite | `pick_skills` + write-tests inject + refuse `done` before a passing run | Wired for add-feature, new-package, bugfix, refactor, and a design-loop write. |
@@ -102,7 +102,7 @@ or on another 8B-hint cell for this board.
 
 ## Two success bars
 
-| Bar | python-vibe (local) | Hosted IDE agent |
+| Bar | py-harness (local) | Hosted IDE agent |
 | --- | --- | --- |
 | Ready for daily use | Small Python tree. First Action correct on Q&A / add / rename / one-split. Writes limited to one folder. Offline. | Any repo, any language, extra tools, browser. Precise multi-site quotes. You pay a usage pool. |
 | How you know | `skill_probe.py` shows the intended Action with prelude on; live eval beats the 8B baseline; a design loop reaches “no structure findings” without rewriting the tree. | Already there. Pointing an editor at Ollama does not move this bar. |

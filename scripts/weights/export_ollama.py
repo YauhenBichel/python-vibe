@@ -43,7 +43,7 @@ def main() -> None:
     parser.add_argument("--from-base", default=DEFAULT_EVERYDAY_OLLAMA)
     parser.add_argument("--from-gguf", type=Path)
     parser.add_argument("--from-fused", type=Path)
-    parser.add_argument("--name", default="python-vibe-everyday")
+    parser.add_argument("--name", default="py-harness-everyday")
     parser.add_argument("--create", action="store_true", help="ollama create")
     args = parser.parse_args()
     if args.from_gguf:

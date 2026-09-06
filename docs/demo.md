@@ -1,6 +1,6 @@
 ---
 title: Demo
-description: python-vibe run over eleven everyday tasks on one small project. Real output, including the cases it does not finish.
+description: py-harness run over eleven everyday tasks on one small project. Real output, including the cases it does not finish.
 permalink: /demo/
 date: 2026-08-29
 ---
@@ -81,7 +81,7 @@ Next move (do only this one): Move what they share into a new module both import
 **Ask what a function does.** The function is found and read for the model before its first turn.
 
 ```
-python-vibe run ./orders "what does apply_discount return?"
+py-harness run ./orders "what does apply_discount return?"
 ```
 
 Skills loaded: `answer-question`
@@ -100,7 +100,7 @@ int
 then be changed.
 
 ```
-python-vibe run ./orders "find a real NameError in src/orders.py and fix it"
+py-harness run ./orders "find a real NameError in src/orders.py and fix it"
 ```
 
 Actions: 
@@ -124,7 +124,7 @@ bound unique NameError typo (subtotl → subtotal) in src/orders.py. Tests passe
 **Add a function and a test.** The function is added, then a test for it, then the tests are run.
 
 ```
-python-vibe run ./orders "add a function total_lines(prices) that counts the prices, and a unit test"
+py-harness run ./orders "add a function total_lines(prices) that counts the prices, and a unit test"
 ```
 
 Skills loaded: `add-feature`, `write-tests`
@@ -153,7 +153,7 @@ stopped after 8 steps
 checks the result. The import line is corrected automatically.
 
 ```
-python-vibe run ./orders "write tests for apply_discount in src/orders.py"
+py-harness run ./orders "write tests for apply_discount in src/orders.py"
 ```
 
 Skills loaded: `write-tests`
@@ -179,7 +179,7 @@ stopped after 8 steps
 first file that mentions it.
 
 ```
-python-vibe run ./orders "rename calc to multiply in src/util.py"
+py-harness run ./orders "rename calc to multiply in src/util.py"
 ```
 
 Skills loaded: `fix-smell`
@@ -205,7 +205,7 @@ renamed def calc → def multiply in src/util.py. Tests passed.
 **Review one file without changing it.** A review reports what it finds. Any attempt to edit is refused.
 
 ```
-python-vibe run ./orders "review src/orders.py for bugs"
+py-harness run ./orders "review src/orders.py for bugs"
 ```
 
 Skills loaded: `review-code`
@@ -234,7 +234,7 @@ stopped after 8 steps
 **See what it would do, change nothing.** With writes turned off, every change is refused before it happens.
 
 ```
-python-vibe run ./orders "fix the NameError in src/orders.py"
+py-harness run ./orders "fix the NameError in src/orders.py"
 ```
 
 Actions: `patch` → `done` → `patch` → `done` → `patch` → `done` → `patch` → `done`
@@ -264,7 +264,7 @@ stopped after 8 steps
 guessing.
 
 ```
-python-vibe run ./orders "clean this up"
+py-harness run ./orders "clean this up"
 ```
 
 Skills loaded: `ask-when-unclear`
@@ -286,7 +286,7 @@ What it reported (question, 0.0s):
 **Stay inside one folder on a bigger tree.** Searching and listing stay inside the folder given by --scope.
 
 ```
-python-vibe run ./orders "what does render_line return?"
+py-harness run ./orders "what does render_line return?"
 ```
 
 Skills loaded: `answer-question`

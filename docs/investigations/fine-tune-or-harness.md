@@ -8,7 +8,7 @@ type: article
 
 # Fine-tune or harness
 
-**Question.** python-vibe’s everyday brain is an untuned 8B. The published
+**Question.** py-harness’s everyday brain is an untuned 8B. The published
 adapter is a 0.5B style prior. Should we fine-tune again to make the loop
 behave like a bigger coding agent?
 
@@ -117,7 +117,7 @@ None of those papers argue for another 0.5B QLoRA on 35 stdlib pairs.
 
 ## Map their grid onto this repo
 
-| Their cell | python-vibe today | What “win” looks like |
+| Their cell | py-harness today | What “win” looks like |
 | --- | --- | --- |
 | C1 large + generic | A hosted IDE agent | Out of scope. Different product |
 | C2 small + generic | 0.5B or 8B with no write limit | Already measured: 0.5B 0/4 vibe; 8B says done with `subtotl` |
@@ -182,10 +182,10 @@ shortcut around classic development.
 ## Save money: next steps
 
 The cheap path is local 8B and this write limit. A hosted IDE agent costs a usage
-pool. You only save that money when python-vibe **finishes** the job so
+pool. You only save that money when py-harness **finishes** the job so
 you do not reopen the paid tool to clean up.
 
-Use python-vibe when the tree is small and the job is one of: a typed
+Use py-harness when the tree is small and the job is one of: a typed
 question, add a function and a test, fix a NameError, rename, a pathlib /
 venv helper, a script, an HTTP client, a tally, an algorithm. Those are
 free once they finish.

@@ -157,12 +157,12 @@ def render_brief_for_person(brief: ProjectBrief, *, scope: str = "") -> str:
     ]
     if brief.kind == "small":
         lines.append(
-            "Small enough that python-vibe can read all of it, so you can "
+            "Small enough that py-harness can read all of it, so you can "
             "ask about any part."
         )
     else:
         lines.append(
-            "Large, so python-vibe will search rather than read everything. "
+            "Large, so py-harness will search rather than read everything. "
             "Add --scope <folder> to keep it in one place."
         )
     lines.append("")

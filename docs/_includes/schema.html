@@ -24,25 +24,25 @@
     {
       "@type": "SoftwareSourceCode",
       "@id": {{ home | append: "#code" | jsonify }},
-      "name": "python-vibe",
+      "name": "py-harness",
       "description": {{ site.description | jsonify }},
       "url": {{ home | jsonify }},
-      "codeRepository": "https://github.com/YauhenBichel/python-vibe",
+      "codeRepository": "https://github.com/YauhenBichel/py-harness",
       "programmingLanguage": ["Python"],
       "runtimePlatform": ["Ollama", "Python 3.13"],
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "author": {"@id": {{ home | append: "#author" | jsonify }}},
-      "citation": "Bichel, Y. (2026). python-vibe [Computer software]. https://github.com/YauhenBichel/python-vibe",
+      "citation": "Bichel, Y. (2026). py-harness [Computer software]. https://github.com/YauhenBichel/py-harness",
       "identifier": {{ "/cite/" | absolute_url | jsonify }},
       "sameAs": [
-        "https://github.com/YauhenBichel/python-vibe",
+        "https://github.com/YauhenBichel/py-harness",
         "https://huggingface.co/YauhenBichel/python-vibe-0.5b"
       ]
     },
     {
       "@type": "SoftwareApplication",
       "@id": {{ home | append: "#app" | jsonify }},
-      "name": "python-vibe agent",
+      "name": "py-harness agent",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "macOS, Linux",
       "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
@@ -71,15 +71,15 @@
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "When should I use python-vibe?",
+          "name": "When should I use py-harness?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Use it on one Python project: ask a question, write a test, fix a bug, or add a small function. It runs on your machine and only changes files in the folder you name. Daily work is python-vibe plus a local 8B model."
+            "text": "Use it on one Python project: ask a question, write a test, fix a bug, or add a small function. It runs on your machine and only changes files in the folder you name. Daily work is py-harness plus a local 8B model."
           }
         },
         {
           "@type": "Question",
-          "name": "Is python-vibe everyday-ready?",
+          "name": "Is py-harness everyday-ready?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Not yet. Live Action parse on 29 Aug 2026 was 2 out of 3. Do not call it everyday-ready until eval_everyday.py --live beats an untuned 8B on parse rate and a real fix of at least 1 KB."

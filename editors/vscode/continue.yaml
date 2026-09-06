@@ -1,8 +1,8 @@
-name: python-vibe local
+name: py-harness local
 version: 0.0.1
 schema: v1
 models:
-  - name: python-vibe-everyday
+  - name: py-harness-everyday
     provider: openai
     model: llama3.1:8b
     apiBase: http://127.0.0.1:8081/v1

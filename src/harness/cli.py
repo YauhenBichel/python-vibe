@@ -139,6 +139,8 @@ def _add_agent_flags(parser: argparse.ArgumentParser) -> None:
 def _program_name() -> str:
     """What to print in usage: the installed command, or the module form."""
     name = Path(sys.argv[0]).name
+    if name.startswith("py-harness"):
+        return "py-harness"
     if name.startswith("python-vibe"):
         return "python-vibe"
     return "python -m harness"
@@ -148,7 +150,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=_program_name(),
         description="Four everyday Python jobs, on this machine.",
-        epilog="Run python-vibe with no arguments for the short how-to.",
+        epilog="Run py-harness with no arguments for the short how-to.",
     )
     subs = parser.add_subparsers(dest="command", required=False)
 
@@ -192,7 +194,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     mcp = subs.add_parser(
         "mcp",
-        help="let an editor call python-vibe. Changes nothing unless --allow-writes.",
+        help="let an editor call py-harness. Changes nothing unless --allow-writes.",
     )
     mcp.add_argument("--project", type=Path, required=True)
     mcp.add_argument("--allow-writes", action="store_true")
@@ -247,7 +249,7 @@ def _run_brief(args) -> int:
     count = len(list_skills(project))
     print()
     print(
-        f"python-vibe has {count} skills it can apply. It picks them from "
+        f"py-harness has {count} skills it can apply. It picks them from "
         "the wording of your task; you do not choose them."
     )
     return 0

@@ -6,7 +6,7 @@ from pathlib import Path
 
 SKIP_DIR = {
     ".git",
-    # Editor settings, including the ones `python-vibe editors` writes.
+    # Editor settings, including the ones `py-harness editors` writes.
     # A project summary that counts the tool's own configuration as part
     # of your project is describing itself, not the code.
     ".cursor",

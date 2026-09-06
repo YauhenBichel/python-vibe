@@ -1,28 +1,28 @@
 ---
 title: Local editor
-description: Add python-vibe to Cursor, VS Code, Continue, and Zed in one command. Tasks and a local MCP stay on this machine. Chat override of localhost is optional.
+description: Add py-harness to Cursor, VS Code, Continue, and Zed in one command. Tasks and a local MCP stay on this machine. Chat override of localhost is optional.
 date: 2026-08-29
 ---
 
-# Use python-vibe from an editor
+# Use py-harness from an editor
 
 Three easy paths. All stay on `127.0.0.1` unless you choose otherwise.
 
 | Path | One command | What you get |
 | --- | --- | --- |
-| Cursor (easiest) | `python-vibe editors cursor --allow-writes` | MCP + tasks in this folder. Recorded walkthrough: [Cursor]({{ '/cursor/' | relative_url }}). |
-| Editor tasks | `python-vibe editors vscode` | Command Palette → Run Task → ask / run / brief. Uses the same **write limit**. Walkthrough: [VS Code]({{ '/vscode/' | relative_url }}). |
-| Continue (VS Code) | `python-vibe editors continue` | Chat uses local Ollama 8B. Uses the **editor’s** tools. |
-| Zed | `python-vibe editors zed` | Merges a `context_servers` entry into `.zed/settings.json`. Same write limit. |
+| Cursor (easiest) | `py-harness editors cursor --allow-writes` | MCP + tasks in this folder. Recorded walkthrough: [Cursor]({{ '/cursor/' | relative_url }}). |
+| Editor tasks | `py-harness editors vscode` | Command Palette → Run Task → ask / run / brief. Uses the same **write limit**. Walkthrough: [VS Code]({{ '/vscode/' | relative_url }}). |
+| Continue (VS Code) | `py-harness editors continue` | Chat uses local Ollama 8B. Uses the **editor’s** tools. |
+| Zed | `py-harness editors zed` | Merges a `context_servers` entry into `.zed/settings.json`. Same write limit. |
 
 `python3 scripts/run/install.py` then `source .venv/bin/activate` so
-`python-vibe` is on PATH (macOS often has no `pip`). Activate in every
+`py-harness` is on PATH (macOS often has no `pip`). Activate in every
 new terminal or the shell says `command not found`. `--project`
 defaults to the current folder. Files land in `.vscode/`, `.continue/`,
 or `.cursor/` inside **your** app. This repo already ships
 `.cursor/mcp.json`.
 
-Drop-in sources: [`editors/`](https://github.com/YauhenBichel/python-vibe/tree/HEAD/editors).
+Drop-in sources: [`editors/`](https://github.com/YauhenBichel/py-harness/tree/HEAD/editors).
 
 ## 1. Pull the everyday brain
 
@@ -35,7 +35,7 @@ ollama pull llama3.1:8b
 ## 2. Easiest: tasks in the integrated terminal
 
 ```bash
-python-vibe editors vscode --project /path/to/your/app
+py-harness editors vscode --project /path/to/your/app
 ```
 
 Then Run Task and type a task, for example:
@@ -64,7 +64,7 @@ PYTHONPATH=src python scripts/run/openai_compat.py
 Or let the **write limit** apply to chat (writes off unless `--allow-writes`):
 
 ```bash
-python-vibe serve --project /path/to/your/app
+py-harness serve --project /path/to/your/app
 # GET  http://127.0.0.1:8090/v1/models
 # POST http://127.0.0.1:8090/v1/chat/completions
 ```
@@ -80,25 +80,25 @@ Some hosted editors send the OpenAI request from a **remote** backend. Those can
 ## 4. Cursor / local MCP (write limit, no tunnel)
 
 ```bash
-python-vibe editors cursor --allow-writes
+py-harness editors cursor --allow-writes
 ```
 
 Cursor launches `python3 -m harness mcp --project ${workspaceFolder}`.
 Tools: `ask` (read-only) and `run` (writes if you passed `--allow-writes`).
 Stdout is JSON-RPC only. Step-by-step: [Cursor]({{ '/cursor/' | relative_url }}).
 
-This is the editor calling python-vibe. It is **not** an Action the 8B may emit.
+This is the editor calling py-harness. It is **not** an Action the 8B may emit.
 
 ## 5. CLI (same write limit, no editor)
 
 ```bash
-python-vibe run /path/to/your/app "write tests for apply_discount"
-python-vibe run /path/to/your/app --scope src "what does apply_source refuse?"
+py-harness run /path/to/your/app "write tests for apply_discount"
+py-harness run /path/to/your/app --scope src "what does apply_source refuse?"
 ```
 
 `--tiny` / `--engine mlx` is smoke only.
 
-## What python-vibe is good at
+## What py-harness is good at
 
 Kit skills for everyday laptop Python (stdlib, AAA tests):
 
@@ -119,7 +119,7 @@ library. Import the Q4_K_M file, then pass `--model`:
 ```bash
 python3 scripts/weights/import_hf_ollama.py --name opencoder
 python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
-python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+py-harness --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 Default stays `llama3.1:8b`. Detail:

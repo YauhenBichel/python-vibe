@@ -9,7 +9,7 @@ type: article
 # Experiments
 
 <p class="paper-meta">Yauhen Bichel · 6 September 2026 ·
-<a href="https://github.com/YauhenBichel/python-vibe">github.com/YauhenBichel/python-vibe</a></p>
+<a href="https://github.com/YauhenBichel/py-harness">github.com/YauhenBichel/py-harness</a></p>
 
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
@@ -241,14 +241,14 @@ everyday-ready bar stays: beat a plain 8B at the next step
 <li id="ref-6">McAndrews, C. J. (2026). Feedback over form: Why execution feedback matters more than pipeline topology in 1–3B code generation. <a href="https://arxiv.org/abs/2604.21950">arXiv:2604.21950</a></li>
 <li id="ref-7">Belcak, P., Heinrich, G., Diao, S., Fu, Y., Dong, X., Muralidharan, S., Lin, Y. C., &amp; Molchanov, P. (2025). Small language models are the future of agentic AI. <a href="https://arxiv.org/abs/2506.02153">arXiv:2506.02153</a></li>
 <li id="ref-8">Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O., &amp; Narasimhan, K. (2024). SWE-bench: Can language models resolve real-world GitHub issues? <i>International Conference on Learning Representations</i> (oral). <a href="https://arxiv.org/abs/2310.06770">arXiv:2310.06770</a></li>
-<li id="ref-9">Bichel, Y. (2026). Bench record. In <i>python-vibe</i>. <a href="https://yauhenbichel.github.io/python-vibe/investigations/bench-record/">yauhenbichel.github.io/python-vibe/investigations/bench-record/</a></li>
+<li id="ref-9">Bichel, Y. (2026). Bench record. In <i>py-harness</i>. <a href="https://yauhenbichel.github.io/py-harness/investigations/bench-record/">yauhenbichel.github.io/py-harness/investigations/bench-record/</a></li>
 <li id="ref-10">Hui, B., Yang, J., Cui, Z., Yang, J., et al. (2024). <i>Qwen2.5-Coder technical report</i>. <a href="https://arxiv.org/abs/2409.12186">arXiv:2409.12186</a></li>
 <li id="ref-11">Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., &amp; Chen, W. (2022). LoRA: Low-rank adaptation of large language models. <i>International Conference on Learning Representations</i>. <a href="https://arxiv.org/abs/2106.09685">arXiv:2106.09685</a></li>
 <li id="ref-12">Grattafiori, A., et al. (2024). <i>The Llama 3 herd of models</i>. <a href="https://arxiv.org/abs/2407.21783">arXiv:2407.21783</a></li>
-<li id="ref-13">Bichel, Y. (2026, September 5). 0.5B exact-stdout eval. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/">yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/</a></li>
-<li id="ref-14">Bichel, Y. (2026, September 5). 0.5B sample-and-run. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/">yauhenbichel.github.io/python-vibe/investigations/sample-and-run/</a></li>
-<li id="ref-15">Bichel, Y. (2026). <i>python-vibe</i> [Computer software]. <a href="https://github.com/YauhenBichel/python-vibe">github.com/YauhenBichel/python-vibe</a></li>
-<li id="ref-16">Bichel, Y. (2026, September 6). The fence was the whole story. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/the-fence/">yauhenbichel.github.io/python-vibe/investigations/the-fence/</a></li>
+<li id="ref-13">Bichel, Y. (2026, September 5). 0.5B exact-stdout eval. In <i>py-harness</i> experiments. <a href="https://yauhenbichel.github.io/py-harness/investigations/held-out-exec-eval/">yauhenbichel.github.io/py-harness/investigations/held-out-exec-eval/</a></li>
+<li id="ref-14">Bichel, Y. (2026, September 5). 0.5B sample-and-run. In <i>py-harness</i> experiments. <a href="https://yauhenbichel.github.io/py-harness/investigations/sample-and-run/">yauhenbichel.github.io/py-harness/investigations/sample-and-run/</a></li>
+<li id="ref-15">Bichel, Y. (2026). <i>py-harness</i> [Computer software]. <a href="https://github.com/YauhenBichel/py-harness">github.com/YauhenBichel/py-harness</a></li>
+<li id="ref-16">Bichel, Y. (2026, September 6). The fence was the whole story. In <i>py-harness</i> experiments. <a href="https://yauhenbichel.github.io/py-harness/investigations/the-fence/">yauhenbichel.github.io/py-harness/investigations/the-fence/</a></li>
 </ol>
 
 APA and BibTeX for this software: [Cite]({{ '/cite/' | relative_url }}).
@@ -689,7 +689,7 @@ typed runs, not `--steps`. Replay:
 `PYTHONPATH=src python scripts/measure/eval_cli_overflow.py`.
 
 ```bash
-python-vibe run "add the comment subcommand and a mocked test"
+py-harness run "add the comment subcommand and a mocked test"
 ```
 
 Same evening, pagination from a list+show+comment tree. Typed:
@@ -722,7 +722,7 @@ No model. Seeded list+show+comment tree.
 `PYTHONPATH=src python scripts/measure/eval_cli_overflow_page.py`.
 
 ```bash
-python-vibe run "add pagination to the GitHub PR CLI"
+py-harness run "add pagination to the GitHub PR CLI"
 ```
 
 Same evening, config from a list+show+comment+`page=` tree. Typed:
@@ -751,7 +751,7 @@ typed runs that the harness can finish without the 8B. Replay:
 `PYTHONPATH=src python scripts/measure/eval_cli_overflow_config.py`.
 
 ```bash
-python-vibe run "add a config file via Path.home"
+py-harness run "add a config file via Path.home"
 ```
 
 Everyday-ready is still the older bar.
@@ -943,7 +943,7 @@ and runs `ollama create`.
 ```bash
 python3 scripts/weights/import_hf_ollama.py --name opencoder
 python3 scripts/weights/import_hf_ollama.py --name swe-agent-lm
-python-vibe --model opencoder:8b run "add a function clamp and a unit test"
+py-harness --model opencoder:8b run "add a function clamp and a unit test"
 ```
 
 **Result.** Both tags are on disk. A one-word generate hit 180s on

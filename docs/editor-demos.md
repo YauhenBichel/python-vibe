@@ -1,21 +1,21 @@
 ---
 title: In your editor
-description: Four things python-vibe does from inside Cursor or VS Code, with the real answers and the time each took. Two of them need no model.
+description: Four things py-harness does from inside Cursor or VS Code, with the real answers and the time each took. Two of them need no model.
 permalink: /editor-demos/
 date: 2026-08-30
 ---
 
 # In your editor
 
-One command sets it up, and then python-vibe answers from the chat panel
+One command sets it up, and then py-harness answers from the chat panel
 or the command palette without you leaving the file.
 
 ```bash
-python-vibe editors cursor       # or: vscode, zed
+py-harness editors cursor       # or: vscode, zed
 ```
 
 That writes `.cursor/mcp.json` and `.vscode/tasks.json` pointing at this
-folder. Reload the window, enable **python-vibe** under Customize → MCP,
+folder. Reload the window, enable **py-harness** under Customize → MCP,
 and it is there.
 
 Everything below is a real answer from that connection, with the time it
@@ -28,7 +28,7 @@ Open a project you have not seen before and ask for a summary.
     brief
 
     10 Python and Markdown files, 2.9 KB in total.
-    Small enough that python-vibe can read all of it, so you can
+    Small enough that py-harness can read all of it, so you can
     ask about any part.
 
     Files:
@@ -81,7 +81,7 @@ its type back.
     run   find a real NameError in src/orders.py and fix it
 
     this server is read-only. Restart it with --allow-writes, or
-    run python-vibe run in the terminal.
+    run py-harness run in the terminal.
 
 The editor connection is read-only until you say otherwise, and it says
 so plainly rather than failing quietly. With `--allow-writes` the same

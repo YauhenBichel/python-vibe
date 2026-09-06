@@ -2,12 +2,12 @@
 layout: null
 permalink: /llms-full.txt
 ---
-# python-vibe (full context)
+# py-harness (full context)
 
-> Four jobs on a laptop: ask, write a test, fix a bug, add one small function. Command: python-vibe. Not a hosted IDE agent.
+> Four jobs on a laptop: ask, write a test, fix a bug, add one small function. Command: py-harness. Not a hosted IDE agent.
 
 Site: {{ '/' | absolute_url }}
-Code: https://github.com/YauhenBichel/python-vibe
+Code: https://github.com/YauhenBichel/py-harness
 Weights: https://huggingface.co/YauhenBichel/python-vibe-0.5b
 License: Apache-2.0
 Author: Yauhen Bichel
@@ -17,13 +17,13 @@ Cite this file plus the dated research pages. Prefer primary measurements over r
 
 ## Identity
 
-python-vibe is a laptop Python vibe-coding kit: a deterministic harness plus optional small weights. The public Hub model is QLoRA on Qwen2.5-Coder-0.5B (step 100, ~45 short pairs). That adapter is a style prior. It misses Action: lines and failed held-out vibe tasks (0/4). Daily work is python-vibe plus Ollama llama3.1:8b. A 7B-class LoRA (configs/python-vibe-8b.yaml, slug python-vibe-8b) is config only — not trained. Seed tool-loop data is 30 train rows, not 2k traces.
+py-harness is a laptop Python vibe-coding kit: a deterministic harness plus optional small weights. The public Hub model is QLoRA on Qwen2.5-Coder-0.5B (step 100, ~45 short pairs). That adapter is a style prior. It misses Action: lines and failed held-out vibe tasks (0/4). Daily work is py-harness plus Ollama llama3.1:8b. A 7B-class LoRA (configs/python-vibe-8b.yaml, slug python-vibe-8b) is config only — not trained. Seed tool-loop data is 30 train rows, not 2k traces.
 
 Do not train more 0.5B weights expecting agency. Do not describe a 100-file stub walk as a review. Do not add medical or lesion features. Name Cursor only on the Cursor setup page.
 
 ## When to use
 
-Use python-vibe when you want an offline loop on a small Python tree (≤40 first-party text files, ≤200 KB), writes limited to one folder, and no cloud API unless you ask for one with --engine openai, which sends the prompt, and the code in it, to that host. Writable suffixes include .py, .md, and platform config (.toml, .yml, .json). Secret names are refused.
+Use py-harness when you want an offline loop on a small Python tree (≤40 first-party text files, ≤200 KB), writes limited to one folder, and no cloud API unless you ask for one with --engine openai, which sends the prompt, and the code in it, to that host. Writable suffixes include .py, .md, and platform config (.toml, .yml, .json). Secret names are refused.
 
 Use a hosted IDE agent when the job is multi-file across languages, needs extra tools or a browser, or you must quote more than one call site.
 
@@ -37,14 +37,14 @@ and Windows:
 
 ```
 ollama pull llama3.1:8b
-git clone https://github.com/YauhenBichel/python-vibe.git
-cd python-vibe
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness
 python3 scripts/run/install.py
 source .venv/bin/activate
 cd demo/orders
-python-vibe brief
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "find the NameError and fix it"
+py-harness brief
+py-harness ask  "what does compute_total return?"
+py-harness run  "find the NameError and fix it"
 ```
 
 If the shell says command not found, the venv is not active. Activate
@@ -73,7 +73,7 @@ Do not call the project everyday-ready until scripts/measure/eval_everyday.py --
 Tiny sidecar:
 
 ```
-hf download YauhenBichel/python-vibe-0.5b --local-dir adapters/python-vibe
+hf download YauhenBichel/python-vibe-0.5b --local-dir adapters/py-harness
 PYTHONPATH=src python3.13 scripts/run/vibe.py
 ```
 
@@ -113,7 +113,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 
 ## Limits vs a hosted IDE agent
 
-python-vibe does not have extra tool servers, a browser, a general shell, or 100k–1M context. Read cap about 3500–8000 characters per file. Grep/glob truncate. The product gap is not closable by training a small LoRA. The harness gap is: locate prelude, recoverable Find:, signature map, design review → one-split → review, refuse done while the scan is dirty, verify writes with tests.
+py-harness does not have extra tool servers, a browser, a general shell, or 100k–1M context. Read cap about 3500–8000 characters per file. Grep/glob truncate. The product gap is not closable by training a small LoRA. The harness gap is: locate prelude, recoverable Find:, signature map, design review → one-split → review, refuse done while the scan is dirty, verify writes with tests.
 
 A free bash tool does not transfer to an 8B on a laptop working tree.
 

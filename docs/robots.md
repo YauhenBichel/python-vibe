@@ -2,7 +2,7 @@
 layout: null
 permalink: /robots.txt
 ---
-# python-vibe — crawl the HTML site and the LLM index.
+# py-harness — crawl the HTML site and the LLM index.
 # Do not block training or answer crawlers. Facts here are public.
 
 User-agent: *

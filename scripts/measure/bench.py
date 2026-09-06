@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure python-vibe on tasks of increasing size, and check the result.
+"""Measure py-harness on tasks of increasing size, and check the result.
 
 Tiers exist so improvement can be seen where it happens. A change that
 helps one-file work and not two-file work should show exactly that.

@@ -22,7 +22,7 @@ SECRET_NAMES = frozenset(
 
 
 def _find_kit_skills() -> Path:
-    """Locate the skills shipped with python-vibe.
+    """Locate the skills shipped with py-harness.
 
     A source checkout keeps them at the repository root. An installed
     package carries a copy inside `harness/`, because the repository root

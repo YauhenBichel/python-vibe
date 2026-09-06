@@ -19,13 +19,13 @@ class ReadmeContributorsTest(unittest.TestCase):
         text = README.read_text(encoding="utf-8")
         self.assertIn("docs/media/vscode-demo.gif", text)
         self.assertIn("asciinema play docs/media/vscode-demo.cast", text)
-        self.assertIn("python-vibe editors vscode", text)
+        self.assertIn("py-harness editors vscode", text)
 
     def test_readme_shows_the_cursor_recording(self) -> None:
         text = README.read_text(encoding="utf-8")
         self.assertIn("docs/media/cursor-demo.gif", text)
         self.assertIn("asciinema play docs/media/cursor-demo.cast", text)
-        self.assertIn("python-vibe editors cursor --allow-writes", text)
+        self.assertIn("py-harness editors cursor --allow-writes", text)
 
     def test_readme_stays_short(self) -> None:
         """The GitHub front page was a second site. Keep the how-to first."""
@@ -34,7 +34,7 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertLess(len(body.splitlines()), 120, len(body.splitlines()))
         self.assertIn("source .venv/bin/activate", body)
         self.assertIn("cd demo/orders", body)
-        self.assertIn("python-vibe/tree/", body)
+        self.assertIn("py-harness/tree/", body)
 
     def test_markers_not_hardcoded_table(self) -> None:
         text = README.read_text(encoding="utf-8")

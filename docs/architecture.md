@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: Bottom-up harness layers for python-vibe. A module may import only a strictly lower layer. The merge gate enforces the rule.
+description: Bottom-up harness layers for py-harness. A module may import only a strictly lower layer. The merge gate enforces the rule.
 date: 2026-08-29
 ---
 

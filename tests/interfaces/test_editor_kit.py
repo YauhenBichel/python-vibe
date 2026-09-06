@@ -122,10 +122,10 @@ class EditorInstallTest(unittest.TestCase):
             cont = install_editors(root, "continue")
             cursor = install_editors(root, "cursor")
             self.assertTrue(vscode[0].is_file())
-            self.assertIn("python-vibe: ask", vscode[0].read_text(encoding="utf-8"))
+            self.assertIn("py-harness: ask", vscode[0].read_text(encoding="utf-8"))
             self.assertIn("127.0.0.1:8081", cont[0].read_text(encoding="utf-8"))
             mcp = json.loads(cursor[0].read_text(encoding="utf-8"))
-            server = mcp["mcpServers"]["python-vibe"]
+            server = mcp["mcpServers"]["py-harness"]
             self.assertIn("mcp", server["args"])
             self.assertIn("${workspaceFolder}", server["args"])
             self.assertEqual(server["type"], "stdio")
@@ -160,7 +160,7 @@ class McpHandshakeTest(unittest.TestCase):
                 model="none",
             )
         assert init is not None and listed is not None
-        self.assertEqual(init["result"]["serverInfo"]["name"], "python-vibe")
+        self.assertEqual(init["result"]["serverInfo"]["name"], "py-harness")
         names = {tool["name"] for tool in listed["result"]["tools"]}
         self.assertEqual(names, {"ask", "run", "brief", "layout"})
         assert prompts is not None
@@ -253,7 +253,7 @@ class CursorConfigTest(unittest.TestCase):
     def test_the_project_path_is_portable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
-            server = self._config(project)["mcpServers"]["python-vibe"]
+            server = self._config(project)["mcpServers"]["py-harness"]
         self.assertIn("${workspaceFolder}", server["args"])
         self.assertNotIn("__PROJECT__", server["args"])
         self.assertEqual(server["type"], "stdio")
@@ -264,7 +264,7 @@ class CursorConfigTest(unittest.TestCase):
             install_editors(project, "cursor", allow_writes=True)
             server = json.loads(
                 (project / ".cursor" / "mcp.json").read_text(encoding="utf-8")
-            )["mcpServers"]["python-vibe"]
+            )["mcpServers"]["py-harness"]
         self.assertIn("--allow-writes", server["args"])
 
     def test_other_servers_are_kept(self) -> None:
@@ -279,14 +279,14 @@ class CursorConfigTest(unittest.TestCase):
             install_editors(project, "cursor")
             data = json.loads(dest.read_text(encoding="utf-8"))
         self.assertEqual(data["mcpServers"]["other"]["command"], "x")
-        self.assertIn("python-vibe", data["mcpServers"])
+        self.assertIn("py-harness", data["mcpServers"])
 
     def test_a_source_checkout_carries_the_import_path(self) -> None:
         from unittest import mock
 
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch("harness.editor_kit._harness_is_importable", return_value=False):
-                server = self._config(Path(tmp))["mcpServers"]["python-vibe"]
+                server = self._config(Path(tmp))["mcpServers"]["py-harness"]
         self.assertIn("PYTHONPATH", server["env"])
 
     def test_an_installed_package_needs_no_import_path(self) -> None:
@@ -294,7 +294,7 @@ class CursorConfigTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch("harness.editor_kit._harness_is_importable", return_value=True):
-                server = self._config(Path(tmp))["mcpServers"]["python-vibe"]
+                server = self._config(Path(tmp))["mcpServers"]["py-harness"]
         self.assertNotIn("env", server)
 
 
@@ -304,7 +304,7 @@ class ZedConfigTest(unittest.TestCase):
             root = Path(tmp)
             written = install_editors(root, "zed")
             data = json.loads(written[0].read_text(encoding="utf-8"))
-        server = data["context_servers"]["python-vibe"]
+        server = data["context_servers"]["py-harness"]
         self.assertIn(root.resolve().as_posix(), server["args"])
         self.assertNotIn("__PROJECT__", server["args"])
 
@@ -321,13 +321,13 @@ class ZedConfigTest(unittest.TestCase):
             data = json.loads(dest.read_text(encoding="utf-8"))
         self.assertEqual(data["theme"], "one")
         self.assertEqual(data["context_servers"]["other"]["command"], "x")
-        self.assertIn("python-vibe", data["context_servers"])
+        self.assertIn("py-harness", data["context_servers"])
 
 
 class VscodeTaskTest(unittest.TestCase):
     """A task runs in a plain shell, where a bare command may not exist.
 
-    `python-vibe` is only on PATH if the install put it there, which a
+    `py-harness` is only on PATH if the install put it there, which a
     virtual environment or a --user install often does not. Naming the
     interpreter works in every case.
     """
@@ -343,8 +343,8 @@ class VscodeTaskTest(unittest.TestCase):
             tasks = self._tasks(Path(tmp))["tasks"]
         for task in tasks:
             self.assertFalse(
-                task["command"].startswith("python-vibe"),
-                f"{task['label']} needs python-vibe on PATH",
+                task["command"].startswith("py-harness"),
+                f"{task['label']} needs py-harness on PATH",
             )
 
     def test_every_task_names_the_interpreter(self) -> None:
@@ -492,7 +492,7 @@ class ReadToolsNeedNoModelTest(unittest.TestCase):
 class EditorSettingsAreNotTheProjectTest(unittest.TestCase):
     """A summary counted the files the tool had just written itself.
 
-    `python-vibe editors cursor` writes `.cursor/mcp.json` and
+    `py-harness editors cursor` writes `.cursor/mcp.json` and
     `.vscode/tasks.json`. Asked for a summary straight afterwards, the
     answer opened with "12 Python and Markdown files" and listed both of
     them first.

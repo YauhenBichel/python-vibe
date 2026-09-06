@@ -1,7 +1,7 @@
 cff-version: 1.2.0
-message: If you use python-vibe or quote a measured score, please cite it.
+message: If you use py-harness (formerly python-vibe) or quote a measured score, please cite it.
 type: software
-title: python-vibe
+title: py-harness
 abstract: >-
   A laptop Python vibe-coding kit. The model proposes; a deterministic
   harness decides what ships. Daily work is an 8B local model. The public
@@ -10,8 +10,8 @@ authors:
   - family-names: Bichel
     given-names: Yauhen
     website: https://github.com/YauhenBichel
-repository-code: https://github.com/YauhenBichel/python-vibe
-url: https://yauhenbichel.github.io/python-vibe/
+repository-code: https://github.com/YauhenBichel/py-harness
+url: https://yauhenbichel.github.io/py-harness/
 license: Apache-2.0
 date-released: "2026-08-29"
 keywords:
@@ -21,15 +21,15 @@ keywords:
   - harness
 preferred-citation:
   type: software
-  title: python-vibe
+  title: py-harness
   authors:
     - family-names: Bichel
       given-names: Yauhen
   year: 2026
-  url: https://github.com/YauhenBichel/python-vibe
+  url: https://github.com/YauhenBichel/py-harness
   notes: >-
     Measurements, including the 5 Sep 2026 0.5B exact-stdout eval
     (Ollama 7/54 base, 12/54 with one repair) and the same-day MLX
     sample-and-run (four drafts 9/18; later loop 12/18 with 0
     hint-repairs; greedy LoRA 0/54),
-    are at https://yauhenbichel.github.io/python-vibe/cite/
+    are at https://yauhenbichel.github.io/py-harness/cite/

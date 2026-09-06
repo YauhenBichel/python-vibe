@@ -3,7 +3,7 @@ requires = ["setuptools>=84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "python-vibe"
+name = "py-harness"
 version = "0.3.0"
 description = "A deterministic harness around a small local coding model."
 readme = "README.md"
@@ -32,12 +32,13 @@ hub = ["huggingface_hub>=1.29.0"]
 train = ["mlx-lm[train]>=0.26.0", "pyyaml>=6.0", "huggingface_hub>=1.29.0"]
 
 [project.scripts]
+py-harness = "harness.cli:main"
 python-vibe = "harness.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/YauhenBichel/python-vibe"
-Documentation = "https://yauhenbichel.github.io/python-vibe/"
-Source = "https://github.com/YauhenBichel/python-vibe"
+Homepage = "https://github.com/YauhenBichel/py-harness"
+Documentation = "https://yauhenbichel.github.io/py-harness/"
+Source = "https://github.com/YauhenBichel/py-harness"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -112,4 +112,4 @@ should do it." otherwise puts that sentence in the file; and the *first*
 closing fence ends the code, so a reply showing a second example block
 does not swallow the prose between them.
 
-[#283]: https://github.com/YauhenBichel/python-vibe/pull/283
+[#283]: https://github.com/YauhenBichel/py-harness/pull/283

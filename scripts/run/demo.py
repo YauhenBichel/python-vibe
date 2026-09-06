@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run python-vibe over a set of everyday tasks and record what happened.
+"""Run py-harness over a set of everyday tasks and record what happened.
 
 Each case starts from a fresh copy of `demo/orders`, so one case never sees
 another's changes and the checked-in project is never modified.
@@ -287,7 +287,7 @@ def render_markdown(rows: list[dict], model: str) -> str:
     lines = [
         "---",
         "title: Demo",
-        "description: python-vibe run over eleven everyday tasks on one small "
+        "description: py-harness run over eleven everyday tasks on one small "
         "project. Real output, including the cases it does not finish.",
         "permalink: /demo/",
         "date: 2026-08-29",
@@ -362,7 +362,7 @@ def case_command(case: Case) -> str:
     scope = case.options.get("scope", "")
     if scope:
         flags += f" --scope {scope}"
-    return f'python-vibe {verb}{flags} ./orders "{case.task}"'
+    return f'py-harness {verb}{flags} ./orders "{case.task}"'
 
 
 def _render_case(row: dict) -> list[str]:

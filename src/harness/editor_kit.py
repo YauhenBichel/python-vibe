@@ -87,7 +87,7 @@ def next_steps(kind: str, *, allow_writes: bool = False, user_wide: bool = False
     if kind != "cursor":
         return (
             "Reload the window, then Command Palette → Tasks: Run Task → "
-            "python-vibe: ask"
+            "py-harness: ask"
         )
     writes = (
         "read-write"
@@ -96,21 +96,21 @@ def next_steps(kind: str, *, allow_writes: bool = False, user_wide: bool = False
     )
     where = "every workspace (~/.cursor/mcp.json)" if user_wide else "this folder"
     return (
-        f"python-vibe is set up for {where} ({writes}).\n"
+        f"py-harness is set up for {where} ({writes}).\n"
         "1. ollama pull llama3.1:8b\n"
         "2. Command Palette → Developer: Reload Window\n"
-        "3. Open Customize → MCP → enable python-vibe\n"
-        "4. In chat: ask python-vibe what compute_total returns\n"
-        "   or Tasks: Run Task → python-vibe: ask\n"
+        "3. Open Customize → MCP → enable py-harness\n"
+        "4. In chat: ask py-harness what compute_total returns\n"
+        "   or Tasks: Run Task → py-harness: ask\n"
         "Do not point Override OpenAI Base URL at 127.0.0.1. "
         "That request often leaves this machine."
     )
 
 
 def _vscode_tasks() -> dict:
-    """Task file that runs whichever interpreter has python-vibe installed.
+    """Task file that runs whichever interpreter has py-harness installed.
 
-    The tasks used to call a bare `python-vibe`. An editor runs a task in a
+    The tasks used to call a bare `py-harness`. An editor runs a task in a
     plain shell, and that command is only there if the install put it on
     PATH, which a virtual environment or a --user install often does not.
     Naming the interpreter directly works in every case.
@@ -229,7 +229,7 @@ def _cursor_env(project: Path, *, user_wide: bool = False) -> dict[str, str]:
 
 
 def _merge_mcp(dest: Path, server: dict) -> str:
-    """Put python-vibe in mcp.json. Keep every other server."""
+    """Put py-harness in mcp.json. Keep every other server."""
     data: dict = {}
     if dest.is_file():
         try:
@@ -242,12 +242,12 @@ def _merge_mcp(dest: Path, server: dict) -> str:
     if not isinstance(servers, dict):
         servers = {}
         data["mcpServers"] = servers
-    servers["python-vibe"] = server
+    servers["py-harness"] = server
     return json.dumps(data, indent=2) + "\n"
 
 
 def _zed_settings(project: Path, dest: Path) -> str:
-    """Merge python-vibe into .zed/settings.json. Do not drop other keys."""
+    """Merge py-harness into .zed/settings.json. Do not drop other keys."""
     incoming = _stdio_server(project)
     data: dict = {}
     if dest.is_file():
@@ -261,5 +261,5 @@ def _zed_settings(project: Path, dest: Path) -> str:
     if not isinstance(servers, dict):
         servers = {}
         data["context_servers"] = servers
-    servers["python-vibe"] = incoming
+    servers["py-harness"] = incoming
     return json.dumps(data, indent=2) + "\n"

@@ -36,10 +36,10 @@ COLS, ROWS = 80, 24
 PROMPT = b"demo $ "
 
 COMMANDS = (
-    "python-vibe editors vscode",
-    "python-vibe brief",
-    'python-vibe ask "what does compute_total return?"',
-    'python-vibe run "find the NameError and fix it"',
+    "py-harness editors vscode",
+    "py-harness brief",
+    'py-harness ask "what does compute_total return?"',
+    'py-harness run "find the NameError and fix it"',
 )
 
 
@@ -53,7 +53,7 @@ def _prepare() -> None:
     shutil.copytree(DEMO, WORK, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     bin_dir = WORK / ".bin"
     bin_dir.mkdir()
-    shim = bin_dir / "python-vibe"
+    shim = bin_dir / "py-harness"
     shim.write_text(
         "#!/bin/sh\n"
         f'export PYTHONPATH="{SRC}"\n'

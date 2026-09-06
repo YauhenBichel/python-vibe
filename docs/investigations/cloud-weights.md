@@ -1,6 +1,6 @@
 ---
 title: Cloud weights
-description: How to try a larger model or a later LoRA without giving up the python-vibe write limit. Inference moves to a GPU box. The harness stays on the laptop.
+description: How to try a larger model or a later LoRA without giving up the py-harness write limit. Inference moves to a GPU box. The harness stays on the laptop.
 permalink: /investigations/cloud-weights/
 date: 2026-08-29
 type: article
@@ -36,7 +36,7 @@ Related: [Experiments]({{ '/investigations/experiments/' | relative_url }})
 
 ## What stays local
 
-`python-vibe` still reads and writes only inside `--project`. `serve.py`
+`py-harness` still reads and writes only inside `--project`. `serve.py`
 still binds **127.0.0.1**. Every file the run writes is written here, by
 this machine.
 
@@ -58,7 +58,7 @@ no browser Action and no free shell. See [local loop vs hosted agents]({{ '/inve
 
 ```bash
 export OLLAMA_HOST=https://gpu.example:11434
-python-vibe --model qwen2.5-coder:32b run "find the NameError and fix it"
+py-harness --model qwen2.5-coder:32b run "find the NameError and fix it"
 ```
 
 **OpenAI-compatible HTTP.** Hugging Face Inference, vLLM, or any other
@@ -68,7 +68,7 @@ environment variable. It is never written into a trace.
 ```bash
 export HF_TOKEN=…          # or PYTHON_VIBE_API_KEY
 export PYTHON_VIBE_BASE_URL=https://router.huggingface.co/v1
-python-vibe --engine openai \
+py-harness --engine openai \
   --model Qwen/Qwen2.5-Coder-32B-Instruct \
   run "find the NameError and fix it"
 ```

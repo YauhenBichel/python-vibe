@@ -1,6 +1,6 @@
 {
   "context_servers": {
-    "python-vibe": {
+    "py-harness": {
       "command": "__PYTHON__",
       "args": ["-m", "harness", "mcp", "--project", "__PROJECT__"]
     }

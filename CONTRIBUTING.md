@@ -1,4 +1,4 @@
-# Contributing to python-vibe
+# Contributing to py-harness
 
 Thanks for being here. This repo is small: one 0.5B LoRA, a deterministic
 harness, and stdlib HTTP. It is a good first open-source project if you keep
@@ -19,8 +19,8 @@ The folders are listed in [docs/tree.md](./docs/tree.md).
 Daily work is `demo/orders`, not the repository root.
 
 ```bash
-git clone https://github.com/YauhenBichel/python-vibe.git
-cd python-vibe
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness
 python3.13 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -31,7 +31,7 @@ You do **not** need a Hugging Face token, Ollama, or a GPU to run the harness
 tests. Training the tiny LoRA uses MLX on Apple Silicon (Homebrew Python 3.13).
 Everyday agent work uses Ollama 8B+ — see [AGENTS.md](./AGENTS.md) and
 [docs/local-editor.md](./docs/local-editor.md). The project site is
-[yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/).
+[yauhenbichel.github.io/py-harness](https://yauhenbichel.github.io/py-harness/).
 New public notes go in `docs/` (Jekyll). Do not name other editors or chat
 products there.
 
@@ -57,19 +57,19 @@ the public adapters without an account.
 
 ## Pick an issue by level
 
-Start at [Welcome — how to pick an issue](https://github.com/YauhenBichel/python-vibe/discussions/10).
-Design questions go in [Discussions](https://github.com/YauhenBichel/python-vibe/discussions), not a drive-by PR.
+Start at [Welcome — how to pick an issue](https://github.com/YauhenBichel/py-harness/discussions/10).
+Design questions go in [Discussions](https://github.com/YauhenBichel/py-harness/discussions), not a drive-by PR.
 
 | Level | Label | Open examples |
 | --- | --- | --- |
-| Very junior | [`good first issue`](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) | [#96](https://github.com/YauhenBichel/python-vibe/issues/96) naming table · [#97](https://github.com/YauhenBichel/python-vibe/issues/97) refuse util.py |
-| Intermediate | [`intermediate`](https://github.com/YauhenBichel/python-vibe/labels/intermediate) | [#99](https://github.com/YauhenBichel/python-vibe/issues/99) two god-module rules · [#100](https://github.com/YauhenBichel/python-vibe/issues/100) demo orders |
+| Very junior | [`good first issue`](https://github.com/YauhenBichel/py-harness/labels/good%20first%20issue) | [#96](https://github.com/YauhenBichel/py-harness/issues/96) naming table · [#97](https://github.com/YauhenBichel/py-harness/issues/97) refuse util.py |
+| Intermediate | [`intermediate`](https://github.com/YauhenBichel/py-harness/labels/intermediate) | [#99](https://github.com/YauhenBichel/py-harness/issues/99) two god-module rules · [#100](https://github.com/YauhenBichel/py-harness/issues/100) demo orders |
 
-What has been measured, and how many runs each number stands on: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
+What has been measured, and how many runs each number stands on: [Experiments](https://yauhenbichel.github.io/py-harness/investigations/experiments/).
 
-Open threads: [fused weights](https://github.com/YauhenBichel/python-vibe/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/python-vibe/discussions/12) · [eval protocol](https://github.com/YauhenBichel/python-vibe/discussions/13) · [train without MLX](https://github.com/YauhenBichel/python-vibe/discussions/14) · [experiment results](https://github.com/YauhenBichel/python-vibe/discussions/128).
+Open threads: [fused weights](https://github.com/YauhenBichel/py-harness/discussions/11) · [stdlib vs FastAPI](https://github.com/YauhenBichel/py-harness/discussions/12) · [eval protocol](https://github.com/YauhenBichel/py-harness/discussions/13) · [train without MLX](https://github.com/YauhenBichel/py-harness/discussions/14) · [experiment results](https://github.com/YauhenBichel/py-harness/discussions/128).
 
-## GitHub account `python-vibe`
+## GitHub account `py-harness`
 
 The harness never authors a commit as this project. **You** stay the
 author. When `Action: commit` runs, it adds:
@@ -78,13 +78,13 @@ author. When `Action: commit` runs, it adds:
 Co-authored-by: python-vibe <322567521+python-vibe@users.noreply.github.com>
 ```
 
-The user is [python-vibe](https://github.com/python-vibe). GitHub links
+The user is [py-harness](https://github.com/python-vibe). GitHub links
 that numbered noreply address to the profile. Do not grant the account
 write access to other repos — attribution only.
 
 ## Project site
 
-The project site is published at https://yauhenbichel.github.io/python-vibe/.
+The project site is published at https://yauhenbichel.github.io/py-harness/.
 
 To enable GitHub Pages in a repository or fork:
 1. Go to **Settings** → **Pages**.

@@ -36,6 +36,6 @@ jobs:
       # Proves the command works with no PYTHONPATH and no repository paths.
       - name: Installed command
         run: |
-          python-vibe --help
-          python-vibe brief .
-          python-vibe layout .
+          py-harness --help
+          py-harness brief .
+          py-harness layout .

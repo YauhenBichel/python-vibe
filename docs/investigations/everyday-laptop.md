@@ -5,7 +5,7 @@ date: 2026-08-29
 type: article
 ---
 
-# Investigation: can python-vibe be everyday laptop work?
+# Investigation: can py-harness be everyday laptop work?
 
 **Answer:** no — not this 0.5B LoRA. Comfortable daily explore / edit / run
 needs a larger model, tool-use training, and a local editor connected to
@@ -15,8 +15,8 @@ Keep python-vibe-0.5b as a cheap draft + harness.
 Related: [research-vibe-review](../research-vibe-review.md) ·
 [local loop vs hosted agents](./local-vs-cloud.md) ·
 [what to improve](./what-to-improve.md) · issues
-[#8](https://github.com/YauhenBichel/python-vibe/issues/8),
-[#9](https://github.com/YauhenBichel/python-vibe/issues/9).
+[#8](https://github.com/YauhenBichel/py-harness/issues/8),
+[#9](https://github.com/YauhenBichel/py-harness/issues/9).
 
 ## What everyday laptop work means
 
@@ -24,7 +24,7 @@ You open a repo and talk. The model explores, edits files, runs tests, and
 keeps a short plan. That is comfortable daily work. The weights need to be
 large enough to emit tool calls.
 
-python-vibe today is a **400 MB style prior** plus scripts:
+py-harness today is a **400 MB style prior** plus scripts:
 
 | Surface | What it does |
 | --- | --- |
@@ -56,7 +56,7 @@ issues”**, 0 applied. That is not a review.
 1. **This week.** `scripts/run/agent.py` defaults to `llama3.1:8b`. Local editor:
    [local-editor.md](../local-editor.md). `scripts/run/openai_compat.py` proxies
    `/v1/chat/completions`. `scripts/weights/export_ollama.py --create` names
-   `python-vibe-everyday`.
+   `py-harness-everyday`.
 2. **Your model.** `scripts/weights/build_agent_data.py` writes seed tool traces
    (`data/agent-loop`). `scripts/weights/train.py --everyday` is the 7B-class LoRA.
    Append redacted explore / edit / run sessions before claiming 2k traces.

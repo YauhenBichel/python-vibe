@@ -139,7 +139,7 @@ def _run(argv: list[str]) -> int:
 
 
 def _repl(generate_once: Callable[[str], str], label: str) -> None:
-    print(f"python-vibe ({label})  {HELP}", flush=True)
+    print(f"py-harness ({label})  {HELP}", flush=True)
     while True:
         try:
             line = input("vibe> ").strip()

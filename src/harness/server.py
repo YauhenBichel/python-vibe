@@ -37,7 +37,7 @@ CHAT_ROUTES = ("/v1/chat/completions", "/chat/completions")
 
 def make_handler(project: Path, *, allow_writes: bool, model: str):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "python-vibe"
+        server_version = "py-harness"
         protocol_version = "HTTP/1.1"
 
         def _send(self, code: int, payload: dict) -> None:
@@ -160,7 +160,7 @@ def make_handler(project: Path, *, allow_writes: bool, model: str):
                     {
                         "error": "this server is read-only",
                         "fix": "restart it with --allow-writes, or run "
-                        "python-vibe run <project> \"<task>\" in the editor terminal",
+                        "py-harness run <project> \"<task>\" in the editor terminal",
                     },
                 )
                 return
@@ -189,7 +189,7 @@ def serve(
     handler = make_handler(project, allow_writes=allow_writes, model=model)
     httpd = ThreadingHTTPServer((HOST, port), handler)
     mode = "read-write" if allow_writes else "read-only"
-    print(f"python-vibe on http://{HOST}:{port}  project {project}  {mode}")
+    print(f"py-harness on http://{HOST}:{port}  project {project}  {mode}")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

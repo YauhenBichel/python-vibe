@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prove python-vibe works: harness always, Ollama/MLX only if asked.
+"""Prove py-harness works: harness always, Ollama/MLX only if asked.
 
   PYTHONPATH=src python scripts/measure/smoke.py
   PYTHONPATH=src python scripts/measure/smoke.py --live

@@ -28,11 +28,11 @@ a failing traceback goes back once.
 
 | You type | What happened | Checked | Time |
 | --- | --- | --- | --- |
-| `python-vibe brief` | Listed 10 files, 2.9 KB. No model. | — | instant |
-| `python-vibe ask "what does compute_total return?"` | Answered `"int", computing the sum of line prices of one order`. The bare type on its own is sent back. | nothing written | 2–9 s |
-| `python-vibe run "write tests for apply_discount"` | Saw the test was already there and declined to add a second. No model. | nothing written, suite green | 0.1 s |
-| `python-vibe run "find the NameError and fix it"` | Bound `subtotl` → `subtotal` in `src/orders.py`. No model. | fixed, and `total_with_tax([10])` is `12.0` | 0.1 s |
-| `python-vibe run "add a function total_lines and a test"` | Added `def total_lines(prices)` and an AAA test. No model. An earlier run the same evening opened a file and left the suite red. | `total_lines([10, 20]) == 2`, suite green | 0.1 s |
+| `py-harness brief` | Listed 10 files, 2.9 KB. No model. | — | instant |
+| `py-harness ask "what does compute_total return?"` | Answered `"int", computing the sum of line prices of one order`. The bare type on its own is sent back. | nothing written | 2–9 s |
+| `py-harness run "write tests for apply_discount"` | Saw the test was already there and declined to add a second. No model. | nothing written, suite green | 0.1 s |
+| `py-harness run "find the NameError and fix it"` | Bound `subtotl` → `subtotal` in `src/orders.py`. No model. | fixed, and `total_with_tax([10])` is `12.0` | 0.1 s |
+| `py-harness run "add a function total_lines and a test"` | Added `def total_lines(prices)` and an AAA test. No model. An earlier run the same evening opened a file and left the suite red. | `total_lines([10, 20]) == 2`, suite green | 0.1 s |
 
 Four of the five finished **without calling the model**. That is why
 they are fast and why they are the same every time. `ask` is the one
@@ -51,10 +51,10 @@ def total_lines(prices: list[int]) -> int:
 
 | You type | What happened | Checked | Time |
 | --- | --- | --- | --- |
-| `python-vibe run "find a real NameError in src/orders.py and fix it"` | Bound `subtotl` → `subtotal`. No model. | passed | 0.1 s |
-| `python-vibe run "add a function total_lines(prices) that counts the prices, and a unit test"` | Same result as the short wording, by the same mechanical route. No model. | passed | 0.1 s |
-| `python-vibe run "write tests for OrderService in src/orders_service.py"` | Six steps. New file `tests/test_OrderService.py`. The summary was the single word `done`. | passed | 23 s |
-| `python-vibe run "find the NameError in src/orders_controller.py and fix it"` | `stauts` reads as `status`, which is the method's own name and not in scope in its body. The harness asks what was meant. Answering `ok` writes `return "ok"`. Answering `status` is still refused. With `--dry-run`, or through `ask`, it reports what it would write and changes nothing. No model. | question until you answer; then the literal you gave | instant |
+| `py-harness run "find a real NameError in src/orders.py and fix it"` | Bound `subtotl` → `subtotal`. No model. | passed | 0.1 s |
+| `py-harness run "add a function total_lines(prices) that counts the prices, and a unit test"` | Same result as the short wording, by the same mechanical route. No model. | passed | 0.1 s |
+| `py-harness run "write tests for OrderService in src/orders_service.py"` | Six steps. New file `tests/test_OrderService.py`. The summary was the single word `done`. | passed | 23 s |
+| `py-harness run "find the NameError in src/orders_controller.py and fix it"` | `stauts` reads as `status`, which is the method's own name and not in scope in its body. The harness asks what was meant. Answering `ok` writes `return "ok"`. Answering `status` is still refused. With `--dry-run`, or through `ask`, it reports what it would write and changes nothing. No model. | question until you answer; then the literal you gave | instant |
 
 The short `add` command now matches the precise one: both write
 `total_lines(prices)` and a test. The controller NameError still has no

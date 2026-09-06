@@ -25,7 +25,7 @@ def _get(url: str, token: str) -> object:
         url,
         headers={
             "Accept": "application/vnd.github+json",
-            "User-Agent": "python-vibe-fill-contributors",
+            "User-Agent": "py-harness-fill-contributors",
             **({"Authorization": f"Bearer {token}"} if token else {}),
         },
     )
@@ -98,7 +98,7 @@ def apply_readme(text: str, table: str) -> str:
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     readme = root / "README.md"
-    repo = os.environ.get("GITHUB_REPOSITORY", "YauhenBichel/python-vibe")
+    repo = os.environ.get("GITHUB_REPOSITORY", "YauhenBichel/py-harness")
     token = os.environ.get("GITHUB_TOKEN", "").strip()
     people = list_people(repo, token)
     table = render_table(people)

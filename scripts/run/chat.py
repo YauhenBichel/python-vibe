@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Ask python-vibe through its harness (Ollama generate → guard → fallback)."""
+"""Ask py-harness through its harness (Ollama generate → guard → fallback)."""
 
 from __future__ import annotations
 

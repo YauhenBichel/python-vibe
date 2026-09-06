@@ -1,63 +1,63 @@
-# python-vibe
+# py-harness
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
-[![CI](https://github.com/YauhenBichel/python-vibe/actions/workflows/ci.yml/badge.svg)](https://github.com/YauhenBichel/python-vibe/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-2F6FED)](https://yauhenbichel.github.io/python-vibe/)
-[![Pages](https://github.com/YauhenBichel/python-vibe/actions/workflows/pages.yml/badge.svg)](https://yauhenbichel.github.io/python-vibe/)
-[![Contributors](https://img.shields.io/github/contributors/YauhenBichel/python-vibe)](https://github.com/YauhenBichel/python-vibe#contributors)
+[![CI](https://github.com/YauhenBichel/py-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/YauhenBichel/py-harness/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-2F6FED)](https://yauhenbichel.github.io/py-harness/)
+[![Pages](https://github.com/YauhenBichel/py-harness/actions/workflows/pages.yml/badge.svg)](https://yauhenbichel.github.io/py-harness/)
+[![Contributors](https://img.shields.io/github/contributors/YauhenBichel/py-harness)](https://github.com/YauhenBichel/py-harness#contributors)
 
 Four jobs on your laptop: **ask**, **write a test**, **fix a bug**, **add
 one small function**. Only touches the folder you point at. Daily work
-is `python-vibe` plus Ollama `llama3.1:8b`. Not everyday-ready.
-Site: [yauhenbichel.github.io/python-vibe](https://yauhenbichel.github.io/python-vibe/).
+is `py-harness` plus Ollama `llama3.1:8b`. Not everyday-ready.
+Site: [yauhenbichel.github.io/py-harness](https://yauhenbichel.github.io/py-harness/).
 
 ## Run it
 
 ```bash
-git clone https://github.com/YauhenBichel/python-vibe.git
-cd python-vibe
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness
 python3 scripts/run/install.py
 source .venv/bin/activate
 ollama pull llama3.1:8b
 cd demo/orders
-python-vibe brief
-python-vibe ask  "what does compute_total return?"
-python-vibe run  "find the NameError and fix it"
+py-harness brief
+py-harness ask  "what does compute_total return?"
+py-harness run  "find the NameError and fix it"
 ```
 
 Activate `.venv` in **every new terminal**. If the shell says
-`command not found: python-vibe`, it is not active. The sample project
+`command not found: py-harness`, it is not active. The sample project
 is `demo/orders` — do not run `brief` on this repository.
 
 `ask` never writes. `run` writes, then runs the tests. The NameError
 sample is built into the tool (no model). Another folder:
-`python-vibe ask ~/app "what does add return?"`.
+`py-harness ask ~/app "what does add return?"`.
 
-[Start](https://yauhenbichel.github.io/python-vibe/start/) ·
-[Commands](https://yauhenbichel.github.io/python-vibe/api/) ·
+[Start](https://yauhenbichel.github.io/py-harness/start/) ·
+[Commands](https://yauhenbichel.github.io/py-harness/api/) ·
 [Contributing](./CONTRIBUTING.md) ·
 [Security](./SECURITY.md)
 
 ## What it looks like
 
-![python-vibe on demo/orders](docs/media/live-demo.gif)
+![py-harness on demo/orders](docs/media/live-demo.gif)
 
 Replay: `asciinema play docs/media/live-demo.cast`.
-Full log: [Live demo](https://yauhenbichel.github.io/python-vibe/live/).
+Full log: [Live demo](https://yauhenbichel.github.io/py-harness/live/).
 
-**VS Code** — `python-vibe editors vscode`, then Tasks: Run Task.
+**VS Code** — `py-harness editors vscode`, then Tasks: Run Task.
 
-![python-vibe VS Code tasks on demo/orders](docs/media/vscode-demo.gif)
+![py-harness VS Code tasks on demo/orders](docs/media/vscode-demo.gif)
 
 Replay: `asciinema play docs/media/vscode-demo.cast`.
-[VS Code](https://yauhenbichel.github.io/python-vibe/vscode/).
+[VS Code](https://yauhenbichel.github.io/py-harness/vscode/).
 
-**Cursor** — `python-vibe editors cursor --allow-writes`, then chat or Tasks.
+**Cursor** — `py-harness editors cursor --allow-writes`, then chat or Tasks.
 
-![python-vibe Cursor MCP on demo/orders](docs/media/cursor-demo.gif)
+![py-harness Cursor MCP on demo/orders](docs/media/cursor-demo.gif)
 
 Replay: `asciinema play docs/media/cursor-demo.cast`.
-[Cursor](https://yauhenbichel.github.io/python-vibe/cursor/).
+[Cursor](https://yauhenbichel.github.io/py-harness/cursor/).
 
 ## Scores
 
@@ -72,19 +72,19 @@ One laptop. 29 Aug–5 Sep 2026. **Not everyday-ready.**
 | Extra 7B–8B on disk | SWE helper chat **36.7s** swapping off the 8B. Idle empty still missed 300s. |
 | A real repository (4,580 files) | reading works; writing **1 / 12** |
 
-The long table: [Experiments](https://yauhenbichel.github.io/python-vibe/investigations/experiments/).
-Every score: [Results](https://yauhenbichel.github.io/python-vibe/investigations/).
-Which tags timed out: [Hub models](https://yauhenbichel.github.io/python-vibe/investigations/hub-models/).
+The long table: [Experiments](https://yauhenbichel.github.io/py-harness/investigations/experiments/).
+Every score: [Results](https://yauhenbichel.github.io/py-harness/investigations/).
+Which tags timed out: [Hub models](https://yauhenbichel.github.io/py-harness/investigations/hub-models/).
 
 ## More
 
 | If you want | Go here |
 | --- | --- |
-| What each folder is | [Folders](https://yauhenbichel.github.io/python-vibe/tree/) |
+| What each folder is | [Folders](https://yauhenbichel.github.io/py-harness/tree/) |
 | Tests | `PYTHONPATH=src python -m unittest discover -s tests -q` |
 | 0.5B style prior | [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b) |
-| Train / serve / API | [Commands](https://yauhenbichel.github.io/python-vibe/api/) |
-| A first issue | [good first issue](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue) |
+| Train / serve / API | [Commands](https://yauhenbichel.github.io/py-harness/api/) |
+| A first issue | [good first issue](https://github.com/YauhenBichel/py-harness/labels/good%20first%20issue) |
 
 Vulnerabilities: a **public** GitHub issue. Do not paste live keys.
 
@@ -92,7 +92,7 @@ Vulnerabilities: a **public** GitHub issue. Do not paste live keys.
 
 ## Contributors
 
-Thank you to everyone who has helped python-vibe.
+Thank you to everyone who has helped py-harness.
 
 <!-- readme: contributors,bots/- -start -->
 <table>
@@ -145,4 +145,4 @@ Thank you to everyone who has helped python-vibe.
 </table>
 <!-- readme: contributors,bots/- -end -->
 
-The list is filled by [Contributors](./.github/workflows/contributors.yml) from GitHub commits (bots omitted). [Contributor graph](https://github.com/YauhenBichel/python-vibe/graphs/contributors) · [good first issue](https://github.com/YauhenBichel/python-vibe/labels/good%20first%20issue)
+The list is filled by [Contributors](./.github/workflows/contributors.yml) from GitHub commits (bots omitted). [Contributor graph](https://github.com/YauhenBichel/py-harness/graphs/contributors) · [good first issue](https://github.com/YauhenBichel/py-harness/labels/good%20first%20issue)

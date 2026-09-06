@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Put the `python-vibe` command on PATH.
+"""Put the `py-harness` command on PATH.
 
   python3 scripts/run/install.py
   python3 scripts/run/install.py --train
@@ -28,19 +28,19 @@ def repo_root(start: Path | None = None) -> Path:
     if start is not None:
         root = Path(start)
         pyproject = root / "pyproject.toml"
-        if not pyproject.is_file() or 'name = "python-vibe"' not in pyproject.read_text(
+        if not pyproject.is_file() or 'name = "py-harness"' not in pyproject.read_text(
             encoding="utf-8"
         ):
-            raise SystemExit(f"not a python-vibe checkout: {root}")
+            raise SystemExit(f"not a py-harness checkout: {root}")
         return root
     here = Path(__file__).resolve().parent
     for root in (here, *here.parents):
         pyproject = root / "pyproject.toml"
-        if pyproject.is_file() and 'name = "python-vibe"' in pyproject.read_text(
+        if pyproject.is_file() and 'name = "py-harness"' in pyproject.read_text(
             encoding="utf-8"
         ):
             return root
-    raise SystemExit("not a python-vibe checkout: no pyproject.toml")
+    raise SystemExit("not a py-harness checkout: no pyproject.toml")
 
 
 def require_python(info: tuple[int, int] | None = None) -> str:
@@ -49,7 +49,7 @@ def require_python(info: tuple[int, int] | None = None) -> str:
     if (major, minor) >= MIN_VERSION:
         return ""
     return (
-        f"python-vibe needs Python {MIN_VERSION[0]}.{MIN_VERSION[1]} or newer "
+        f"py-harness needs Python {MIN_VERSION[0]}.{MIN_VERSION[1]} or newer "
         f"(this is {major}.{minor})"
     )
 
@@ -77,8 +77,8 @@ def venv_python(venv_dir: Path, *, windows: bool | None = None) -> Path:
 def console_script(python: Path, *, windows: bool | None = None) -> Path:
     on_windows = os.name == "nt" if windows is None else windows
     if on_windows:
-        return python.parent / "python-vibe.exe"
-    return python.parent / "python-vibe"
+        return python.parent / "py-harness.exe"
+    return python.parent / "py-harness"
 
 
 def activate_hint(venv_dir: Path, *, windows: bool | None = None) -> str:
@@ -99,8 +99,8 @@ def next_steps(*, system: bool, already_in_venv: bool, windows: bool | None = No
         lines.append("If the shell says command not found, the venv is not active.")
     lines.append("Demo (planted NameError):")
     lines.append("  cd demo/orders")
-    lines.append("  python-vibe brief")
-    lines.append("From the checkout, without cd: python-vibe brief demo/orders")
+    lines.append("  py-harness brief")
+    lines.append("From the checkout, without cd: py-harness brief demo/orders")
     return "\n".join(lines)
 
 
@@ -110,7 +110,7 @@ def pip_argv(python: Path, spec: list[str]) -> list[str]:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Install the python-vibe command into a venv (or this interpreter)."
+        description="Install the py-harness command into a venv (or this interpreter)."
     )
     parser.add_argument(
         "--train",
@@ -169,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     ran = subprocess.run(argv_pip, cwd=root, check=False)
     if ran.returncode != 0:
         return ran.returncode
-    print(f"installed python-vibe -> {script}")
+    print(f"installed py-harness -> {script}")
     print(
         next_steps(
             system=args.system,

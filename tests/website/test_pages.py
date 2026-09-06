@@ -81,7 +81,7 @@ class PagesInvestigationsTest(unittest.TestCase):
         missing = [name for name in required if not (DOCS / name).is_file()]
         self.assertEqual(missing, [])
         llms = (DOCS / "llms.md").read_text(encoding="utf-8")
-        self.assertIn("# python-vibe", llms)
+        self.assertIn("# py-harness", llms)
         self.assertIn("permalink: /llms.txt", llms)
         self.assertIn("> ", llms)
         full = (DOCS / "llms-full.md").read_text(encoding="utf-8")
@@ -155,8 +155,8 @@ class PagesInvestigationsTest(unittest.TestCase):
 
     def test_live_page_is_a_real_session(self) -> None:
         text = (DOCS / "live.md").read_text(encoding="utf-8")
-        self.assertIn('$ python-vibe brief', text)
-        self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
+        self.assertIn('$ py-harness brief', text)
+        self.assertIn('$ py-harness ask "what does compute_total return?"', text)
         self.assertIn("subtotl → subtotal", text)
         self.assertIn("def total_lines(prices: list[int]) -> int:", text)
         self.assertIn("/media/live-demo.gif", text)
@@ -255,10 +255,10 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("/media/vscode-demo.gif", text)
         self.assertIn("asciinema play docs/media/vscode-demo.cast", text)
         self.assertIn("python scripts/measure/record_vscode.py", text)
-        self.assertIn("python-vibe editors vscode", text)
+        self.assertIn("py-harness editors vscode", text)
         self.assertIn("Do not commit that path", text)
         self.assertNotIn("file has no personal path", text)
-        self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
+        self.assertIn('$ py-harness ask "what does compute_total return?"', text)
         self.assertIn("subtotl → subtotal", text)
 
     def test_vscode_recording_is_checked_in(self) -> None:
@@ -280,8 +280,8 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("/media/cursor-demo.gif", text)
         self.assertIn("asciinema play docs/media/cursor-demo.cast", text)
         self.assertIn("python scripts/measure/record_cursor.py", text)
-        self.assertIn("python-vibe editors cursor --allow-writes", text)
-        self.assertIn('$ python-vibe ask "what does compute_total return?"', text)
+        self.assertIn("py-harness editors cursor --allow-writes", text)
+        self.assertIn('$ py-harness ask "what does compute_total return?"', text)
         self.assertIn("subtotl → subtotal", text)
 
     def test_cursor_recording_is_checked_in(self) -> None:
@@ -441,7 +441,7 @@ class CrossPlatformDocsTest(unittest.TestCase):
         missing = [
             name
             for name in self.RUN_PAGES
-            if "python-vibe " not in (DOCS / name).read_text(encoding="utf-8")
+            if "py-harness " not in (DOCS / name).read_text(encoding="utf-8")
         ]
         self.assertEqual(missing, [])
 
