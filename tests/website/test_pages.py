@@ -224,6 +224,11 @@ class PagesInvestigationsTest(unittest.TestCase):
         self.assertIn("8 billion weights", text)
         self.assertIn("does **not** report a SWE-bench score", text)
         self.assertNotIn("sidecar", text.lower())
+        self.assertIn('id="ref-1"', text)
+        self.assertIn('href="#ref-1"', text)
+        self.assertIn("## Appendix: full tables", text)
+        self.assertIn('class="refs"', text)
+        self.assertIn('class="abstract"', text)
 
     def test_references_page_lists_what_runs_and_related_work(self) -> None:
         text = (DOCS / "references.md").read_text(encoding="utf-8")

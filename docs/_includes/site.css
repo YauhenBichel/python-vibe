@@ -159,6 +159,25 @@ body {
 .toc p { margin: 0 0 0.35rem; color: var(--mute); font-size: 0.85rem; }
 .toc ol { margin: 0; padding-left: 1.1rem; }
 
+.paper-meta { color: var(--mute); margin: 0 0 1.1rem; font-size: 0.95rem; }
+
+.abstract {
+  max-width: var(--measure);
+  margin: 0 0 1.6rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.abstract > h2 { margin-top: 0; }
+
+.cite { font-weight: 650; font-size: 0.88em; }
+
+.refs { padding-left: 1.4rem; }
+.refs li { margin: 0.5rem 0; }
+
 .quiet { font-size: 0.8rem; color: var(--mute); }
 
 h1, h2, h3 {

@@ -1,6 +1,6 @@
 ---
 title: Experiments
-description: Laptop measurements of a local Python helper. Abstract, methods, results, and related work. One machine, 29 August–5 September 2026.
+description: A laptop paper. Numbered citations, methods, headline scores, then the full tables. 0.5B is 500 million weights.
 permalink: /investigations/experiments/
 date: 2026-09-06
 type: article
@@ -8,8 +8,8 @@ type: article
 
 # Experiments
 
-Yauhen Bichel  
-6 September 2026
+<p class="paper-meta">Yauhen Bichel · 6 September 2026 ·
+<a href="https://github.com/YauhenBichel/python-vibe">github.com/YauhenBichel/python-vibe</a></p>
 
 <nav class="toc" aria-label="On this page">
 <p>On this page</p>
@@ -23,8 +23,11 @@ Yauhen Bichel
   <li><a href="#limitations">Limitations</a></li>
   <li><a href="#conclusion">Conclusion</a></li>
   <li><a href="#references">References</a></li>
+  <li><a href="#appendix-full-tables">Appendix</a></li>
 </ol>
 </nav>
+
+<div class="abstract" markdown="1">
 
 ## Abstract
 
@@ -32,24 +35,24 @@ A local helper plus a small open model was asked to do four daily
 Python jobs on one laptop: answer a question, write a test, fix a
 bug, add one function. Dates: 29–30 August and 5 September 2026.
 
-**0.5B** here means a model with about **500 million weights** —
-Qwen2.5-Coder-0.5B, plus an optional public LoRA on top. It is the
-tiny Hub demo, not daily work. **8B** means about **8 billion
-weights** — Ollama `llama3.1:8b`, the default. **7B** is the
-on-disk coder comparison (`qwen2.5-coder:7b`).
+**0.5B** means a model with about **500 million weights** —
+Qwen2.5-Coder-0.5B, plus an optional public LoRA. It is the tiny
+Hub demo, not daily work. **8B** means about **8 billion weights**
+— Ollama `llama3.1:8b`, the default. **7B** is
+`qwen2.5-coder:7b`.
 
 The 0.5B adapter is a style prior, not an agent (held-out vibe
 **0 / 4**; greedy LoRA **0 / 54**). One traceback repair lifts
 exact-stdout from **7 / 54** to **12 / 54**. Daily jobs on the 8B
 reached **9 / 9** the same evening the 7B coder scored **7 / 9**.
-The helper moved the four Start commands from **0 / 4** to
-**4 / 4** by doing compiler jobs itself. The everyday-ready bar —
-beat a plain 8B at the next step **and** at a real bug the helper
-cannot write — is not met. This project does not report a
+The helper moved four start commands from **0 / 4** to **4 / 4**.
+The everyday-ready bar is not met. This paper does not report a
 SWE-bench score.
 
+</div>
+
 <div class="stats">
-  <div class="stat"><b>12 / 18</b><span>tiny 0.5B (500M weights), four drafts then a later loop</span></div>
+  <div class="stat"><b>12 / 18</b><span>tiny 0.5B (500 million weights), four drafts then a later loop</span></div>
   <div class="stat"><b>0 / 54</b><span>same 0.5B + LoRA, one greedy try each</span></div>
   <div class="stat"><b>8 / 15</b><span>daily 8B (8 billion weights) picked the right first step</span></div>
   <div class="stat"><b>9 / 9</b><span>daily 8B jobs, evening of 5 Sep</span></div>
@@ -61,56 +64,58 @@ The question is whether a laptop helper and a small open model can
 do everyday Python without a hosted agent. Two sizes are easy to
 mix up: the **public 0.5B** (500 million weights, a style prior)
 and the **daily 8B** (8 billion weights, what `ask` / `run` call).
-“Everyday-ready” here means: beat a plain 8B at reading the next
-step, **and** at fixing a real bug the helper cannot do itself.
-The first “real bug” cell was a whole-line `return 0.0` on a named
-sum — the helper can write that, so it is no longer a model job.
 
-Each table below is one question, what I typed, and what happened.
-The map of every note is [Results]({{ '/investigations/' | relative_url }}).
-How to cite a score: [Cite]({{ '/cite/' | relative_url }}).
+“Everyday-ready” means: beat a plain 8B at reading the next step,
+**and** at fixing a real bug the helper cannot write. The first
+“real bug” cell was a whole-line `return 0.0` on a named sum — the
+helper can write that, so it is no longer a model job.
 
-[What you type]({{ '/scenarios/' | relative_url }}) ·
-[The machine]({{ '/investigations/bench-record/' | relative_url }}) ·
-[discussion #128](https://github.com/YauhenBichel/python-vibe/discussions/128).
+This note is the paper. The long run log is the
+[appendix](#appendix-full-tables). Cite the software or a score
+with [Cite]({{ '/cite/' | relative_url }}). The machine:
+[Bench record]({{ '/investigations/bench-record/' | relative_url }}).
 
 ## Related work
 
 The loop is one `Action:` block, then tools — a tight read-act
-loop, not a free shell (Yao et al., 2023). SWE-agent showed that
-the interface around the same model moves the score (Yang et al.,
-2024): previous best retrieval-only 3.8%, agent 12.5%, same model
-1.3% → 12.5%. python-vibe’s first-run four jobs were **0 / 4**
-then **4 / 4** after the helper. Same shape, smaller tree.
+loop, not a free shell <a class="cite" href="#ref-1">[1]</a>.
+SWE-agent showed that the interface around the same model moves
+the score <a class="cite" href="#ref-2">[2]</a>: previous best
+retrieval-only 3.8%, agent 12.5%; same model 1.3% → 12.5%. The
+first-run four jobs here were **0 / 4** then **4 / 4** after the
+helper. Same shape, smaller tree.
 
-A green suite that never called the bug is not done (Liu et al.,
-2023). `run` may send **one** traceback back (Shinn et al., 2023;
-McAndrews, 2026). Small models can be workers at 7–8B; that is not
-a claim that a 0.5B style adapter is an agent (Belcak et al.,
-2025). SWE-bench is the field’s ruler (Jimenez et al., 2024). It
-is the wrong ruler for a one-folder laptop helper. This project
-does **not** report a SWE-bench score.
+CodeAct lets the model emit Python as the action
+<a class="cite" href="#ref-3">[3]</a>. This project uses named
+actions and a write limit. A green suite that never called the bug
+is not done <a class="cite" href="#ref-4">[4]</a>. `run` may send
+**one** traceback back <a class="cite" href="#ref-5">[5]</a>
+<a class="cite" href="#ref-6">[6]</a>. Small models can be workers
+at 7–8B <a class="cite" href="#ref-7">[7]</a>; that is not a claim
+that a 0.5B style adapter is an agent. SWE-bench is the field’s
+ruler <a class="cite" href="#ref-8">[8]</a> and the wrong ruler
+for a one-folder laptop helper. This paper does **not** report a
+SWE-bench score.
 
-Full citations: [References]({{ '/references/' | relative_url }}).
+The longer list of papers: [References]({{ '/references/' | relative_url }}).
 
 ## Methods
 
 **Machine.** One Apple M3 Pro laptop, 18 GB unified memory. Ollama
-and, for the 0.5B sample-and-run cell, MLX. Detail:
-[Bench record]({{ '/investigations/bench-record/' | relative_url }}).
+for most cells; MLX for the 0.5B sample-and-run cell
+<a class="cite" href="#ref-9">[9]</a>.
 
 **Models.** Size names are weight counts, not versions.
 
-| Name on this page | About how many weights | What it is | Role |
+| Name | Weights | What it is | Role |
 | --- | --- | --- | --- |
-| **0.5B** | 500 million | Qwen2.5-Coder-0.5B (Hui et al., 2024), Ollama `qwen2.5-coder:0.5b` or MLX 4-bit. Optional public LoRA [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b) (Hu et al., 2022), step 100 | Style prior. Smoke and Hub demo. Not daily `ask` / `run` |
+| **0.5B** | 500 million | Qwen2.5-Coder-0.5B <a class="cite" href="#ref-10">[10]</a>. Ollama `qwen2.5-coder:0.5b` or MLX 4-bit. Optional LoRA <a class="cite" href="#ref-11">[11]</a> [YauhenBichel/python-vibe-0.5b](https://huggingface.co/YauhenBichel/python-vibe-0.5b), step 100 | Style prior. Not daily `ask` / `run` |
 | **7B** | 7 billion | `qwen2.5-coder:7b` unless a table names another tag | Same-night comparison |
-| **8B** | 8 billion | Ollama `llama3.1:8b` (Grattafiori et al., 2024) | Daily default |
+| **8B** | 8 billion | Ollama `llama3.1:8b` <a class="cite" href="#ref-12">[12]</a> | Daily default |
 
 A “clean” 8B is the same 8 billion weights with no agent system
-prompt and no loop. Other 7B–8B tags appear only where a table
-names them. The 0.5B file on disk is about 400 MB; the 8B is about
-4.9 GB.
+prompt and no loop. The 0.5B file on disk is about 400 MB; the 8B
+is about 4.9 GB.
 
 **Tasks.** Four daily jobs on `demo/orders` unless a table names
 another fixture. A case counts only if the function runs and does
@@ -118,16 +123,99 @@ the job — not if a file appeared, and not if the run said `done`.
 Writes stay inside the named folder. There is no general shell.
 
 **Scoring.** One run unless the table says otherwise. A gap of one
-or two cases is noise. Ten of fifteen bench cases changed verdict
-across three unchanged reruns; a single parse pass is not a score.
-Compiler-bound cells (NameError `subtotl`, whole-line `return 0`
-on a named sum, `page=` on a list URL) finish with no model. They
-are not model scores.
-
-Replay commands sit under each table. Scripts live in
-`scripts/measure/`.
+or two cases is noise. Compiler-bound cells (NameError `subtotl`,
+whole-line `return 0` on a named sum) finish with no model. They
+are not model scores. Replay scripts live in `scripts/measure/`.
+The full cells are in the [appendix](#appendix-full-tables).
 
 ## Results
+
+### 0.5B — 500 million weights
+
+Held-out vibe (weekday, count-md, jsonl, docstring): **0 / 4**.
+Parsed `Action:` that day: **0 / 2**. Exact stdout, 18 scripts × 3,
+Ollama `qwen2.5-coder:0.5b` <a class="cite" href="#ref-13">[13]</a>:
+base **7 / 54**, one traceback repair **12 / 54**. Greedy LoRA:
+**0 / 54**. Four drafts then a later loop: **12 / 18**
+<a class="cite" href="#ref-14">[14]</a>. Sampling found a different
+set, not a superset.
+
+### Daily 8B and 7B
+
+Same evening, 5 September 2026. `llama3.1:8b`: **9 / 9**.
+`qwen2.5-coder:7b`: **7 / 9**. First-run four on `demo/orders`:
+**0 / 4**, then **4 / 4** after the helper did the compiler jobs.
+Live first-Action parse: **8 / 15**.
+
+### Everyday-ready bar
+
+Beat a plain 8B at the next step **and** at a ≥1 KB logic fix the
+helper cannot write (`clip`). Last recorded night: harness parse
+**8 / 15**, clean 8B **0 / 15**; harness fix **0 / 3**, clean 8B
+**3 / 3**. Not everyday-ready.
+
+### A real tree
+
+4,580 first-party files. Reads worked. Write a test or add a
+function: **1 / 12**.
+
+## Discussion
+
+The helper is load-bearing for jobs it can finish without a model
+<a class="cite" href="#ref-2">[2]</a>. First-run four went
+**0 / 4** to **4 / 4** once the compiler wrote the NameError, the
+test, and `total_lines`. The model still has to do the rest. The
+loop helps the 8B pick an Action and does not get a patch on
+`clip`.
+
+The 0.5B is a style prior. A traceback fixes `NameError` and
+`SyntaxError`, not logic <a class="cite" href="#ref-6">[6]</a>. A
+7B coder is close and not better. Writing on a 4,580-file tree is
+**1 / 12**. Two models of different lineage hit the same wall
+(51 vs 50 of 75). Raising the count that works is the target.
+
+## Limitations
+
+One laptop, 18 GB unified memory. One run unless a table says
+otherwise. Several cells are compiler binds. For part of the month
+the instrument was wrong: unanswered `ask` stops, and markdown
+fences reaching the file. Numbers from before that note are unsafe.
+
+This paper does **not** report a SWE-bench score
+<a class="cite" href="#ref-8">[8]</a>. No claim that the 0.5B LoRA
+audited a real repository.
+
+## Conclusion
+
+Keep `llama3.1:8b`. Do not train more 0.5B steps. The helper should
+keep finishing compiler jobs. Everyday-ready is not met.
+
+## References
+
+<ol class="refs">
+<li id="ref-1">Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., &amp; Cao, Y. (2023). ReAct: Synergizing reasoning and acting in language models. <i>International Conference on Learning Representations</i>. <a href="https://arxiv.org/abs/2210.03629">arXiv:2210.03629</a></li>
+<li id="ref-2">Yang, J., Jimenez, C. E., Wettig, A., Lieret, K., Yao, S., Narasimhan, K., &amp; Press, O. (2024). SWE-agent: Agent-computer interfaces enable automated software engineering. <i>Advances in Neural Information Processing Systems</i>. <a href="https://arxiv.org/abs/2405.15793">arXiv:2405.15793</a></li>
+<li id="ref-3">Wang, X., Chen, Y., Yuan, L., Zhang, Y., Li, Y., Peng, H., &amp; Ji, H. (2024). Executable code actions elicit better LLM agents. <i>International Conference on Machine Learning</i>. <a href="https://arxiv.org/abs/2402.01030">arXiv:2402.01030</a></li>
+<li id="ref-4">Liu, J., Xia, C. S., Wang, Y., &amp; Zhang, L. (2023). Is your code generated really correct? Rigorous evaluation of large language models for code generation. <i>Advances in Neural Information Processing Systems</i>. <a href="https://arxiv.org/abs/2305.01210">arXiv:2305.01210</a></li>
+<li id="ref-5">Shinn, N., Cassano, F., Labash, B., Gopinath, A., Narasimhan, K., &amp; Yao, S. (2023). Reflexion: Language agents with verbal reinforcement learning. <i>Advances in Neural Information Processing Systems</i>. <a href="https://arxiv.org/abs/2303.11366">arXiv:2303.11366</a></li>
+<li id="ref-6">McAndrews, C. J. (2026). Feedback over form: Why execution feedback matters more than pipeline topology in 1–3B code generation. <a href="https://arxiv.org/abs/2604.21950">arXiv:2604.21950</a></li>
+<li id="ref-7">Belcak, P., Heinrich, G., Diao, S., Fu, Y., Dong, X., Muralidharan, S., Lin, Y. C., &amp; Molchanov, P. (2025). Small language models are the future of agentic AI. <a href="https://arxiv.org/abs/2506.02153">arXiv:2506.02153</a></li>
+<li id="ref-8">Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O., &amp; Narasimhan, K. (2024). SWE-bench: Can language models resolve real-world GitHub issues? <i>International Conference on Learning Representations</i> (oral). <a href="https://arxiv.org/abs/2310.06770">arXiv:2310.06770</a></li>
+<li id="ref-9">Bichel, Y. (2026). Bench record. In <i>python-vibe</i>. <a href="https://yauhenbichel.github.io/python-vibe/investigations/bench-record/">yauhenbichel.github.io/python-vibe/investigations/bench-record/</a></li>
+<li id="ref-10">Hui, B., Yang, J., Cui, Z., Yang, J., et al. (2024). <i>Qwen2.5-Coder technical report</i>. <a href="https://arxiv.org/abs/2409.12186">arXiv:2409.12186</a></li>
+<li id="ref-11">Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., &amp; Chen, W. (2022). LoRA: Low-rank adaptation of large language models. <i>International Conference on Learning Representations</i>. <a href="https://arxiv.org/abs/2106.09685">arXiv:2106.09685</a></li>
+<li id="ref-12">Grattafiori, A., et al. (2024). <i>The Llama 3 herd of models</i>. <a href="https://arxiv.org/abs/2407.21783">arXiv:2407.21783</a></li>
+<li id="ref-13">Bichel, Y. (2026, September 5). 0.5B exact-stdout eval. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/">yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/</a></li>
+<li id="ref-14">Bichel, Y. (2026, September 5). 0.5B sample-and-run. In <i>python-vibe</i> experiments. <a href="https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/">yauhenbichel.github.io/python-vibe/investigations/sample-and-run/</a></li>
+<li id="ref-15">Bichel, Y. (2026). <i>python-vibe</i> [Computer software]. <a href="https://github.com/YauhenBichel/python-vibe">github.com/YauhenBichel/python-vibe</a></li>
+</ol>
+
+APA and BibTeX for this software: [Cite]({{ '/cite/' | relative_url }}).
+
+## Appendix: full tables
+
+Each cell below is one question, what I typed, and what happened.
+The paper above is the result.
 
 ### The 0.5B as daily work
 
@@ -1034,118 +1122,3 @@ the size of the model you mean to run.
 
 Write-up: [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }})
 · [Bench record]({{ '/investigations/bench-record/' | relative_url }}).
-
-## Discussion
-
-The helper is the load-bearing part for the jobs it can finish
-without a model. First-run four went **0 / 4** to **4 / 4** once
-the compiler wrote the NameError, the test, and `total_lines`.
-Greenfield overflow (comment, pagination, config) closed the same
-way. That is the SWE-agent lesson at a smaller tree: the interface
-moves the score.
-
-The model still has to do the rest. Daily `llama3.1:8b` is **9 / 9**
-on small fixtures and **8 / 15** on first-step parse. The
-everyday-ready bar asks for a ≥1 KB logic fix the helper cannot
-write (`clip`). Harness **0 / 3**, clean 8B **3 / 3**. So the loop
-helps the model pick an Action and hurts it on the one cell that
-still counts.
-
-The 0.5B (500 million weights) is a style prior. Exact-stdout **7 / 54** base,
-**12 / 54** after one repair; greedy LoRA **0 / 54**. Sampling
-finds a different set, not a superset. That matches Feedback Over
-Form: a traceback fixes `NameError` and `SyntaxError`, not logic.
-
-A 7B coder is close (**7 / 9**) and not better. Extra 7B–8B tags
-timed out on the first daily generate that calls the model. Default
-stays `llama3.1:8b`. Writing on a 4,580-file tree is **1 / 12**.
-Do not treat the fixture scores as a real-repo review.
-
-Two models of different lineage hit the same wall (51 vs 50 of 75).
-Wrong-code failures can become refusals without the pass count
-moving. Raising the count that works is the target.
-
-## Limitations
-
-One laptop, 18 GB unified memory. One run unless a table says
-otherwise; gaps of one or two cases are noise. Several published
-cells are compiler binds, not model writes. The instrument was
-wrong for part of the month: unanswered `ask` stops, and markdown
-fences reaching the file. Every model number from before that note
-is unsafe.
-
-This project does **not** report a SWE-bench score. The public
-numbers are four jobs on `demo/orders` and a 4,580-file write rate
-of **1 / 12**. No hosted chat product is named. No claim that the
-0.5B LoRA audited a real repository.
-
-## Conclusion
-
-Keep `llama3.1:8b`. Do not train more 0.5B steps. Do not switch
-the default to a 7B coder or a Hub GGUF that misses the 180s
-generate cap. The helper should keep finishing compiler jobs. The
-everyday-ready bar stays: beat a plain 8B at the next step **and**
-at a real bug the helper cannot write. It does not, yet.
-
-## References
-
-Bichel, Y. (2026). *python-vibe* [Computer software].
-<https://github.com/YauhenBichel/python-vibe>
-
-Bichel, Y. (2026, September 5). 0.5B exact-stdout eval. In
-*python-vibe* experiments.
-<https://yauhenbichel.github.io/python-vibe/investigations/held-out-exec-eval/>
-
-Bichel, Y. (2026, September 5). 0.5B sample-and-run. In
-*python-vibe* experiments.
-<https://yauhenbichel.github.io/python-vibe/investigations/sample-and-run/>
-
-Belcak, P., Heinrich, G., Diao, S., Fu, Y., Dong, X.,
-Muralidharan, S., Lin, Y. C., & Molchanov, P. (2025). Small
-language models are the future of agentic AI.
-<https://arxiv.org/abs/2506.02153>
-
-Grattafiori, A., et al. (2024). *The Llama 3 herd of models*.
-<https://arxiv.org/abs/2407.21783>
-
-Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S.,
-Wang, L., & Chen, W. (2022). LoRA: Low-rank adaptation of large
-language models. *ICLR*.
-<https://arxiv.org/abs/2106.09685>
-
-Hui, B., Yang, J., Cui, Z., Yang, J., et al. (2024).
-*Qwen2.5-Coder technical report*.
-<https://arxiv.org/abs/2409.12186>
-
-Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O.,
-& Narasimhan, K. (2024). SWE-bench: Can language models resolve
-real-world GitHub issues? *ICLR* (oral).
-<https://arxiv.org/abs/2310.06770>
-
-Liu, J., Xia, C. S., Wang, Y., & Zhang, L. (2023). Is your code
-generated really correct? Rigorous evaluation of large language
-models for code generation. *NeurIPS* (EvalPlus / HumanEval+).
-<https://arxiv.org/abs/2305.01210>
-
-McAndrews, C. J. (2026). Feedback over form: Why execution
-feedback matters more than pipeline topology in 1–3B code
-generation.
-<https://arxiv.org/abs/2604.21950>
-
-Shinn, N., Cassano, F., Labash, B., Gopinath, A., Narasimhan, K.,
-& Yao, S. (2023). Reflexion: Language agents with verbal
-reinforcement learning. *NeurIPS*.
-<https://arxiv.org/abs/2303.11366>
-
-Yang, J., Jimenez, C. E., Wettig, A., Lieret, K., Yao, S.,
-Narasimhan, K., & Press, O. (2024). SWE-agent: Agent-computer
-interfaces enable automated software engineering. *NeurIPS*.
-<https://arxiv.org/abs/2405.15793>
-
-Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., &
-Cao, Y. (2023). ReAct: Synergizing reasoning and acting in language
-models. *ICLR*.
-<https://arxiv.org/abs/2210.03629>
-
-APA and BibTeX for this software: [Cite]({{ '/cite/' | relative_url }}).
-The longer related-work list: [References]({{ '/references/' | relative_url }}).
