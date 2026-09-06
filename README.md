@@ -107,15 +107,12 @@ Thank you to everyone who has helped py-harness.
 
 <!-- readme: contributors,bots/- -start -->
 <p align="center">
-  <a href="https://github.com/YauhenBichel" title="Yauhen Bichel"><img src="https://avatars.githubusercontent.com/YauhenBichel?s=144" width="72" height="72" alt="Yauhen Bichel" /></a>
-  <a href="https://github.com/xianjianlf2" title="Mark Xian"><img src="https://avatars.githubusercontent.com/xianjianlf2?s=144" width="72" height="72" alt="Mark Xian" /></a>
-  <a href="https://github.com/ItzSaurav" title="Itzsaurav"><img src="https://avatars.githubusercontent.com/ItzSaurav?s=144" width="72" height="72" alt="Itzsaurav" /></a>
-  <a href="https://github.com/svkzn" title="svkzn"><img src="https://avatars.githubusercontent.com/svkzn?s=144" width="72" height="72" alt="svkzn" /></a>
-  <a href="https://github.com/Aditya-233" title="Aditya"><img src="https://avatars.githubusercontent.com/Aditya-233?s=144" width="72" height="72" alt="Aditya" /></a>
-  <a href="https://github.com/kkkhs" title="Huangshuo Kuang"><img src="https://avatars.githubusercontent.com/kkkhs?s=144" width="72" height="72" alt="Huangshuo Kuang" /></a>
-</p>
-<p align="center">
-  <a href="https://github.com/YauhenBichel">Yauhen Bichel</a><span> · </span><a href="https://github.com/xianjianlf2">Mark Xian</a><span> · </span><a href="https://github.com/ItzSaurav">Itzsaurav</a><span> · </span><a href="https://github.com/svkzn">svkzn</a><span> · </span><a href="https://github.com/Aditya-233">Aditya</a><span> · </span><a href="https://github.com/kkkhs">Huangshuo Kuang</a>
+  <a href="https://github.com/YauhenBichel" title="Yauhen Bichel"><img src=".github/faces/YauhenBichel.svg" width="87" height="99" alt="Yauhen Bichel" /></a>
+  <a href="https://github.com/xianjianlf2" title="Mark Xian"><img src=".github/faces/xianjianlf2.svg" width="66" height="75" alt="Mark Xian" /></a>
+  <a href="https://github.com/ItzSaurav" title="Itzsaurav"><img src=".github/faces/ItzSaurav.svg" width="72" height="82" alt="Itzsaurav" /></a>
+  <a href="https://github.com/svkzn" title="svkzn"><img src=".github/faces/svkzn.svg" width="80" height="91" alt="svkzn" /></a>
+  <a href="https://github.com/Aditya-233" title="Aditya"><img src=".github/faces/Aditya-233.svg" width="63" height="72" alt="Aditya" /></a>
+  <a href="https://github.com/kkkhs" title="Huangshuo Kuang"><img src=".github/faces/kkkhs.svg" width="76" height="87" alt="Huangshuo Kuang" /></a>
 </p>
 <!-- readme: contributors,bots/- -end -->
 
