@@ -176,3 +176,43 @@ def _help(bench) -> str:
     finally:
         sys.argv = argv
     return out.getvalue()
+
+
+class SayingWhatTheSampleResolvesTest(unittest.TestCase):
+    """"A gap smaller than the spread above is noise" was not enough.
+
+    In one night four readings were made or nearly made off gaps inside
+    that spread — a partial 3 of 9 read as a regression caused by a
+    change that finished 10 of 20 against a control of 10 of 20, and an
+    11-against-8 read as one model beating another. The runner knows the
+    number. It should say it.
+    """
+
+    def setUp(self) -> None:
+        self.bench = _bench()
+
+    def test_the_floor_is_the_spread_of_identical_runs(self) -> None:
+        self.assertEqual(self.bench.noise_floor([10, 7, 9, 8, 10]), 3)
+
+    def test_a_steady_sample_resolves_a_single_case(self) -> None:
+        self.assertEqual(self.bench.noise_floor([4, 4, 4]), 0)
+
+    def test_no_passes_is_not_a_crash(self) -> None:
+        self.assertEqual(self.bench.noise_floor([]), 0)
+
+    def test_the_report_states_the_number(self) -> None:
+        rows = _rows({"a": "YnY", "b": "nnY"})
+        out = io.StringIO()
+        with redirect_stderr(out):
+            self.bench.report(rows, 3)
+        text = " ".join(out.getvalue().split())
+        self.assertIn("resolves a gap of", text)
+        self.assertIn("must not be reported as a result", text)
+
+    def test_it_does_not_claim_more_than_the_spread(self) -> None:
+        """Totals of 2, 0, 2 move by two, so two is noise and three is not."""
+        rows = _rows({"a": "YnY", "b": "YnY"})
+        out = io.StringIO()
+        with redirect_stderr(out):
+            self.bench.report(rows, 3)
+        self.assertIn("gap of 3 case(s) or more", " ".join(out.getvalue().split()))

@@ -340,13 +340,34 @@ def report(rows: list[dict], passes: int) -> None:
             f"passed every pass: {steady}   changed verdict: {moved}",
             file=sys.stderr,
         )
+        floor = noise_floor(totals)
         if moved:
             print(
-                "A gap smaller than the spread above is noise.",
+                f"This sample resolves a gap of {floor + 1} case(s) or more. "
+                f"Identical code scored {min(totals)}-{max(totals)} across "
+                f"{passes} passes, so a difference of {floor} or fewer is "
+                "noise and must not be reported as a result.",
                 file=sys.stderr,
             )
     else:
         print(f"\n{ONE_RUN_WARNING}", file=sys.stderr)
+
+
+def noise_floor(totals: list[int]) -> int:
+    """The largest gap this sample cannot tell from run-to-run variation.
+
+    One configuration, measured repeatedly, moves on its own. Whatever it
+    moves by is the smallest difference between *two* configurations that
+    this sample could not have produced by chance, so a comparison closer
+    than that says nothing.
+
+    It is stated as a number because "smaller than the spread above" was
+    not enough. In one night four readings were published or nearly
+    published off gaps inside this floor: a 3-of-9 partial read as a
+    regression from a change that scored 10 of 20 against a control of
+    10 of 20, and an 11-versus-8 read as one model beating another.
+    """
+    return max(totals) - min(totals) if totals else 0
 
 
 def _trace_path(argument: str) -> Path | None:
