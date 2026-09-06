@@ -42,12 +42,13 @@ HOW_TO = """\
 
 Run those inside your project folder. To point at another folder:
 
+  {prog} brief /path/to/project
   {prog} ask /path/to/project "what does compute_total return?"
 
 ask never writes. Daily run writes, then runs the suite; a failing
 traceback goes back to the model once. Unique-typo NameError and a
 template add are harness demos on demo/orders — they finish with no model.
-From this checkout: {prog} brief demo/orders
+Sample (clone first): {prog} brief demo/orders
 More commands: {prog} --help
 """
 
@@ -237,8 +238,19 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _require_dir(raw: Path) -> Path | str:
+    """A real folder, or a one-line refusal. Missing paths used to look empty."""
+    path = raw.expanduser().resolve()
+    if path.is_dir():
+        return path
+    return f"not a directory: {raw}"
+
+
 def _run_brief(args) -> int:
-    project = args.project.expanduser().resolve()
+    project = _require_dir(args.project)
+    if isinstance(project, str):
+        print(project, file=sys.stderr)
+        return 2
     print(
         render_brief_for_person(
             classify_project(project, args.scope), scope=args.scope

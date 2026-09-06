@@ -30,10 +30,12 @@ The command is `py-harness`. The PyPI name is `py-harness-cli`. Do not
 (`source .venv/bin/activate`). If the shell says `command not found`,
 the virtualenv is not active.
 
-`demo/orders` is the sample project (needs a clone).
+`demo/orders` is the sample. `pip install` does not download it.
+Clone, then stay in that folder. Do not `brief` the repository root.
 
 ```bash
-cd demo/orders
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness/demo/orders
 py-harness brief
 py-harness ask  "what does compute_total return?"
 py-harness run  "write tests for apply_discount"

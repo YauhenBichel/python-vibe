@@ -25,6 +25,8 @@ class HowToTest(unittest.TestCase):
         self.assertIn("harness demos", text)
         self.assertIn("no model", text)
         self.assertIn("demo/orders", text)
+        self.assertIn("brief /path/to/project", text)
+        self.assertIn("clone first", text)
         self.assertEqual(text, how_to())
 
 
@@ -67,6 +69,30 @@ class ProjectTaskTest(unittest.TestCase):
         project, task = resolve_project_task(str(here), None)
         self.assertEqual(project, here)
         self.assertEqual(task, "")
+
+    def test_brief_refuses_a_missing_folder(self) -> None:
+        err = io.StringIO()
+        old = sys.stderr
+        sys.stderr = err
+        try:
+            code = main(["brief", "/tmp/py-harness-no-such-folder"])
+        finally:
+            sys.stderr = old
+        self.assertEqual(code, 2)
+        self.assertIn("not a directory", err.getvalue())
+        self.assertNotIn("0 Python", err.getvalue())
+
+    def test_brief_an_empty_folder_is_still_a_folder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            buf = io.StringIO()
+            old = sys.stdout
+            sys.stdout = buf
+            try:
+                code = main(["brief", tmp])
+            finally:
+                sys.stdout = old
+            self.assertEqual(code, 0)
+            self.assertIn("0 Python", buf.getvalue())
 
     def test_ask_without_a_question_fails(self) -> None:
         err = io.StringIO()
