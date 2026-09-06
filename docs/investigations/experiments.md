@@ -397,7 +397,12 @@ nine-cell table.
 holding `/api/chat`. That is why `/api/ps` listed the 8B after SWE
 chats. The same-night SWE first-turn 180s walls were taken while
 that generate was in flight. Do not treat `keep_alive` as the
-cause. Do not remasure SWE until that bench is idle. **Do not
+cause. Do not remasure SWE until that bench is idle.
+
+**Same rerun, next tag.** The 8B `--repeat 10` ended. The same
+rerun immediately started `bench.py --tier 3 --model
+qwen2.5-coder:7b --repeat 10`. `/api/ps` listed the 7B coder.
+The laptop is still not idle. SWE was not remasured. **Do not
 switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
