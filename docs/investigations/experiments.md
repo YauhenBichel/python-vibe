@@ -531,8 +531,16 @@ cause. Do not remasure SWE until that bench is idle.
 **Same rerun, next tag.** The 8B `--repeat 10` ended. The same
 rerun immediately started `bench.py --tier 3 --model
 qwen2.5-coder:7b --repeat 10`. `/api/ps` listed the 7B coder.
-The laptop is still not idle. SWE was not remasured. **Do not
-switch.** Default stays `llama3.1:8b`.
+The laptop is still not idle. SWE was not remasured.
+
+**Idle local remasure, same night.** Unloaded the leftover 7B
+coder. `/api/ps` empty. No local client on port 11434. Two
+identical Agent bodies (no `keep_alive`, about 6,800 characters):
+first POST **180s** timeout, then `/api/ps` listed
+`swe-agent-lm:7b`. Immediate second POST **2.15 s** (load 0.01 s,
+1,709 prompt tokens, prose). The first-turn 180s is not only the
+8B bench. Still not a nine-cell table. **Do not switch.** Default
+stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.

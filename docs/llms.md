@@ -50,9 +50,9 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [What to improve]({{ '/investigations/what-to-improve/' | absolute_url }}): Harness work that can close a gap, and work that cannot.
 - [Small models, classic development]({{ '/investigations/small-llm-harness/' | absolute_url }}): Oracles and refuses that make an 8B finish like a careful review.
 - [Fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | absolute_url }}): When new weights help. Not another 0.5B run. Not 30 seed traces.
-- [Which model to run]({{ '/investigations/which-model/' | absolute_url }}): Same-night daily: 8B 9/9, 7B coder 7/9. 8B bench ended; same rerun loaded the 7B coder. SWE not remasured. 8B stays.
+- [Which model to run]({{ '/investigations/which-model/' | absolute_url }}): Same-night daily: 8B 9/9, 7B coder 7/9. Idle VRAM: SWE first Agent chat 180s; second 2.2s. 8B stays.
 - [Model lanes]({{ '/investigations/model-lanes/' | absolute_url }}): Which local weight for which job. Default stays 8B.
-- [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights that fit 18 GB. 8B bench ended; same rerun loaded the 7B coder. SWE not remasured. Do not switch.
+- [Hub models]({{ '/investigations/hub-models/' | absolute_url }}): Hugging Face weights that fit 18 GB. Idle VRAM: SWE first Agent chat 180s; second 2.2s. Do not switch.
 - [Cloud weights]({{ '/investigations/cloud-weights/' | absolute_url }}): Larger models on a rented GPU. Same write limit. No 0.5B retrain.
 - [Platform engineering]({{ '/investigations/platform-engineering/' | absolute_url }}): pathlib, both venv layouts, config files, every OS.
 - [Everyday laptop]({{ '/investigations/everyday-laptop/' | absolute_url }}): Why the 0.5B LoRA is not daily work.
