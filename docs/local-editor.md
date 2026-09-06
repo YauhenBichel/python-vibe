@@ -15,7 +15,8 @@ Three easy paths. All stay on `127.0.0.1` unless you choose otherwise.
 | Continue (VS Code) | `py-harness editors continue` | Chat uses local Ollama 8B. Uses the **editor’s** tools. |
 | Zed | `py-harness editors zed` | Merges a `context_servers` entry into `.zed/settings.json`. Same write limit. |
 
-`python3 scripts/run/install.py` then `source .venv/bin/activate` so
+`pip install py-harness-cli`, or from a clone
+`python3 scripts/run/install.py` then `source .venv/bin/activate`, so
 `py-harness` is on PATH (macOS often has no `pip`). Activate in every
 new terminal or the shell says `command not found`. `--project`
 defaults to the current folder. Files land in `.vscode/`, `.continue/`,

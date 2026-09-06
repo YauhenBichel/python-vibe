@@ -36,11 +36,14 @@ PYTHONPATH=src python scripts/measure/record_cursor.py
 From a clone (same installer as [Start]({{ '/start/' | relative_url }})):
 
 ```bash
-python3 scripts/run/install.py
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
 ollama pull llama3.1:8b
 py-harness editors cursor --allow-writes
 ```
+
+From a clone: `python3 scripts/run/install.py` then
+`source .venv/bin/activate`.
 
 macOS often has no `pip` on PATH. The installer creates `.venv` and
 runs `python -m pip` for you. Activate that venv in every new terminal

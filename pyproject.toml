@@ -1,10 +1,11 @@
 [build-system]
 requires = ["setuptools>=84.0.0"]
-build-backend = "setuptools.build_meta"
+build-backend = "kit_build"
+backend-path = ["."]
 
 [project]
-name = "py-harness"
-version = "0.3.0"
+name = "py-harness-cli"
+version = "0.3.1"
 description = "A deterministic harness around a small local coding model."
 readme = "README.md"
 license = "Apache-2.0"
@@ -39,6 +40,7 @@ python-vibe = "harness.cli:main"
 Homepage = "https://github.com/YauhenBichel/py-harness"
 Documentation = "https://yauhenbichel.github.io/py-harness/"
 Source = "https://github.com/YauhenBichel/py-harness"
+PyPI = "https://pypi.org/project/py-harness-cli/"
 
 [tool.setuptools.packages.find]
 where = ["src"]

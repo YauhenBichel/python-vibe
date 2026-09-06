@@ -17,10 +17,12 @@ Related: [local editor]({{ '/local-editor/' | relative_url }}) ·
 ## Use it (no plugin to write)
 
 ```bash
-pip install -e .
+pip install py-harness-cli
 ollama pull llama3.1:8b
 py-harness editors cursor --allow-writes
 ```
+
+From a clone, `pip install -e .` is the same command.
 
 Cursor: [use py-harness in Cursor]({{ '/cursor/' | relative_url }}).
 `--project` defaults to this folder.
@@ -40,7 +42,7 @@ stdlib so `pip install -e .` builds nothing on Windows, macOS, or Linux.
 
 Treat py-harness as a **subprocess**, not as a library you re-implement.
 
-1. **Require** `py-harness` on PATH (`pip install py-harness` or
+1. **Require** `py-harness` on PATH (`pip install py-harness-cli` or
    `-e .` from a clone).
 2. **Spawn** one of:
    - `py-harness mcp --project <abs>` — JSON-RPC on stdin/stdout

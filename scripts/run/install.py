@@ -21,6 +21,13 @@ import venv
 from pathlib import Path
 
 MIN_VERSION = (3, 11)
+# PyPI name is py-harness-cli (py-harness collides with pyharness).
+# The console script is the checkout marker.
+_CHECKOUT = 'py-harness = "harness.cli:main"'
+
+
+def _is_this_project(pyproject: str) -> bool:
+    return _CHECKOUT in pyproject
 
 
 def repo_root(start: Path | None = None) -> Path:
@@ -28,16 +35,16 @@ def repo_root(start: Path | None = None) -> Path:
     if start is not None:
         root = Path(start)
         pyproject = root / "pyproject.toml"
-        if not pyproject.is_file() or 'name = "py-harness"' not in pyproject.read_text(
-            encoding="utf-8"
+        if not pyproject.is_file() or not _is_this_project(
+            pyproject.read_text(encoding="utf-8")
         ):
             raise SystemExit(f"not a py-harness checkout: {root}")
         return root
     here = Path(__file__).resolve().parent
     for root in (here, *here.parents):
         pyproject = root / "pyproject.toml"
-        if pyproject.is_file() and 'name = "py-harness"' in pyproject.read_text(
-            encoding="utf-8"
+        if pyproject.is_file() and _is_this_project(
+            pyproject.read_text(encoding="utf-8")
         ):
             return root
     raise SystemExit("not a py-harness checkout: no pyproject.toml")

@@ -16,7 +16,8 @@ repository root — that scans hundreds of files.
 | Path | What it is |
 | --- | --- |
 | `demo/orders` | Sample app. Run `brief` / `ask` / `run` here. |
-| `scripts/run/install.py` | Puts `py-harness` on PATH. Then `source .venv/bin/activate`. |
+| PyPI `py-harness-cli` | Puts `py-harness` on PATH. Then `source .venv/bin/activate`. |
+| `scripts/run/install.py` | Editable install from a clone. Then `source .venv/bin/activate`. |
 | `docs/` | This site. |
 
 ```bash

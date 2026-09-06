@@ -159,12 +159,29 @@ class PagesInvestigationsTest(unittest.TestCase):
 
     def test_live_page_is_a_real_session(self) -> None:
         text = (DOCS / "live.md").read_text(encoding="utf-8")
+        self.assertIn("pip install py-harness-cli", text)
+        self.assertIn("/media/pip-demo.gif", text)
+        self.assertIn("asciinema play docs/media/pip-demo.cast", text)
         self.assertIn('$ py-harness brief', text)
         self.assertIn('$ py-harness ask "what does compute_total return?"', text)
         self.assertIn("subtotl → subtotal", text)
         self.assertIn("def total_lines(prices: list[int]) -> int:", text)
         self.assertIn("/media/live-demo.gif", text)
         self.assertIn("asciinema play docs/media/live-demo.cast", text)
+
+    def test_pip_recording_is_checked_in(self) -> None:
+        gif = DOCS / "media" / "pip-demo.gif"
+        cast = DOCS / "media" / "pip-demo.cast"
+        self.assertTrue(gif.is_file(), gif)
+        self.assertTrue(cast.is_file(), cast)
+        self.assertLess(gif.stat().st_size, 800_000, "keep the GIF small enough to ship")
+        body = cast.read_text(encoding="utf-8")
+        self.assertNotIn("/Users/", body)
+        self.assertNotIn("DevBox/", body)
+        self.assertIn("pip install py-harness-cli", body)
+        self.assertIn("py-harness brief", body)
+        self.assertIn("subtotl", body)
+        self.assertNotIn("0 skills", body)
 
     def test_live_recording_is_checked_in(self) -> None:
         gif = DOCS / "media" / "live-demo.gif"

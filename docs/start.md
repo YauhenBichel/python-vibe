@@ -20,6 +20,21 @@ not need a GPU.
 
 ## 1. Install
 
+Usual path — PyPI. The command is `py-harness`. The package name is
+`py-harness-cli` because `py-harness` collides with another project.
+Do not `pip install py-harness` or `pip install pyharness`.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
+```
+
+Activate that virtualenv in **every new terminal**
+(`source .venv/bin/activate`, or `.venv\Scripts\Activate.ps1` on
+Windows) or the shell says `command not found: py-harness`.
+
+From a clone (sample project, editable install, training extras):
+
 ```bash
 git clone https://github.com/YauhenBichel/py-harness.git
 cd py-harness
@@ -28,10 +43,8 @@ source .venv/bin/activate
 ```
 
 That creates `.venv` if you are not already in a virtualenv, then
-`pip install -e .`. Activate it in **every new terminal**
-(`source .venv/bin/activate`, or `.venv\Scripts\Activate.ps1` on
-Windows) or the shell says `command not found: py-harness`.
-Already in a virtualenv: `pip install -e .` is the same install.
+`pip install -e .`. Already in a virtualenv: `pip install -e .` is
+the same install.
 
 ## 2. Check it works
 

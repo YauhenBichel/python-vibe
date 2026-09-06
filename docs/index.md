@@ -20,12 +20,19 @@ date: 2026-09-06
 
 ## Try it
 
-`demo/orders` is the sample project. Activate the virtualenv first
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
+```
+
+The command is `py-harness`. The PyPI name is `py-harness-cli`. Do not
+`pip install py-harness`. Activate the virtualenv first
 (`source .venv/bin/activate`). If the shell says `command not found`,
 the virtualenv is not active.
 
+`demo/orders` is the sample project (needs a clone).
+
 ```bash
-source .venv/bin/activate
 cd demo/orders
 py-harness brief
 py-harness ask  "what does compute_total return?"

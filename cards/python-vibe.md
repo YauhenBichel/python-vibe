@@ -65,10 +65,12 @@ Works the same on macOS, Linux and Windows. The harness needs only the
 standard library.
 
 ```bash
-git clone https://github.com/YauhenBichel/py-harness.git
-cd py-harness
-pip install -e .
+python3 -m venv .venv && source .venv/bin/activate
+pip install py-harness-cli
 ```
+
+The command is `py-harness`. The PyPI name is `py-harness-cli`. Do not
+`pip install py-harness`. From a clone: `pip install -e .`.
 
 ```bash
 py-harness brief  ./your-project      # summary, no model
