@@ -1097,6 +1097,35 @@ the fix cannot move them, and it does not:
 
 Write-up: [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}).
 
+### What the totals were hiding
+
+**Example.** Tier 3, twenty runs an arm, `llama3.1:8b`. A change to how
+the harness reads the subject of a task — preferring a name written with
+brackets, `word_count(text)` — measured before and after.
+
+**Result**
+
+| tier 3, twenty runs | worked | `slugify` | `wordcount` | zero-step runs |
+| --- | --- | --- | --- | --- |
+| before | 9 of 20 | 6/10 | 3/10 | 0 |
+| subject fixed | 10 of 20 | 10/10 | **0/10** | **10** |
+| subject fixed and guarded | **19 of 20** | — | — | 0 |
+
+One case looked like noise. Underneath were two large effects cancelling
+out, and the second arm scored exactly 1 on all ten passes — a flat line
+on a benchmark that changes verdict two thirds of the time. All ten
+`wordcount` runs used **no model steps**: a mechanical path was writing
+`def word_count(prices) -> int: return len(prices)`, writing its test to
+match, and reporting "Tests passed".
+
+The bug was already in the harness. The change only removed the accident
+hiding it, because the subject of that task used to read as `module`.
+Guarding it — a task that spells its own signature has answered the
+question the guess was for — took the tier to 19 of 20, ten cases
+against a floor of two.
+
+Write-up: [What the totals were hiding]({{ '/investigations/totals-hide-things/' | relative_url }}).
+
 ### The wall two local models share
 
 **Example.** Tier six is platform and operations work: environment

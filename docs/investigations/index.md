@@ -48,6 +48,7 @@ Public pages do not name other editors or chat products.
 | [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}) | A day comparing models found two faults in the benchmark instead. Every model number before this is unsafe. |
 | [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}) | The hosted 32B was never the problem. 1 of 10 became 9 of 10 once four backticks stopped reaching the Python parser. |
 | [The wall two local models share]({{ '/investigations/the-wall/' | relative_url }}) | Tier six: 18 of 20 hosted 32B, 8 and 11 for the two local models. They are level; the gap to the larger one is not. |
+| [What the totals were hiding]({{ '/investigations/totals-hide-things/' | relative_url }}) | 9 of 20 against 10 of 20 looked like noise. It was two opposite effects, one of them a wrong function written with no model. Now 19 of 20. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
 | [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Idle SWE 180s then 2.2s. New tier-6 bench; past 180s not run. Do not switch. |

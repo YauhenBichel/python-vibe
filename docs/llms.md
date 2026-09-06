@@ -42,6 +42,7 @@ Measured on one laptop, 29 Aug 2026: 8B first Action on three scoped tasks 3/3; 
 - [The instrument was broken]({{ '/investigations/measuring/' | absolute_url }}): The benchmark punished asking a question, and fed markdown fences to the Python parser.
 - [The fence was the whole story]({{ '/investigations/the-fence/' | absolute_url }}): A hosted 32B went from 1 of 10 to 9 of 10 once the markdown fence was stripped. The local models it was compared against do not move.
 - [The wall two local models share]({{ '/investigations/the-wall/' | absolute_url }}): On tier six a hosted 32B scores 18 of 20 against 8 and 11 for the two local models, which are level with each other. Part of that tier is out of reach of any further rule.
+- [What the totals were hiding]({{ '/investigations/totals-hide-things/' | absolute_url }}): A change scored 9 of 20 against 10 of 20 and looked like noise. Underneath, the harness was writing a wrong function with no model at all. Fixing it took tier three to 19 of 20.
 - [Two models, one wall]({{ '/investigations/two-models/' | absolute_url }}): Same score, opposite failures — one writes wrong code, the other writes nothing.
 - [Where the failures are]({{ '/investigations/failures/' | absolute_url }}): A third of runs fail; two thirds of those wrote the wrong code, which no rule can catch.
 - [What the harness cannot fix]({{ '/investigations/limits/' | absolute_url }}): Seven measurements where the harness knew something and it made no difference — and the one refusal that was taught to earn itself.
