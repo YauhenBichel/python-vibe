@@ -571,8 +571,13 @@ expired. `/api/ps` listed `llama3.1:8b`. One Agent body (no
 `keep_alive`, about 6,800 characters): **36.69 s** (load 5.73 s,
 1,709 prompt tokens, prose). After that `/api/ps` listed SWE.
 The helper-sized first chat can finish when swapping off the 8B.
-The 300s miss was empty VRAM, not prompt size alone. **Do not
-switch.** Default stays `llama3.1:8b`.
+The 300s miss was empty VRAM, not prompt size alone.
+
+**Already listed, later.** `/api/ps` still listed SWE. No client
+on port 11434. The same Agent body: **74.83 s** (load 0.02 s,
+1,710 prompt tokens, **1,700** eval tokens, prose). The wall is
+the long reply, not the load. Still not a nine-cell table. **Do
+not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
