@@ -38,9 +38,8 @@ and the exact-stdout eval use Qwen2.5-Coder. The adapter method is LoRA.
 Grattafiori, A., et al. (2024). *The Llama 3 herd of models*.
 <https://arxiv.org/abs/2407.21783>
 
-Hui, B., Yang, J., Cui, Z., Yang, J., Liu, D., Zhang, L., Liu, T.,
-Zhang, J., Yu, B., Dang, K., et al. (2024). *Qwen2.5-Coder technical
-report*.
+Hui, B., Yang, J., Cui, Z., Yang, J., et al. (2024). *Qwen2.5-Coder
+technical report*.
 <https://arxiv.org/abs/2409.12186>
 
 Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S.,
@@ -67,9 +66,10 @@ Narasimhan, K., & Press, O. (2024). SWE-agent: Agent-computer
 interfaces enable automated software engineering. *NeurIPS*.
 <https://arxiv.org/abs/2405.15793>
 
-Same model, better interface: about 3.8% (retrieval only) to 12.5%
-resolved on SWE-bench. python-vibe’s first-run four jobs were **0 / 4**
-then **4 / 4** after the helper. Same shape, smaller tree.
+Previous best retrieval-only: 3.8%. SWE-agent: 12.5%. Same
+model: retrieval 1.3% → agent 12.5%. python-vibe’s first-run
+four jobs were **0 / 4** then **4 / 4** after the helper. Same
+shape, smaller tree.
 [First-run four]({{ '/investigations/first-run-four/' | relative_url }}).
 
 Wang, X., Chen, Y., Yuan, L., Zhang, Y., Li, Y., Peng, H., & Ji, H.
@@ -78,8 +78,6 @@ Wang, X., Chen, Y., Yuan, L., Zhang, Y., Li, Y., Peng, H., & Ji, H.
 
 That paper lets the model emit Python as the action. This project
 does the opposite: named actions, a write limit, no general shell.
-A 2026 ablation says the tool surface is load-bearing
-(<https://arxiv.org/abs/2607.10569>).
 
 Later benches treat the helper as a variable, not a footnote.
 
@@ -89,8 +87,11 @@ Harness-Bench: Measuring harness effects across models in
 realistic agent workflows.
 <https://arxiv.org/abs/2605.27922>
 
-Claw-SWE-Bench (2026). Same backbone: thin adapter 19.1% Pass@1,
-full adapter 73.4%. Helper sweep 27.4 points, model sweep 29.4.
+Zheng, M., Han, K., Li, B., Xu, H., Tian, Y., He, W., Zhou, H.,
+Guo, J., Hu, H., Ma, L., et al. (2026). Claw-SWE-Bench: A
+benchmark for evaluating OpenClaw-style agent harnesses on coding
+tasks. Same backbone: thin adapter 19.1% Pass@1, full adapter
+73.4%. Helper sweep 27.4 points, model sweep 29.4.
 <https://arxiv.org/abs/2606.12344>
 
 ## Repair and oracles
@@ -98,14 +99,14 @@ full adapter 73.4%. Helper sweep 27.4 points, model sweep 29.4.
 `run` writes, then runs the tests, then may send **one** traceback
 back. A green suite that never called the bug is not done.
 
-Shinn, N., Cassano, F., Gopinath, A., Narasimhan, K., & Yao, S.
-(2023). Reflexion: Language agents with verbal reinforcement
-learning. *NeurIPS*.
+Shinn, N., Cassano, F., Labash, B., Gopinath, A., Narasimhan, K.,
+& Yao, S. (2023). Reflexion: Language agents with verbal
+reinforcement learning. *NeurIPS*.
 <https://arxiv.org/abs/2303.11366>
 
 Liu, J., Xia, C. S., Wang, Y., & Zhang, L. (2023). Is your code
-generated really correct? Rigorous evaluation of neural code
-generation. *NeurIPS* (EvalPlus / HumanEval+).
+generated really correct? Rigorous evaluation of large language
+models for code generation. *NeurIPS* (EvalPlus / HumanEval+).
 <https://arxiv.org/abs/2305.01210>
 
 McAndrews, C. J. (2026). Feedback over form: Why execution
@@ -132,8 +133,13 @@ ruler for a one-folder laptop helper.
 
 Related later benches (not run here):
 
-- SWE-Bench Pro — <https://arxiv.org/abs/2509.16941>
-- SWE-PolyBench — <https://arxiv.org/abs/2504.08703>
+- Deng, X., Da, J., Pan, E., et al. (2025). SWE-Bench Pro: Can
+  AI agents solve long-horizon software engineering tasks?
+  <https://arxiv.org/abs/2509.16941>
+- Rashid, M. S., Bock, C., Zhuang, Y., et al. (2025). SWE-PolyBench:
+  A multi-language benchmark for repository-level evaluation of
+  coding agents.
+  <https://arxiv.org/abs/2504.08703>
   (Python-only benches overstate a multi-language agent; this
   tool is Python-only on purpose.)
 
@@ -148,8 +154,11 @@ Agrees at 7–8B. Does not claim a 0.5B style adapter is an agent.
 Laptop split: 8B **9 / 9** daily; 0.5B vibe **0 / 4**; greedy LoRA
 **0 / 54**.
 
-SWE-Protégé (2026). A 7B coder plus SWE-agent plus rare expert
-calls: 42.4% Pass@1 on SWE-bench Verified.
+Kon, P. T. J., Pradeep, A., Chen, A., Ellis, A. P., Hunt, W.,
+Wang, Z., Yang, J., & Thompson, S. (2026). SWE-Protégé: Learning
+to selectively collaborate with an expert. A 7B coder plus
+SWE-agent plus rare expert calls: 42.4% Pass@1 on SWE-bench
+Verified.
 <https://arxiv.org/abs/2602.22124>
 
 That is a different job: train a 7B to ask a larger model. Daily
@@ -161,8 +170,10 @@ Agent-wise LoRA on a **7B**, not a 0.5B.
 <https://aclanthology.org/2026.findings-eacl.346/>
 <https://arxiv.org/abs/2509.17489>
 
-Survey of small models in agent systems:
-<https://arxiv.org/abs/2510.03847>.
+Sharma, R., & Mehta, M. (2025). Small language models for agentic
+systems: A survey of architectures, capabilities, and deployment
+trade offs.
+<https://arxiv.org/abs/2510.03847>
 
 ## BibTeX
 
@@ -220,8 +231,8 @@ Survey of small models in agent systems:
 }
 
 @inproceedings{liu2023evalplus,
-  title = {Is Your Code Generated Really Correct? Rigorous Evaluation of Neural Code Generation},
-  author = {Liu, Jiawei and Xia, Chunqiu Steven and Wang, Yixuan and Zhang, Lingming},
+  title = {Is Your Code Generated Really Correct? Rigorous Evaluation of Large Language Models for Code Generation},
+  author = {Liu, Jiawei and Xia, Chunqiu Steven and Wang, Yuyao and Zhang, Lingming},
   booktitle = {NeurIPS},
   year = {2023},
   eprint = {2305.01210},
@@ -231,7 +242,7 @@ Survey of small models in agent systems:
 
 @inproceedings{shinn2023reflexion,
   title = {Reflexion: Language Agents with Verbal Reinforcement Learning},
-  author = {Shinn, Noah and Cassano, Federico and Gopinath, Ashwin and Narasimhan, Karthik and Yao, Shunyu},
+  author = {Shinn, Noah and Cassano, Federico and Labash, Beck and Gopinath, Ashwin and Narasimhan, Karthik and Yao, Shunyu},
   booktitle = {NeurIPS},
   year = {2023},
   eprint = {2303.11366},
