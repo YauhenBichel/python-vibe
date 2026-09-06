@@ -51,7 +51,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `starcoder2:7b` | 4.0 GB | On disk. One-word generate hit 180s. Completion-style. |
 | `codellama:7b-python` | 3.8 GB | On disk. One-word generate hit 180s. |
 | `opencoder:8b` | 4.7 GB | On disk. One-word generate hit 180s. |
-| `swe-agent-lm:7b` | 4.7 GB | On disk. Idle first Agent chat missed **300s**; `/api/ps` still empty. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Idle first Agent chat missed **300s**. Later an 8B tier-3 bench held `/api/chat`. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -98,7 +98,8 @@ VRAM, no client on 11434): first Agent chat 180s, then SWE
 listed; second 2.15 s. A new `bench.py --tier 6` then held the
 8B and started the 7B coder. A later idle first chat with a
 300s client cap still timed out and `/api/ps` stayed empty.
-OpenCoder still misses a one-word generate.
+After that a new `bench.py --tier 3` on the 8B held `/api/chat`
+again. OpenCoder still misses a one-word generate.
 Write-tests was 3 / 3 with no model (harness AAA bind). That is not
 a score. Do not switch the default.
 
@@ -124,7 +125,7 @@ These write Python. None of them were trained on python-vibe
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. One-word generate hit 180s. Completion-style. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | On disk. One-word generate hit 180s. |
 | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. One-word generate hit 180s. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Idle first Agent chat missed 300s; `/api/ps` still empty. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Idle first Agent chat missed 300s. Later an 8B tier-3 bench held `/api/chat`. |
 
 ### Fits, measure later
 
