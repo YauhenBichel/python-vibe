@@ -167,7 +167,7 @@ def patch_py(
         already = already_defined(original, append, rel)
         if already:
             return already
-        repaired = repair_unittest_append(text, append)
+        repaired = repair_unittest_append(text, append, rel)
         text = (
             repaired
             if repaired is not None

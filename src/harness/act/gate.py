@@ -12,6 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+import ast
 import re
 from pathlib import Path
 
@@ -71,10 +72,64 @@ def _called_name(original: str, append: str) -> str:
     return match.group(1) if match else ""
 
 
-def repair_unittest_append(original: str, append: str) -> str | None:
+def _class_name_for(rel: str) -> str:
+    """A TestCase name from the file it is going into.
+
+    `tests/test_pricing.py` gives `TestPricing`, which is what this
+    project's own test files are called. Naming it after the test method
+    instead gave `TestApplyDiscountReturnsTotalMinusPercent`.
+    """
+    stem = Path(rel).stem.removeprefix("test_") if rel else ""
+    parts = [part for part in re.split(r"[^A-Za-z0-9]+", stem) if part]
+    if not parts:
+        return "Tests"
+    return "Test" + "".join(part[:1].upper() + part[1:] for part in parts)
+
+
+def _new_test_file(append: str, rel: str) -> str | None:
+    """A whole test module around a bare test method. None if unsure.
+
+    Asked to write tests for a function, an 8B answers with the method
+    and not the class it belongs to — indented, because it knows it goes
+    inside something, and it never writes the something. Appended to a
+    file that does not exist yet, that is `unexpected indent` and no
+    file at all. Four runs of four spent every step resending it.
+
+    Supplying `class Test...(unittest.TestCase):` invents no behaviour:
+    the assertions are the model's, and this is the scaffolding unittest
+    requires in order to collect them.
+    """
+    lines = [line for line in append.strip("\n").splitlines() if line.strip()]
+    if not lines:
+        return None
+    base = len(lines[0]) - len(lines[0].lstrip())
+    body = "\n".join(
+        line[base:] if len(line) >= base else line.lstrip()
+        for line in append.strip("\n").splitlines()
+    )
+    try:
+        ast.parse(body)
+    except SyntaxError:
+        return None
+    if re.search(r"^class\s", body, re.MULTILINE):
+        return None
+    method = "    " + body.rstrip().replace("\n", "\n    ")
+    name = _class_name_for(rel)
+    return (
+        "import unittest\n\n\n"
+        f"class {name}(unittest.TestCase):\n{method}\n\n\n"
+        'if __name__ == "__main__":\n    unittest.main()\n'
+    )
+
+
+def repair_unittest_append(original: str, append: str, rel: str = "") -> str | None:
     """8B Append: often lands after if __name__ and skips the import."""
     if "def test_" not in append:
         return None
+    if not original.strip():
+        # A test file that does not exist yet. There is no class to put
+        # the method into, so the repair is to write the whole module.
+        return _new_test_file(append, rel)
     if "TestCase" not in original and "unittest" not in original:
         return None
     meth = _TEST_METH.search(append)
