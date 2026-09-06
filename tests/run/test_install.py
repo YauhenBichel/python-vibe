@@ -115,9 +115,11 @@ class InstallScriptTest(unittest.TestCase):
         self.assertIn("scripts/run/install.py", start)
         self.assertIn("source .venv/bin/activate", start)
         self.assertIn("demo/orders", start)
+        self.assertIn("cd py-harness/demo/orders", start)
         self.assertIn("command not found", start)
         self.assertNotIn("curl", start)
         self.assertIn("Do not `pip install py-harness`", start)
+        self.assertIn("does not download", start)
 
 
 if __name__ == "__main__":

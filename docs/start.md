@@ -13,9 +13,9 @@ not need a GPU.
 ## You need
 
 <ul class="need">
-  <li>Python 3.11 or newer, on macOS, Linux or Windows</li>
-  <li><a href="https://ollama.com" rel="noreferrer">Ollama</a>, free, plus about 5 GB of disk for the model</li>
-  <li>A Python project of your own</li>
+  <li>Python 3.11 or newer, on macOS, Linux or Windows. Check with <code>python3 --version</code>. macOS <code>/usr/bin/python3</code> is often 3.9 and cannot install this package</li>
+  <li>A folder to point at — yours, or the sample below</li>
+  <li><a href="https://ollama.com" rel="noreferrer">Ollama</a> later, for <code>ask</code> and daily <code>run</code> (about 5 GB). <code>brief</code> and the NameError sample do not need it</li>
 </ul>
 
 ## 1. Install
@@ -48,16 +48,25 @@ the same install.
 
 ## 2. Check it works
 
-No model yet. `demo/orders` is the sample project. Do not run `brief`
-on the py-harness repository root — that scans the whole tree.
+No model yet. Your own project, from that folder:
 
 ```bash
-cd demo/orders
 py-harness brief
 ```
 
-From the repository root, without `cd`: `py-harness brief demo/orders`.
-You should see about 10 files and 2.9 KB.
+Or `py-harness brief ~/app`. A missing folder is refused. The sample
+needs a clone — `pip install` does not download `demo/orders`. Do not
+`brief` the repository root.
+
+```bash
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness/demo/orders
+py-harness brief
+py-harness run "find the NameError and fix it"
+```
+
+You should see about 10 files, then the `subtotl` typo bound. From a
+clone root, without `cd`: `py-harness brief demo/orders`.
 
 ## 3. Download the model (once)
 

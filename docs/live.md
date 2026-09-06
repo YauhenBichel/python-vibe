@@ -20,7 +20,8 @@ package.
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install py-harness-cli
-cd demo/orders
+git clone https://github.com/YauhenBichel/py-harness.git
+cd py-harness/demo/orders
 py-harness brief
 py-harness run "find the NameError and fix it"
 ```
