@@ -584,7 +584,14 @@ was not run.
 
 **Still later.** A second local Python client was holding
 `/api/chat`. `/api/ps` still listed the 8B. Empty helper still
-not remasured. **Do not switch.** Default stays `llama3.1:8b`.
+not remasured.
+
+**Empty helper remasure, later.** That client ended. Unloaded the
+8B. `/api/ps` empty. No client on port 11434. One Agent body
+(no `keep_alive`): **43.45 s** (load 5.62 s, 1,709 prompt
+tokens, 797 eval tokens, prose). After that `/api/ps` listed
+SWE. The earlier 300s empty miss is not stable. Still not a
+nine-cell table. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
