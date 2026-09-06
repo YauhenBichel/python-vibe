@@ -51,7 +51,7 @@ Related: [fine-tune or harness]({{ '/investigations/fine-tune-or-harness/' | rel
 | `starcoder2:7b` | 4.0 GB | On disk. One-word generate hit 180s. Completion-style. |
 | `codellama:7b-python` | 3.8 GB | On disk. One-word generate hit 180s. |
 | `opencoder:8b` | 4.7 GB | On disk. One-word generate hit 180s. |
-| `swe-agent-lm:7b` | 4.7 GB | On disk. Warm helper chat **74.83 s** (load 0.02 s). Idle empty still missed 300s. |
+| `swe-agent-lm:7b` | 4.7 GB | On disk. Warm helper **74.83 s**. Later an 8B client held `/api/chat`. |
 
 ## Hub weights that are not an Ollama tag
 
@@ -103,7 +103,8 @@ again. Once that ended, an idle one-word generate finished in
 7.42 s (load 5.09 s). A later helper-sized Agent chat while the
 8B was listed finished in 36.69 s. A second helper chat while
 SWE was still listed finished in 74.83 s (load 0.02 s, 1,700
-eval tokens). OpenCoder still misses a one-word generate.
+eval tokens). Later an 8B client held `/api/chat`; empty helper
+was not remasured. OpenCoder still misses a one-word generate.
 Write-tests was 3 / 3 with no model (harness AAA bind). That is not
 a score. Do not switch the default.
 
@@ -129,7 +130,7 @@ These write Python. None of them were trained on python-vibe
 | [bigcode/starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | 7B, OpenRAIL | `ollama pull starcoder2:7b` | On disk. One-word generate hit 180s. Completion-style. |
 | [codellama/CodeLlama-7b-Python-hf](https://huggingface.co/codellama/CodeLlama-7b-Python-hf) | 7B | `ollama pull codellama:7b-python` | On disk. One-word generate hit 180s. |
 | [infly/OpenCoder-8B-Instruct](https://huggingface.co/infly/OpenCoder-8B-Instruct) | 8B, INF | `import_hf_ollama.py --name opencoder` | On disk as `opencoder:8b`. One-word generate hit 180s. |
-| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Warm helper chat 74.83 s. Idle empty still missed 300s. |
+| [SWE-bench/SWE-agent-LM-7B](https://huggingface.co/SWE-bench/SWE-agent-LM-7B) | 7B, Apache-2.0 | `import_hf_ollama.py --name swe-agent-lm` | On disk as `swe-agent-lm:7b`. Warm helper 74.83 s. Later an 8B client held `/api/chat`. |
 
 ### Fits, measure later
 

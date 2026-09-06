@@ -576,8 +576,11 @@ The 300s miss was empty VRAM, not prompt size alone.
 **Already listed, later.** `/api/ps` still listed SWE. No client
 on port 11434. The same Agent body: **74.83 s** (load 0.02 s,
 1,710 prompt tokens, **1,700** eval tokens, prose). The wall is
-the long reply, not the load. Still not a nine-cell table. **Do
-not switch.** Default stays `llama3.1:8b`.
+the long reply, not the load. Still not a nine-cell table.
+
+**Later.** A local Python client was holding `/api/chat`.
+`/api/ps` listed `llama3.1:8b`. An empty-VRAM helper remasure
+was not run. **Do not switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
