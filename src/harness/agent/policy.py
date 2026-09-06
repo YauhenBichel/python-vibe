@@ -620,6 +620,31 @@ def refuse_done(state: LoopState, turn) -> str:
 
 RUN_SUITE = "Next Action must be run Argv: -m unittest discover -s tests -q\n"
 
+# `unittest discover` exits 0 when it found nothing to run, so a suite
+# that ran no tests read as a suite that passed. A run then wrote a test
+# method at module level — `def test_apply_discount(self)` with no class
+# around it — watched the suite "pass", and reported done. It compiles,
+# so nothing errors; discovery imports the file, finds no TestCase, and
+# collects zero tests.
+_NO_TESTS = re.compile(r"^Ran 0 tests\b", re.MULTILINE)
+
+NO_TESTS_RAN = (
+    "not done. That suite ran 0 tests, so it proves nothing. "
+    "unittest discover only collects methods of a unittest.TestCase "
+    "subclass — a `def test_...` at module level is never run. Put the "
+    "test methods inside `class Test...(unittest.TestCase):` and run "
+    "Argv: -m unittest discover -s tests -q again.\n"
+)
+
+
+def ran_no_tests(result: str) -> bool:
+    """True when a suite exited cleanly having run nothing.
+
+    Zero tests is not evidence. It is the absence of evidence, and it
+    exits 0, which is why it was being read as success.
+    """
+    return bool(_NO_TESTS.search(result)) or "NO TESTS RAN" in result
+
 
 def write_needs_a_test(state: LoopState, result: str, path: str) -> bool:
     """True when the next step is still to write a test, not to run."""
@@ -714,6 +739,12 @@ def next_prompt(state: LoopState, turn, result: str, target=None) -> str:
         for line in result.splitlines():
             if line.startswith("Next:"):
                 return line.split(":", 1)[1].strip() + "\n"
+    # Before the exit code is read at all. Python 3.12 made `unittest`
+    # exit 5 when it collected nothing; 3.11 exits 0, and this project
+    # tests on both. Either way a suite that ran nothing is neither a
+    # pass to finish on nor a failure to repair.
+    if turn.action == "run" and ran_no_tests(result) and state.wrote_something:
+        return NO_TESTS_RAN
     if turn.action == "run" and not result.startswith("exit 0"):
         if result.startswith("refusing") or "no tests/ directory" in result:
             return ""
