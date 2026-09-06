@@ -109,7 +109,7 @@ call-http is urllib.request only. The harness refuses curl, wget, and os.system 
 - 7B / 14B / 32B listed in everyday.py: not pulled. 30B-class on disk timed out at 180s.
 - python-vibe-8b adapters: missing.
 - Hub comparison: {{ '/investigations/hub-models/' | absolute_url }}
-- OpenCoder 8B and SWE-agent-LM 7B imported from Hub GGUF (`import_hf_ollama.py`). Write-tests 3/3 is the compiler bind. Idle local remasure: first Agent chat 180s, second 2.15s. A new `bench.py --tier 6` then held the 8B and started the 7B coder; a first chat past 180s was not run. Default stays 8B. Do not pull 14B or 30B.
+- OpenCoder 8B and SWE-agent-LM 7B imported from Hub GGUF (`import_hf_ollama.py`). Write-tests 3/3 is the compiler bind. Idle first Agent chat with a 300s client cap still timed out; `/api/ps` stayed empty. Default stays 8B. Do not pull 14B or 30B.
 
 ## Limits vs a hosted IDE agent
 
