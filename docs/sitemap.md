@@ -35,6 +35,7 @@ permalink: /sitemap.xml
   <url><loc>{{ '/investigations/the-wall/' | absolute_url }}</loc><lastmod>2026-09-06</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/totals-hide-things/' | absolute_url }}</loc><lastmod>2026-09-06</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/a-day-of-repairs/' | absolute_url }}</loc><lastmod>2026-09-06</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>{{ '/status/' | absolute_url }}</loc><lastmod>2026-09-06</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>{{ '/investigations/two-models/' | absolute_url }}</loc><lastmod>2026-09-05</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/failures/' | absolute_url }}</loc><lastmod>2026-09-05</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>{{ '/investigations/limits/' | absolute_url }}</loc><lastmod>2026-09-04</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
