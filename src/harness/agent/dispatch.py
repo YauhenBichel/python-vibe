@@ -105,6 +105,44 @@ def _grep(ask: Ask) -> tuple[str, str]:
     return grep_py(ask.project, ask.turn.query, scope=ask.scope), ask.last_path
 
 
+def refuse_outside_scope(project: Path, scope: str, rel: str) -> str:
+    """Refuse a write to a file outside the folder the run was given.
+
+    `--scope` says "work only inside this folder". It was threaded into
+    locate, map, glob and grep — every read — and never reached patch or
+    edit, so the one flag a person uses to fence the tool off from the
+    rest of a project did not fence the part that changes files.
+
+    A real run showed what that costs. Given `--scope scripts`, it left
+    scope at step five, appended nonsense to `tests/whole/test_bench.py`,
+    and ended with the suite broken and the asked-for function never
+    written.
+
+    This guards the actions the model chooses. A repair the harness
+    applies itself still goes where it goes — a cover test belongs in
+    `tests/` whatever the scope is — and that is deliberate.
+    """
+    # An empty scope needs no special case: `resolve_scope` answers the
+    # project root for it, and every path in the project is inside that.
+    if not rel:
+        return ""
+    try:
+        base = resolve_scope(Path(project), scope)
+    except ValueError:
+        # A scope that cannot be resolved is reported where it is set.
+        return ""
+    root = Path(project).resolve()
+    try:
+        (root / rel).resolve().relative_to(base)
+    except ValueError:
+        return (
+            f"{rel} is outside this run's scope ({scope}). Stay inside "
+            f"{scope}/ — or re-run without --scope if the change really "
+            "belongs elsewhere."
+        )
+    return ""
+
+
 def _read(ask: Ask) -> tuple[str, str]:
     if not ask.path:
         return "read needs Path:", ask.last_path
@@ -114,6 +152,9 @@ def _read(ask: Ask) -> tuple[str, str]:
 def _edit(ask: Ask) -> tuple[str, str]:
     if not ask.path:
         return "edit needs Path:", ask.last_path
+    outside = refuse_outside_scope(ask.project, ask.scope, ask.path)
+    if outside:
+        return outside, ask.last_path
     if not ask.turn.source:
         return "edit needs a ```python block", ask.path
     blocked = PythonVibeGuard().check(ask.turn.source)
@@ -128,6 +169,9 @@ def _edit(ask: Ask) -> tuple[str, str]:
 def _patch(ask: Ask) -> tuple[str, str]:
     if not ask.path:
         return "patch needs Path: (or read that file first)", ask.last_path
+    outside = refuse_outside_scope(ask.project, ask.scope, ask.path)
+    if outside:
+        return outside, ask.last_path
     return patch_py(
         ask.project,
         ask.path,
