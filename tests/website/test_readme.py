@@ -139,22 +139,23 @@ class ReadmeContributorsTest(unittest.TestCase):
             text,
         )
 
-    def test_celebrate_merge_uses_giphy_not_hardcoded_gifs(self) -> None:
+    def test_celebrate_merge_hardcodes_no_gif(self) -> None:
+        """The celebration moved into `YauhenBichel/merge-cheer`, which
+        chooses the image and bundles its own fallbacks.
+
+        This checked the inline implementation — a Giphy call, a rating,
+        a folder of owned GIFs. What still has to hold here is that no
+        specific image is nailed into the workflow, so a broken or
+        moved URL cannot reach a public comment.
+        """
         text = CELEBRATE.read_text(encoding="utf-8")
         self.assertIn("pull_request_target", text)
-        self.assertIn("api.giphy.com", text)
-        self.assertIn("rating", text)
-        self.assertIn("GIPHY_API_KEY", text)
-        self.assertIn(".github/celebrate/", text)
         self.assertNotIn("media.giphy.com/media/", text)
-        self.assertNotIn("YauhenBichel", text)
-        gifs = sorted((ROOT / ".github" / "celebrate").glob("*.gif"))
-        names = {path.name for path in gifs}
-        self.assertTrue(gifs, "owned fallback GIFs belong in .github/celebrate/")
-        self.assertIn("celebration.gif", names)
-        self.assertIn("ship-it.gif", names)
-        notice = (ROOT / ".github" / "celebrate" / "NOTICE").read_text(encoding="utf-8")
-        self.assertIn("cultofthepartyparrot.com", notice)
+        self.assertNotRegex(text, r"https?://\S+\.gif")
+        self.assertNotIn(".github/celebrate/", text)
+        # The images, and the NOTICE recording where they came from, moved
+        # with them: `YauhenBichel/merge-cheer` carries its own.
+        self.assertFalse((ROOT / ".github" / "celebrate").exists())
 
     def test_contributor_markers_are_not_an_empty_pair(self) -> None:
         """Each person is a separate icon that links to their profile.
@@ -176,7 +177,16 @@ class ReadmeContributorsTest(unittest.TestCase):
         self.assertGreaterEqual(len(icons), 2, body)
         self.assertEqual(len(icons), len(set(icons)), body)
         for login in icons:
-            self.assertIn(f"avatars.githubusercontent.com/{login}", body)
+            # Where the icon is hosted is the generator's business — it
+            # has been the avatar CDN and is now a generated SVG under
+            # `.github/faces/`. What must hold is that the icon beside a
+            # profile link belongs to that person.
+            self.assertRegex(
+                body,
+                rf'<a href="https://github\.com/{re.escape(login)}"[^>]*>\s*'
+                rf'<img src="[^"]*{re.escape(login)}[^"]*"',
+                f"{login}'s icon does not carry their name",
+            )
 
     def test_fill_script_renders_a_table_without_bots(self) -> None:
         import importlib.util
