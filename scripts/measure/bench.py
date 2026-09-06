@@ -41,9 +41,17 @@ sys.path.insert(0, str(ROOT / "src"))
 from harness import Agent, AgentOptions  # noqa: E402
 from harness.observe.trace_record import default_trace_path  # noqa: E402
 
+# A module that raises on import is skipped, which is right — a project
+# may hold a script that cannot run here. But skipping it silently meant
+# a file that *defines* the wanted function and fails to import reported
+# "not found in any module", and that sentence sends the reader looking
+# for a missing function rather than a broken import. It did exactly
+# that to me: I read three such failures as the run deleting the
+# function it was asked to fix, and went to check. It had not.
 LOADER = '''
 import importlib.util, pathlib
 def load(name):
+    broken = []
     for path in sorted(pathlib.Path(".").rglob("*.py")):
         if "__init__" in path.name or path.name.startswith("test"):
             continue
@@ -53,10 +61,21 @@ def load(name):
         module = importlib.util.module_from_spec(spec)
         try:
             spec.loader.exec_module(module)
-        except Exception:
+        except Exception as exc:
+            try:
+                defines = ("def " + name) in path.read_text(encoding="utf-8")
+            except OSError:
+                defines = False
+            if defines:
+                broken.append(
+                    str(path) + " defines " + name + " but does not import: "
+                    + type(exc).__name__ + ": " + str(exc)
+                )
             continue
         if callable(getattr(module, name, None)):
             return getattr(module, name)
+    if broken:
+        raise AssertionError("; ".join(broken))
     raise AssertionError(name + " not found in any module")
 '''
 
@@ -215,6 +234,18 @@ NO_HELP = (
 DEFAULT_TRACES = default_trace_path(ROOT)
 
 
+# The last line carries the reason. 60 characters cut the exception off
+# the end of it, leaving "src/orders.py defines last_price but does not
+# import: Module" — the half that says what went wrong, gone.
+WHY_LIMIT = 160
+
+
+def why_from(output: str) -> str:
+    """The one line of a failed check that says why, kept readable."""
+    tail = output.strip().splitlines()
+    return tail[-1][:WHY_LIMIT] if tail else "check failed"
+
+
 def run(case: Case, model: str, steps: int, engine: str = "ollama",
         traces: Path | None = None) -> dict:
     """Measure one case, and keep the turns it produced.
@@ -256,8 +287,7 @@ def run(case: Case, model: str, steps: int, engine: str = "ollama",
         worked = proc.returncode == 0
         why = ""
         if not worked:
-            tail = (proc.stderr or proc.stdout).strip().splitlines()
-            why = tail[-1][:60] if tail else "check failed"
+            why = why_from(proc.stderr or proc.stdout)
         suite = ""
         if case.suite_must_pass:
             run_tests = subprocess.run(
