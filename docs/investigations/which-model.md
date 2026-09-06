@@ -100,7 +100,9 @@ chat 180s, then SWE listed; second 2.15 s. A new
 `bench.py --tier 6` then held the 8B and started the 7B coder.
 A later idle first chat with a 300s client cap still timed
 out and `/api/ps` stayed empty. After that a new
-`bench.py --tier 3` on the 8B held `/api/chat` again. A reply is not a daily score.
+`bench.py --tier 3` on the 8B held `/api/chat` again. Once that
+ended, an idle one-word generate finished in 7.42 s (load 5.09 s).
+A reply is not a daily score.
 **Do not switch.**
 See [Hub models](./hub-models.md).
 

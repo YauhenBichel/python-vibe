@@ -557,8 +557,15 @@ table.
 **Later, same laptop.** A new local
 `bench.py --tier 3 --model llama3.1:8b --repeat 10` was holding
 `/api/chat`. `/api/ps` listed the 8B. A one-word SWE generate
-from empty VRAM was not run. **Do not switch.** Default stays
-`llama3.1:8b`.
+from empty VRAM was not run.
+
+**Idle one-word, later.** That 8B bench ended. Unloaded the 8B.
+`/api/ps` empty. No client on port 11434. Prompt: `Reply with the
+single word ok.` Cap 180s. **7.42 s** (load 5.09 s, 36 prompt
+tokens, prose). After that `/api/ps` listed `swe-agent-lm:7b`.
+The tag loads. The 300s miss is the helper-sized first chat, not
+a dead weight file. Still not a nine-cell table. **Do not
+switch.** Default stays `llama3.1:8b`.
 
 Replay one finished table:
 `PYTHONPATH=src python3 scripts/measure/eval_daily.py --model llama3.1:8b`.
