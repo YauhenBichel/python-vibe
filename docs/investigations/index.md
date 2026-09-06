@@ -44,14 +44,14 @@ Public pages do not name other editors or chat products.
 
 | Note | In one sentence |
 | --- | --- |
-| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. Empty-VRAM SWE daily clamp: first generate 180s. Keep the 8B. |
+| [Which model]({{ '/investigations/which-model/' | relative_url }}) | Evening daily: 8B 9/9, 7B coder 7/9. SWE-listed daily clamp: first generate 180s. Keep the 8B. |
 | [The instrument was broken]({{ '/investigations/measuring/' | relative_url }}) | A day comparing models found two faults in the benchmark instead. Every model number before this is unsafe. |
 | [The fence was the whole story]({{ '/investigations/the-fence/' | relative_url }}) | The hosted 32B was never the problem. 1 of 10 became 9 of 10 once four backticks stopped reaching the Python parser. |
 | [The wall two local models share]({{ '/investigations/the-wall/' | relative_url }}) | Tier six: 18 of 20 hosted 32B, 8 and 11 for the two local models. They are level; the gap to the larger one is not. |
 | [What the totals were hiding]({{ '/investigations/totals-hide-things/' | relative_url }}) | 9 of 20 against 10 of 20 looked like noise. It was two opposite effects, one of them a wrong function written with no model. Now 19 of 20. |
 | [Two models, one wall]({{ '/investigations/two-models/' | relative_url }}) | The same 75 jobs. 51 vs 50. They fail in opposite ways. |
 | [Model lanes]({{ '/investigations/model-lanes/' | relative_url }}) | Which local weight for a question, a write, or a ship. Default stays 8B. |
-| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | Empty-VRAM SWE daily clamp: first generate 180s. Do not switch. |
+| [Hub models]({{ '/investigations/hub-models/' | relative_url }}) | SWE-listed daily clamp: first generate 180s. Do not switch. |
 | [Cloud weights]({{ '/investigations/cloud-weights/' | relative_url }}) | A larger model on a rented GPU. The helper stays on this machine. |
 | [Everyday laptop]({{ '/investigations/everyday-laptop/' | relative_url }}) | Why the 0.5B adapter is a demo, not daily work. |
 | [Bench record]({{ '/investigations/bench-record/' | relative_url }}) | The machine, what fits in 18 GB, and the runs behind the numbers. |
