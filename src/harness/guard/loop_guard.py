@@ -5,9 +5,9 @@ The tool returns the same output, the model is no better informed, and the
 step budget is spent.
 
 Read-only actions are keyed by their arguments. Patches are keyed by their
-exact Find, Replace, and Append body rather than their path, because sending
-the same mutation to another file is still repetition. Running the tests
-again after a change remains progress and is never rejected here.
+destination and exact Find, Replace, and Append body so the same boilerplate
+can legitimately be applied to more than one file. Running the tests again
+after a change remains progress and is never rejected here.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ def turn_key(turn) -> tuple[str, ...]:
 
 
 def patch_key(turn) -> tuple[str, ...] | None:
-    """The exact mutation a patch proposes, independent of destination."""
+    """The destination and exact mutation a patch proposes."""
     if turn.action != "patch":
         return None
     body = tuple(
@@ -46,27 +46,33 @@ def patch_key(turn) -> tuple[str, ...] | None:
     )
     if not any(body):
         return None
-    return ("patch", *body)
+    return ("patch", turn.path.strip(), *body)
 
 
 @dataclass
 class LoopGuard:
     """Remembers explore actions and patch bodies already seen in this run."""
 
-    seen: set[tuple[str, ...]] = field(default_factory=set)
+    seen: dict[tuple[str, ...], str] = field(default_factory=dict)
+
+    def remember_patch_result(self, turn, result: str) -> None:
+        """Record whether a previously accepted patch was applied or refused."""
+        patch = patch_key(turn)
+        if patch is not None and patch in self.seen:
+            self.seen[patch] = result
 
     def check(self, turn) -> str:
         if turn is None:
             return ""
         patch = patch_key(turn)
         if patch is not None:
-            if patch in self.seen:
+            if result := self.seen.get(patch):
                 return (
-                    "already proposed that exact patch body. It was already "
-                    "applied or refused; repeating it will not help. Read the "
+                    f"already proposed that exact patch for this path. It was {result}; "
+                    "repeating it will not help. Read the "
                     "earlier result and take a different action."
                 )
-            self.seen.add(patch)
+            self.seen[patch] = "proposed"
             return ""
         if turn.action not in EXPLORE:
             return ""
@@ -79,5 +85,5 @@ class LoopGuard:
                 + (f" ({detail})" if detail else "")
                 + f". The result has not changed. {hint}"
             )
-        self.seen.add(key)
+        self.seen[key] = "ran"
         return ""
